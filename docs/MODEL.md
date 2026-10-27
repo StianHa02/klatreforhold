@@ -62,8 +62,8 @@ RH ≥ 90 % (eller regn) og duggpunktsdifferanse < 2 °C (eller regn).
 ## Hvorfor fysikk først, og ikke ML direkte?
 
 - Vi har ingen pålitelige etiketter. Syntetiske etiketter laget med en nedbørsregel gjør at en
-  ML-modell bare lærer regelen tilbake (testet i `scripts/train.py`: modellen "uten fysikk" treffer
-  Kristians syntetiske etiketter nesten perfekt fordi de er laget av de samme kolonnene).
+  ML-modell bare lærer regelen tilbake (en modell "uten fysikk" treffer slike etiketter nesten
+  perfekt fordi de er laget av de samme kolonnene).
 - Fysikkmodellen gir fornuftige svar fra dag én og kan forklares ("8 mm regn mot veggen i natt,
   ingen sol før kl 16").
 - Når vi får observasjoner, brukes de til å (1) kalibrere parametrene og (2) trene en ML-modell som

@@ -1,4 +1,4 @@
-"""Leser stasjons-CSV i formatet fra Frost (som Kristians eksportfil) til standard værformat."""
+"""Leser stasjons-CSV eksportert fra Frost (referenceTime + elementnavn som kolonner) til standard værformat."""
 from __future__ import annotations
 
 import pandas as pd

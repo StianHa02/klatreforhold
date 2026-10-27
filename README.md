@@ -63,9 +63,9 @@ python scripts\train.py --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-
   --labels data\labels\ekstraveggen_observasjoner.csv --torch --save
 ```
 `--save` legger `models\ekstraveggen_sklearn.joblib` og `models\ekstraveggen_torch.pt` der API-et finner dem.
-Da viser UI-et også sannsynlighet for tørt per time. **Ikke tren med `--save` på Kristians syntetiske
-etiketter**: da lærer modellen bare regelen hans. Vent til det finnes ekte tilbakemeldinger
-(grovt sett et par hundre, spredt over vær og årstider).
+Da viser UI-et også sannsynlighet for tørt per time. **Ikke tren med `--save` på syntetiske etiketter**
+(f.eks. laget av en nedbørsregel): da lærer modellen bare regelen tilbake. Vent til det finnes ekte
+tilbakemeldinger (grovt sett et par hundre, spredt over vær og årstider).
 
 ### Tester
 
@@ -109,19 +109,15 @@ docs/                         modellbeskrivelse og research
 
 ## Første resultater (Open-Meteo 2023-01-01 → 2026-10-26)
 
-- Open-Meteo stemmer godt med stasjonsdataene i Kristians fil (jun–okt 2026): temperatur r = 0.98, luftfuktighet r = 0.96, vind r = 0.74. Nedbøren er ca. 20 % lavere enn stasjonen.
+- Open-Meteo stemmer godt med målte stasjonsdata nær feltet (jun–okt 2026): temperatur r = 0.98, luftfuktighet r = 0.96, vind r = 0.74. Nedbøren er ca. 20 % lavere enn stasjonen.
 - Andel tørre timer i modellen: ca. 70–75 % i april–juli, 30–45 % i september–mars.
-- I timene der Kristians fil har en tilbakemelding om gode forhold, sier modellen tørt 99 % av tiden.
-  (Etikettene "ikke gode forhold" betyr mest "ingen tilbakemelding", så de sier lite.)
 - Siging står for bare noen få prosentpoeng av de våte timene.
 - Status `is` når det er vann på berg under 0 °C (ca. 3 % av timene).
 
 ## Viktige forbehold
 
-- **Vi har ingen ekte fasit.** Kristians eksempelfil (`data/raw/137-ekstraveggen_...kristian.csv`)
-  har syntetiske etiketter laget av en nedbørsregel, og vær kun kl 14–00. Den brukes bare til å teste
-  at koden kjører. Resultatene i `outputs/train_results.json` sier derfor ingenting om hvor god
-  modellen er.
+- **Vi har ingen ekte fasit ennå.** Tallene over viser at modellen oppfører seg fornuftig, ikke hvor
+  treffsikker den er. Det får vi først vite når tilbakemeldingene fra brukerne kommer inn.
 - Neste viktige steg er å samle inn ekte observasjoner: en "tørt / fuktig / vått"-knapp i nettføreren,
   helst med klokkeslett for når man var på feltet.
 
