@@ -5,12 +5,12 @@ export default function StatusHero({ varsel }: { varsel: Varsel }) {
   const om24 = varsel.timer[varsel.timer.length - 1]
   const nesteTort = s.neste_torre_time
   return (
-    <section className={`rounded-xl p-md shadow-sm ${statusTint[s.status_na]}`}>
+    <section className={`rounded-xl border border-border-subtle p-md ${statusTint[s.status_na]}`}>
       <div className="flex items-center gap-md">
         <span className={`inline-block h-lg w-lg shrink-0 rounded-full ${statusFarge[s.status_na]}`} aria-hidden />
         <div>
           <p className="text-sm text-text-subtle">Nå på {varsel.felt.navn}</p>
-          <p className="text-2xl font-semibold leading-tight">{s.status_na_tekst}</p>
+          <p className="font-mabry text-2xl leading-tight">{s.status_na_tekst}</p>
         </div>
       </div>
       {s.grunner_na.length > 0 && (

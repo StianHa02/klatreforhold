@@ -82,10 +82,14 @@ def run_model(weather: pd.DataFrame, crag: Crag, params: dict | None = None,
     sw = rad["sw_face"].to_numpy(float)
     lw_sky = rad["lw_sky"].to_numpy(float)
 
-    wdr = wind_driven_rain(pr, u10, wd, crag.face_azimuth_deg, p)
+    # Helning: 90 = vertikal vegg, lavere = sva. På sva treffer vanlig regn rett på (cos(helning) av
+    # horisontal nedbør per m2 flate), mens slagregnet fra siden blir mindre (sin(helning)).
+    tilt = np.deg2rad(crag.face_tilt_deg)
+    wdr = wind_driven_rain(pr, u10, wd, crag.face_azimuth_deg, p) * np.sin(tilt)
     if crag.rain_sheltered:
         wdr = wdr * 0.1
-    rain_face = wdr + (p["direct_rain_fraction"] + p["runoff_from_above"]) * pr
+    direct = p["direct_rain_fraction"] + max(float(np.cos(tilt)), 0.0)
+    rain_face = wdr + (direct + p["runoff_from_above"]) * pr
 
     n = len(w)
     dt = 3600.0 / substeps

@@ -1,0 +1,121 @@
+# Sandviken (felt_id 33), Bergen
+# Kilde: BKK nettfører (felt-tabellen): orientering 270, bratthet 2 (vertikalt), sol fra 12:00 (nettføreren),
+# regnsikkert = false. Beskrivelse: "Feltet tørker raskt etter regnvær."
+crag:
+  name: Sandviken
+  felt_id: 33
+  lat: 60.4166
+  lon: 5.3190
+  elevation_m: 78        # bakkehøyde fra DOM1
+  timezone: Europe/Oslo
+  face_azimuth_deg: 270
+  face_tilt_deg: 90
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # med scripts/horizon_from_dem.py --step-deg 5 (ignorerer nærmeste 10 m). 90 = bak veggen.
+  horizon:
+    - [0, 90.0]
+    - [5, 90.0]
+    - [10, 90.0]
+    - [15, 90.0]
+    - [20, 90.0]
+    - [25, 90.0]
+    - [30, 90.0]
+    - [35, 90.0]
+    - [40, 90.0]
+    - [45, 90.0]
+    - [50, 90.0]
+    - [55, 90.0]
+    - [60, 90.0]
+    - [65, 90.0]
+    - [70, 90.0]
+    - [75, 90.0]
+    - [80, 90.0]
+    - [85, 90.0]
+    - [90, 90.0]
+    - [95, 90.0]
+    - [100, 90.0]
+    - [105, 90.0]
+    - [110, 90.0]
+    - [115, 90.0]
+    - [120, 90.0]
+    - [125, 90.0]
+    - [130, 90.0]
+    - [135, 90.0]
+    - [140, 90.0]
+    - [145, 90.0]
+    - [150, 90.0]
+    - [155, 90.0]
+    - [160, 90.0]
+    - [165, 90.0]
+    - [170, 90.0]
+    - [175, 90.0]
+    - [180, 90.0]
+    - [185, 0.0]
+    - [190, 0.0]
+    - [195, 0.0]
+    - [200, 0.0]
+    - [205, 0.0]
+    - [210, 0.0]
+    - [215, 0.0]
+    - [220, 0.0]
+    - [225, 0.0]
+    - [230, 0.0]
+    - [235, 0.0]
+    - [240, 0.0]
+    - [245, 0.0]
+    - [250, 2.5]
+    - [255, 0.0]
+    - [260, 2.3]
+    - [265, 28.4]
+    - [270, 28.4]
+    - [275, 32.4]
+    - [280, 34.9]
+    - [285, 25.6]
+    - [290, 20.2]
+    - [295, 7.5]
+    - [300, 4.9]
+    - [305, 7.2]
+    - [310, 23.8]
+    - [315, 37.0]
+    - [320, 34.3]
+    - [325, 38.3]
+    - [330, 45.0]
+    - [335, 48.7]
+    - [340, 52.0]
+    - [345, 55.9]
+    - [350, 58.5]
+    - [355, 59.5]
+    - [360, 90.0]
+  rain_sheltered: false
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.6            # reduksjon av 10 m-vind ved veggen (trær/terreng), 0-1
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  holds_capacity_mm: 0.4        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 0.5      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.5        # reservoar over dette gir siging på veggen
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.34         # fra DOM1 (flatt terreng = 0.5)
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01

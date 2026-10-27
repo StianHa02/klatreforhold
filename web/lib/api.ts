@@ -67,5 +67,5 @@ export const statusTint: Record<Status, string> = {
   tort: 'bg-forhold-tort-tinted',
   fuktig: 'bg-forhold-fuktig-tinted',
   vatt: 'bg-forhold-vatt-tinted',
-  is: 'bg-forhold-vatt-tinted',
+  is: 'bg-forhold-is-tinted',
 }

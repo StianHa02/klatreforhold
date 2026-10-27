@@ -54,15 +54,20 @@ def main():
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
     ap.add_argument("--product", default="DOM1", choices=["DOM1", "DTM1"])
     ap.add_argument("--radius-m", type=float, default=3000)
+    ap.add_argument("--tile", help="bruk en allerede nedlastet rute i stedet for å laste ned")
     a = ap.parse_args()
     crag, _ = load_config(a.config)
 
-    hits = [(t, l) for t, l, c in tiles(a.product) if covers(c, crag.lat, crag.lon)]
-    if not hits:
-        raise SystemExit("Fant ingen rute som dekker feltet. Last ned manuelt fra https://hoydedata.no")
-    title, link = hits[0]
-    raw = ROOT / "data" / "raw" / f"{a.product}_{title}.tif".replace(" ", "_")
-    if not raw.exists():
+    if a.tile:
+        from pathlib import Path
+        raw, link = Path(a.tile), None
+    else:
+        hits = [(t, l) for t, l, c in tiles(a.product) if covers(c, crag.lat, crag.lon)]
+        if not hits:
+            raise SystemExit("Fant ingen rute som dekker feltet. Last ned manuelt fra https://hoydedata.no")
+        title, link = hits[0]
+        raw = ROOT / "data" / "raw" / f"{a.product}_{title}.tif".replace(" ", "_")
+    if link and not raw.exists():
         print(f"Laster ned {title}: {link}")
         with requests.get(link, stream=True, timeout=600) as r:
             r.raise_for_status()

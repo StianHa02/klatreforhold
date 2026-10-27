@@ -1,7 +1,8 @@
 # klatreforhold
 
 Predikerer om fjellet på et klatrefelt er **vått eller tørt**, time for time, bare fra offentlige
-værdata. Første felt: **Ekstraveggen** (Bønes, Bergen, felt_id 137).
+værdata. Felt: **Ekstraveggen** (Bønes), **Sandviken** og **Helleneset** (Bergen). Ett felt = én fil i `config/`;
+timesjobben og nettsiden plukker opp nye filer automatisk.
 
 - Hvordan modellen fungerer: [`docs/MODEL.md`](docs/MODEL.md)
 - Research bak valgene (fysikk, analoge modeller, datakilder): [`docs/RESEARCH.md`](docs/RESEARCH.md)

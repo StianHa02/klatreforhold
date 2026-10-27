@@ -23,23 +23,23 @@ export default async function FeltSide({
   return (
     <div className="flex flex-col gap-md">
       <div>
-        <h1 className="text-xl font-medium">{varsel.felt.navn}</h1>
+        <h1 className="font-mabry text-[32px] leading-tight">{varsel.felt.navn}</h1>
         <p className="text-sm text-text-subtle">
           Varsel for {dag(varsel.na)} kl {klokke(varsel.na)} og 24 timer fram · {varsel.kilde}
           {varsel.ml_modell ? ' · med ML-modell' : ' · fysisk modell'}
         </p>
       </div>
       {varsel.utdatert && (
-        <p className="rounded-lg bg-forhold-fuktig-tinted p-sm text-sm">
+        <p className="rounded-lg border border-state-warning bg-state-warning-tinted p-sm text-sm">
           Varselet ble sist oppdatert {dag(varsel.generert)} kl {klokke(varsel.generert)}. Timesjobben har kanskje stoppet.
         </p>
       )}
       <StatusHero varsel={varsel} />
-      <HourStrip timer={varsel.timer} />
       <Feedback slug={slug} na={varsel.timer[0]} />
+      <HourStrip timer={varsel.timer} />
       <ForecastChart timer={varsel.timer} />
-      <section className="rounded-xl bg-surface-default p-md text-sm shadow-sm">
-        <h2 className="font-medium">Tilbakemeldinger</h2>
+      <section className="rounded-xl border border-border-subtle bg-surface-default p-md text-sm">
+        <h2 className="h3">Tilbakemeldinger</h2>
         {obs && obs.antall > 0 ? (
           <>
             <p className="mt-xs text-text-subtle">

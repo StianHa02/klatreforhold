@@ -7,38 +7,77 @@
   --color-light-600: hsl(202, 44%, 90%);
   --color-light-700: hsl(202, 44%, 85%);
   --color-light-800: hsl(202, 44%, 80%);
+  --color-light-900: hsl(202, 44%, 75%);
+
   --color-dark-900: hsl(243, 15%, 5%);
+  --color-dark-800: hsl(243, 15%, 10%);
+  --color-dark-700: hsl(243, 15%, 15%);
   --color-dark-600: hsl(243, 15%, 20%);
   --color-dark-400: hsl(243, 15%, 25%);
   --color-dark-200: hsl(243, 15%, 45%);
+  --color-dark-50: hsl(243, 15%, 55%);
+
   --color-accent-red-400: hsl(15, 100%, 50%);
+  --color-accent-red-200: hsl(15, 100%, 70%);
+  --color-accent-red-50: hsl(15, 100%, 90%);
+
   --color-accent-blue-400: hsl(223, 100%, 63%);
   --color-accent-blue-200: hsl(223, 100%, 83%);
   --color-accent-blue-50: hsl(223, 100%, 93%);
+
   --color-accent-yellow-400: hsl(48, 100%, 58%);
+  --color-accent-yellow-200: hsl(48, 100%, 78%);
   --color-accent-yellow-50: hsl(48, 100%, 98%);
-  /* Nye for tørt/is (finnes ikke i nettføreren ennå) */
-  --color-accent-green-400: hsl(145, 55%, 42%);
-  --color-accent-green-50: hsl(145, 55%, 94%);
-  --color-accent-violet-400: hsl(265, 60%, 60%);
+
+  /* Nye for tørt/is (finnes ikke i nettføreren), stemt mot BKK-aksentene */
+  --color-accent-green-400: hsl(150, 70%, 40%);
+  --color-accent-green-50: hsl(150, 70%, 93%);
+  --color-accent-violet-400: hsl(265, 85%, 66%);
+  --color-accent-violet-50: hsl(265, 85%, 95%);
 }
 
 @theme {
   --color-*: initial;
+  --color-transparent: transparent;
+  --color-white: #fff;
+
   --color-background-default: var(--color-light-200);
   --color-background-tinted: var(--color-light-400);
   --color-surface-default: var(--color-light-200);
   --color-surface-tinted: var(--color-light-600);
   --color-surface-hover: var(--color-light-700);
+  --color-surface-active: var(--color-light-900);
   --color-text-default: var(--color-dark-400);
   --color-text-tinted: var(--color-dark-600);
   --color-text-subtle: var(--color-dark-200);
   --color-border-subtle: var(--color-light-600);
   --color-border-default: var(--color-light-700);
-  --color-border-strong: var(--color-light-800);
+  --color-border-tinted: var(--color-light-800);
+  --color-border-strong: var(--color-light-900);
   --color-focus: var(--color-accent-red-400);
+
+  --color-state-error: var(--color-accent-red-400);
+  --color-state-error-subtle: var(--color-accent-red-200);
+  --color-state-error-tinted: var(--color-accent-red-50);
+
+  --color-state-warning: var(--color-accent-yellow-400);
+  --color-state-warning-subtle: var(--color-accent-yellow-200);
+  --color-state-warning-tinted: var(--color-accent-yellow-50);
+
+  --color-state-info: var(--color-accent-blue-400);
+  --color-state-info-subtle: var(--color-accent-blue-200);
+  --color-state-info-tinted: var(--color-accent-blue-50);
+
   --color-accent-surface-default: var(--color-dark-400);
+  --color-accent-surface-tinted: var(--color-dark-600);
+  --color-accent-surface-hover: var(--color-dark-700);
   --color-accent-text-default: var(--color-light-400);
+  --color-accent-text-subtle: var(--color-light-200);
+  --color-accent-border-subtle: var(--color-dark-600);
+  --color-accent-border-default: var(--color-dark-700);
+  --color-accent-border-tinted: var(--color-dark-800);
+  --color-accent-border-strong: var(--color-dark-900);
+
   --color-forhold-tort: var(--color-accent-green-400);
   --color-forhold-tort-tinted: var(--color-accent-green-50);
   --color-forhold-fuktig: var(--color-accent-yellow-400);
@@ -46,7 +85,9 @@
   --color-forhold-vatt: var(--color-accent-blue-400);
   --color-forhold-vatt-tinted: var(--color-accent-blue-50);
   --color-forhold-is: var(--color-accent-violet-400);
-  --color-white: #fff;
+  --color-forhold-is-tinted: var(--color-accent-violet-50);
+
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
 
   --spacing-*: initial;
   --spacing-0: 0;
@@ -67,11 +108,60 @@
 
   --shadow-*: initial;
   --shadow-color: 207deg 11% 60%;
-  --shadow-sm: 0.7px 0.3px 1px hsl(var(--shadow-color) / 0.12), 2.3px 1.1px 3.5px -0.8px hsl(var(--shadow-color) / 0.35);
+  --shadow-sm:
+    0.7px 0.3px 1px hsl(var(--shadow-color) / 0.12),
+    2.3px 1.1px 3.5px -0.8px hsl(var(--shadow-color) / 0.35);
+  --shadow-md:
+    0.7px 0.3px 1px hsl(var(--shadow-color) / 0.11),
+    3.7px 1.8px 5.6px -0.4px hsl(var(--shadow-color) / 0.25),
+    11.3px 5.7px 17.4px -0.8px hsl(var(--shadow-color) / 0.39);
+  --shadow-lg:
+    0.7px 0.3px 1px hsl(var(--shadow-color) / 0.1),
+    5.5px 2.8px 8.5px -0.2px hsl(var(--shadow-color) / 0.17),
+    10.3px 5.1px 15.8px -0.3px hsl(var(--shadow-color) / 0.23),
+    17.2px 8.6px 26.4px -0.5px hsl(var(--shadow-color) / 0.3),
+    28.3px 14.1px 43.4px -0.7px hsl(var(--shadow-color) / 0.37),
+    45.9px 22.9px 70.4px -0.8px hsl(var(--shadow-color) / 0.43);
+}
+
+@theme inline {
+  --font-mabry: var(--font-mabry);
+}
+
+.h1 {
+  font-size: var(--text-xl);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.h2 {
+  font-size: var(--text-lg);
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.h3 {
+  font-size: var(--text-md);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.byline {
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--color-text-subtle);
+}
+
+@utility focus {
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-text-tinted;
+}
+
+@utility focus-box {
+  @apply outline-hidden focus-visible:ring-2 focus-visible:ring-text-tinted focus-visible:ring-offset-2 focus-visible:border-text-tinted transition;
 }
 
 body {
   background: var(--color-background-tinted);
   color: var(--color-text-default);
-  font-family: 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }

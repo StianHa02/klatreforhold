@@ -23,6 +23,8 @@ def main():
     ap.add_argument("--eye-height-m", type=float, default=1.5)
     ap.add_argument("--max-dist-m", type=float, default=3000)
     ap.add_argument("--step-deg", type=float, default=2.0)
+    ap.add_argument("--min-dist-m", type=float, default=10.0,
+                    help="ignorer terreng nærmere enn dette (1 m-modellen er støyete helt inntil veggen: trær, blokker)")
     a = ap.parse_args()
 
     import rasterio
@@ -50,7 +52,7 @@ def main():
 
         zg = height(x0, y0)
         zobs = zg + a.eye_height_m
-        dists = np.arange(res, a.max_dist_m, res)
+        dists = np.arange(max(res, a.min_dist_m), a.max_dist_m, res)
         profile = []
         for azd in np.arange(0, 360, a.step_deg):
             # bak veggen: veggen selv blokkerer

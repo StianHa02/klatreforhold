@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { type ButtonHTMLAttributes, useMemo, useState } from 'react'
 import { type Status, type Time } from '@/lib/api'
 
 type Valg = Exclude<Status, 'is'>
@@ -28,6 +28,14 @@ function datoMinusDager(iso: string, dager: number) {
   return new Date(new Date(`${iso}T12:00:00Z`).getTime() - dager * 864e5).toISOString().slice(0, 10)
 }
 
+const pad = (h: number) => String(h).padStart(2, '0')
+
+function beskrivDag(iso: string, iDag: string, iGar: string) {
+  if (iso === iDag) return 'i dag'
+  if (iso === iGar) return 'i går'
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+}
+
 // Brukeren forteller hvordan det faktisk var, for nå eller et tidspunkt de siste dagene.
 // Vi viser IKKE hva varselet sa her, for ikke å påvirke svaret. Serveren slår opp varselet
 // for samme time i varselarkivet og regner ut om det stemte.
@@ -35,13 +43,22 @@ export default function Feedback({ slug, na }: { slug: string; na: Time }) {
   const router = useRouter()
   const iDagIso = useMemo(() => osloNa().dato, [])
   const tidligst = datoMinusDager(iDagIso, MAKS_DAGER_BAKOVER)
+  const iGarIso = datoMinusDager(iDagIso, 1)
   const [dag, setDag] = useState(iDagIso)
+  const [annenDag, setAnnenDag] = useState(false)
   const [time, setTime] = useState<'na' | number>('na')
   const [kommentar, setKommentar] = useState('')
   const [sender, setSender] = useState(false)
   const [svar, setSvar] = useState<{ ok: boolean; tekst: string } | null>(null)
   const iDag = dag === iDagIso
   const naTime = osloNa().time
+
+  function velgDag(v: string) {
+    setDag(v)
+    if (v === iDagIso || v === iGarIso) setAnnenDag(false)
+    if (v === iDagIso) setTime((t) => (t !== 'na' && t > naTime ? 'na' : t))
+    else if (time === 'na') setTime(14)
+  }
 
   async function send(status: Valg) {
     setSender(true)
@@ -78,49 +95,67 @@ export default function Feedback({ slug, na }: { slug: string; na: Time }) {
   }
 
   return (
-    <section className="rounded-xl bg-surface-default p-md shadow-sm">
-      <h2 className="font-medium">Har du vært på feltet?</h2>
+    <section className="rounded-xl border border-border-subtle bg-surface-default p-md">
+      <h2 className="h3">Har du vært på feltet?</h2>
       <p className="mt-xs text-sm text-text-subtle">
         Si hvordan fjellet faktisk var, også om det var tørt. Det er dette modellen lærer av.
       </p>
-      <div className="mt-md grid grid-cols-1 gap-sm sm:grid-cols-2">
-        <label className="flex flex-col gap-xs text-sm">
-          Dato
-          <input
-            type="date"
-            className="rounded-md border border-border-default bg-surface-default p-sm"
-            value={dag}
-            min={tidligst}
-            max={iDagIso}
-            required
-            onChange={(e) => {
-              const v = e.target.value
-              if (!v || v < tidligst || v > iDagIso) return // utenfor tillatt periode
-              setDag(v)
-              if (v !== iDagIso && time === 'na') setTime(14)
-            }}
-          />
-        </label>
-        <label className="flex flex-col gap-xs text-sm">
-          Når
-          <select
-            className="rounded-md border border-border-default bg-surface-default p-sm"
-            value={String(time)}
-            onChange={(e) => setTime(e.target.value === 'na' ? 'na' : Number(e.target.value))}
-          >
-            {iDag && <option value="na">Akkurat nå</option>}
-            {TIMER.filter((h) => !iDag || h <= naTime).map((h) => (
-              <option key={h} value={h}>
-                kl {String(h).padStart(2, '0')}–{String(h + 1).padStart(2, '0')}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <fieldset className="mt-md">
+        <legend className="mb-xs text-sm">Dag</legend>
+        <div className="flex flex-wrap gap-xs">
+          <Chip valgt={iDag && !annenDag} onClick={() => velgDag(iDagIso)}>I dag</Chip>
+          <Chip valgt={dag === iGarIso && !annenDag} onClick={() => velgDag(iGarIso)}>I går</Chip>
+          <Chip valgt={annenDag} onClick={() => { setAnnenDag(true); if (iDag || dag === iGarIso) velgDag(datoMinusDager(iDagIso, 2)) }}>
+            Tidligere
+          </Chip>
+        </div>
+        {annenDag && (
+          <label className="mt-sm flex flex-col gap-xs text-sm">
+            <span className="text-text-subtle">Velg dato (inntil {MAKS_DAGER_BAKOVER} dager tilbake)</span>
+            <input
+              type="date"
+              className="focus-box rounded-md border border-border-default bg-surface-default p-sm sm:max-w-[16rem]"
+              value={dag}
+              min={tidligst}
+              max={iDagIso}
+              required
+              onChange={(e) => {
+                const v = e.target.value
+                if (!v || v < tidligst || v > iDagIso) return // utenfor tillatt periode
+                velgDag(v)
+              }}
+            />
+          </label>
+        )}
+      </fieldset>
+      <fieldset className="mt-md">
+        <legend className="mb-xs text-sm">Når på dagen</legend>
+        {iDag && (
+          <Chip valgt={time === 'na'} onClick={() => setTime('na')} className="mb-xs w-full sm:w-auto">
+            Akkurat nå
+          </Chip>
+        )}
+        <div className="grid grid-cols-6 gap-xs sm:grid-cols-9">
+          {TIMER.map((h) => (
+            <Chip
+              key={h}
+              valgt={time === h}
+              disabled={iDag && h > naTime}
+              onClick={() => setTime(h)}
+              aria-label={`kl ${pad(h)}–${pad(h + 1)}`}
+            >
+              {pad(h)}
+            </Chip>
+          ))}
+        </div>
+        <p className="mt-xs text-xs text-text-subtle">
+          Valgt: {beskrivDag(dag, iDagIso, iGarIso)}, {time === 'na' ? 'akkurat nå' : `kl ${pad(time)}–${pad(time + 1)}`}
+        </p>
+      </fieldset>
       <label className="mt-sm flex flex-col gap-xs text-sm">
         Kommentar (valgfritt)
         <input
-          className="rounded-md border border-border-default bg-surface-default p-sm"
+          className="focus-box rounded-md border border-border-default bg-surface-default p-sm"
           value={kommentar}
           maxLength={500}
           placeholder="F.eks. tørt nederst, fuktig i toppen"
@@ -135,14 +170,30 @@ export default function Feedback({ slug, na }: { slug: string; na: Time }) {
             type="button"
             disabled={sender}
             onClick={() => send(v.verdi)}
-            className="flex items-center justify-center gap-sm rounded-lg border border-border-default p-sm font-medium hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus disabled:opacity-50"
+            className="flex items-center justify-center gap-sm focus cursor-pointer rounded-lg border-2 border-accent-border-default p-sm font-medium transition hover:bg-background-tinted disabled:cursor-default disabled:opacity-50"
           >
             <span className={`inline-block h-md w-md rounded-full ${v.farge}`} aria-hidden />
             {v.tekst}
           </button>
         ))}
       </div>
-      {svar && <p className={`mt-sm text-sm ${svar.ok ? 'text-text-tinted' : 'text-focus'}`}>{svar.tekst}</p>}
+      {svar && <p className={`mt-sm text-sm ${svar.ok ? 'text-text-tinted' : 'text-state-error'}`}>{svar.tekst}</p>}
     </section>
+  )
+}
+
+// Valgknapp i BKK-stil: mørk når valgt, ellers lys med kant
+function Chip({ valgt, className = '', ...rest }: { valgt: boolean } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      aria-pressed={valgt}
+      className={`focus cursor-pointer rounded-lg border-2 px-sm py-xs text-sm tabular-nums transition disabled:cursor-default disabled:opacity-40 ${
+        valgt
+          ? 'border-accent-border-default bg-accent-surface-default text-accent-text-default'
+          : 'border-border-default bg-surface-default hover:bg-surface-tinted disabled:hover:bg-surface-default'
+      } ${className}`}
+      {...rest}
+    />
   )
 }
