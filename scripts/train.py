@@ -6,6 +6,7 @@ Vær-CSV: fra fetch_history.py (Open-Meteo/Frost) eller stasjons-CSV med 'refere
 """
 import argparse
 import json
+from pathlib import Path
 
 import pandas as pd
 from _common import DEFAULT_CONFIG, ROOT
@@ -30,7 +31,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
     ap.add_argument("--weather", required=True)
-    ap.add_argument("--labels", required=True, nargs="+", help="én eller flere etikettfiler")
+    ap.add_argument("--labels", required=True, nargs="+",
+                    help="én eller flere etikettfiler, eller 'supabase' for å hente observasjonene direkte")
+    ap.add_argument("--med-dev", action="store_true", help="ta med observasjoner registrert fra utvikling (kilde=dev)")
     ap.add_argument("--save", action="store_true", help="lagre modellene i models/ så API-et bruker dem")
     ap.add_argument("--torch", action="store_true", help="tren også GRU-modell (PyTorch, CUDA hvis mulig)")
     a = ap.parse_args()
@@ -39,7 +42,21 @@ def main():
     phys = run_model(w, crag, params)
     X = build_features(w.interpolate(limit=3), phys, crag.timezone)
     X = X[w["air_temperature"].notna()]  # ikke tren på utfylte hull
-    y = pd.concat([load_labels(p, crag.timezone) for p in a.labels])
+    def labels(p):
+        if p == "supabase":
+            from klatreforhold.ml.features import labels_from_frame
+            from klatreforhold.storage import SupabaseStorage, get_storage
+            st = get_storage()
+            if not isinstance(st, SupabaseStorage):
+                raise SystemExit("--labels supabase krever SUPABASE_URL og SUPABASE_SERVICE_ROLE_KEY (f.eks. i .env)")
+            df = st.all_observations(Path(a.config).stem, include_dev=a.med_dev)
+            print(f"Hentet {len(df)} observasjoner fra Supabase")
+            return labels_from_frame(df, crag.timezone)
+        return load_labels(p, crag.timezone)
+
+    y = pd.concat([labels(p) for p in a.labels])
+    if y.empty:
+        raise SystemExit("Ingen etiketter ennå")
     y = y.groupby(level=0).max().reindex(X.index).dropna().astype(bool)
     tr, te = time_split(X, y)
     print(f"Trening: {tr.min()} -> {tr.max()} ({len(tr)} t), test: {te.min()} -> {te.max()} ({len(te)} t)")

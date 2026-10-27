@@ -53,3 +53,10 @@ const arkivKall = kall.find((c) => c.url.includes('/varsel?'))
 const rad5 = JSON.parse(kall.find((c) => c.init.method === 'POST' && c.url.endsWith('/observasjoner'))!.init.body as string)
 assert(s5 === 201 && arkivKall && rad5.predikert_status === 'vatt' && rad5.riktig === false, 'arkivet vinner over klienten')
 assert(arkivKall!.url.includes('generert=lte.') && /tid=eq\.\d{4}-\d\d-\d\dT\d\d%3A00%3A00\.000Z/.test(arkivKall!.url), 'slår opp riktig time i arkivet')
+
+// lokalt merkes observasjoner som dev
+process.env.KLATREFORHOLD_KILDE = 'dev'
+kall.length = 0
+await k.lagreObservasjon('ekstraveggen', { status: 'tort', kilde: 'web' })
+const rad6 = JSON.parse(kall.find((c) => c.init.method === 'POST' && c.url.endsWith('/observasjoner'))!.init.body as string)
+assert(rad6.kilde === 'dev', 'dev-merking fra miljøet')

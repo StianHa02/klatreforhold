@@ -28,6 +28,27 @@ Alle modellparametre er startverdier fra litteraturen (se `config/ekstraveggen.y
 
 ## Kom i gang
 
+### Miljøvariabler (gjør dette først)
+
+Utvikling bruker **samme Supabase-database som produksjon**, så du har brukernes tilbakemeldinger
+lokalt og kan trene direkte på dem.
+
+```powershell
+copy .env.example .env               # fyll inn SUPABASE_SERVICE_ROLE_KEY og KLATREFORHOLD_CONTACT
+copy web\.env.example web\.env.local # samme nøkkel
+```
+
+Observasjoner du registrerer lokalt merkes `kilde = dev` og tas ikke med i trening
+(med mindre du ber om det med `--med-dev`). Nøkkelen gir full tilgang til databasen, så den skal aldri
+committes eller brukes i kode som kjører i nettleseren.
+
+Tren rett fra databasen:
+
+```powershell
+python scripts\fetch_history.py --start 2023-01-01 --end 2026-10-26
+python scripts\train.py --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase --torch --save
+```
+
 ### Alt-i-ett med Docker (anbefalt for utvikling)
 
 ```powershell

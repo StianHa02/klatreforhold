@@ -16,6 +16,7 @@ from klatreforhold.storage import SupabaseStorage, get_storage
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--felt", default=None, help="slug, standard alle")
+    ap.add_argument("--med-dev", action="store_true", help="ta med observasjoner fra utvikling (kilde=dev)")
     a = ap.parse_args()
     st = get_storage()
     if not isinstance(st, SupabaseStorage):
@@ -24,7 +25,7 @@ def main():
     out_dir = ROOT / "data" / "labels"
     out_dir.mkdir(parents=True, exist_ok=True)
     for slug in slugs:
-        df = st.all_observations(slug)
+        df = st.all_observations(slug, include_dev=a.med_dev)
         path = out_dir / f"{slug}_observasjoner_supabase.csv"
         if df.empty:
             print(f"{slug}: ingen observasjoner")

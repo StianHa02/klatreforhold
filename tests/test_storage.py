@@ -62,6 +62,37 @@ def test_supabase_payloads():
     assert "merge-duplicates" in kw["headers"]["Prefer"]
 
 
+def test_training_excludes_dev():
+    st = SupabaseStorage("https://abc.supabase.co", "key")
+    st.s = FakeSession()
+    st.all_observations("ekstraveggen")
+    _, _, kw = st.s.calls[-1]
+    assert kw["params"]["kilde"] == "not.in.(dev,test)"
+    st.all_observations("ekstraveggen", include_dev=True)
+    assert "kilde" not in st.s.calls[-1][2]["params"]
+
+
+def test_labels_from_supabase_rows():
+    import pandas as pd
+    from klatreforhold.ml.features import labels_from_frame
+    df = pd.DataFrame([{"tid": "2026-10-27T13:30:00+00:00", "status": "tort"},
+                       {"tid": "2026-10-27T14:10:00+00:00", "status": "fuktig"}])
+    y = labels_from_frame(df)
+    assert y.tolist() == [False, True] and str(y.index[0]) == "2026-10-27 13:00:00+00:00"
+    assert labels_from_frame(pd.DataFrame()).empty
+
+
+def test_dotenv_does_not_override():
+    import os
+    from klatreforhold.config import _load_dotenv
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / ".env"
+        p.write_text("# kommentar\nKF_TEST_A=fra_fil\nKF_TEST_B = 'sitert'\n", encoding="utf-8")
+        os.environ["KF_TEST_A"] = "fra_miljo"
+        _load_dotenv(p)
+        assert os.environ["KF_TEST_A"] == "fra_miljo" and os.environ["KF_TEST_B"] == "sitert"
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

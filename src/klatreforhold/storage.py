@@ -79,13 +79,15 @@ class SupabaseStorage:
         df["riktig"] = df["riktig"].map(lambda v: "" if v is None else int(bool(v)))
         return df.fillna("")
 
-    def all_observations(self, felt: str | None = None) -> pd.DataFrame:
-        """Alle observasjoner (for trening), sidevis."""
+    def all_observations(self, felt: str | None = None, include_dev: bool = False) -> pd.DataFrame:
+        """Alle observasjoner (for trening), sidevis. Observasjoner fra utvikling (kilde=dev/test) utelates."""
         out, start, page = [], 0, 1000
         while True:
             params = {"select": "*", "order": "id.asc"}
             if felt:
                 params["felt"] = f"eq.{felt}"
+            if not include_dev:
+                params["kilde"] = "not.in.(dev,test)"
             r = self.s.get(f"{self.base}/observasjoner", params=params,
                            headers={"Range-Unit": "items", "Range": f"{start}-{start + page - 1}"}, timeout=30)
             r.raise_for_status()

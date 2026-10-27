@@ -58,7 +58,14 @@ def load_labels(path, timezone: str = "Europe/Oslo") -> pd.Series:
 
     'time' uten tidssone tolkes som lokal tid. Returnerer bool-serie (True = vått/fuktig) på hele timer i UTC.
     """
-    df = pd.read_csv(path)
+    return labels_from_frame(pd.read_csv(path), timezone)
+
+
+def labels_from_frame(df: pd.DataFrame, timezone: str = "Europe/Oslo") -> pd.Series:
+    if "time" not in df and "tid" in df:
+        df = df.rename(columns={"tid": "time"})
+    if df.empty:
+        return pd.Series(dtype=bool, name="wet")
     t = pd.to_datetime(df["time"])
     if t.dt.tz is None:
         t = t.dt.tz_localize(timezone, ambiguous="NaT", nonexistent="shift_forward")

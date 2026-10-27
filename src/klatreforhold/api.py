@@ -102,7 +102,7 @@ def ny_observasjon(slug: str, obs: Observasjon):
         riktig = (obs.predikert_status == "tort") == (obs.status == "tort")
     row = {"time": t_utc.isoformat(), "status": obs.status, "predikert_status": obs.predikert_status or "",
            "riktig": "" if riktig is None else int(riktig), "kommentar": (obs.kommentar or "").replace("\n", " ").strip(),
-           "kilde": obs.kilde, "registrert": datetime.now(timezone.utc).isoformat()}
+           "kilde": os.environ.get("KLATREFORHOLD_KILDE") or obs.kilde, "registrert": datetime.now(timezone.utc).isoformat()}
     try:
         storage.add_observation(slug, row)
     except Exception as err:

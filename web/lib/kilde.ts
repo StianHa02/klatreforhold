@@ -193,7 +193,8 @@ export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promis
     predikert_status: predikert,
     riktig,
     kommentar,
-    kilde: (obs.kilde ?? 'web').slice(0, 40),
+    // KLATREFORHOLD_KILDE=dev lokalt, så testklikk kan holdes utenfor treningsdataene
+    kilde: (process.env.KLATREFORHOLD_KILDE || obs.kilde || 'web').slice(0, 40),
   }
   await sb('observasjoner', { method: 'POST', body: JSON.stringify(rad), headers: { Prefer: 'return=minimal' } })
   return [201, { lagret: { ...rad, riktig: riktig === null ? '' : riktig ? 1 : 0 } }]
