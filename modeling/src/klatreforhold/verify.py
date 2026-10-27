@@ -98,6 +98,21 @@ def scores(fc: pd.DataFrame, obs: pd.DataFrame, by_lead: bool = True) -> pd.Data
     return pd.DataFrame(rows)
 
 
+def rain_windows(fc_mm: pd.Series, obs_mm: pd.Series) -> dict:
+    """Regn over lengre vinduer. For tørking teller hvor mye som kom siste 6-24 t, ikke nøyaktig hvilken time."""
+    j = pd.concat({"v": fc_mm, "m": obs_mm}, axis=1).dropna()
+    out = {}
+    for h in (6, 24):
+        r = j.resample(f"{h}h").sum(min_count=h // 2).dropna()
+        p, o = r["v"] >= 0.5, r["m"] >= 0.5
+        hits, miss, fa = int((p & o).sum()), int((~p & o).sum()), int((p & ~o).sum())
+        out[f"traff_regn_{h}t"] = None if hits + miss == 0 else round(hits / (hits + miss), 3)
+        out[f"falsk_regn_{h}t"] = None if hits + fa == 0 else round(fa / (hits + fa), 3)
+    d = j.resample("24h").sum(min_count=12).dropna()
+    out["korr_mm_24t"] = round(float(d["v"].corr(d["m"])), 3) if len(d) > 2 else None
+    return out
+
+
 def to_obs_frame(w: pd.DataFrame) -> pd.DataFrame:
     """Gjør en værramme (Open-Meteo/Frost-kolonner) om til tabellkolonnene."""
     return w.rename(columns=VAR)[[c for c in VAR.values() if c in w.rename(columns=VAR)]]

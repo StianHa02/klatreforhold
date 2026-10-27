@@ -17,7 +17,7 @@ from _common import ROOT
 from train import load_weather
 
 from klatreforhold.predict import list_crags, load_crag
-from klatreforhold.verify import scores, to_obs_frame
+from klatreforhold.verify import rain_windows, scores, to_obs_frame
 
 PD = dict(index=False)
 
@@ -56,11 +56,12 @@ def history(start, end):
         print(f"\n=== {station} {info.get('navn')} ({info['lat']:.4f}, {info['lon']:.4f}), {start} – {end} ===")
         obs = to_obs_frame(fetch_observations(station, start, end, elements=RECENT_ELEMENTS))
         print(f"{obs.dropna(how='all').shape[0]} timer med målinger")
-        rows = []
+        rows, vinduer = [], []
         met = fetch_history(info["lat"], info["lon"], start, end)
         r = scores(to_obs_frame(met).reset_index(names="tid"), obs, by_lead=False)
         r.insert(0, "værserie", "MET Nordic ved stasjonen")
         rows.append(r)
+        vinduer.append({"værserie": "MET Nordic ved stasjonen", **rain_windows(met["precipitation"], obs["nedbor_mm"])})
         for slug in slugs:
             files = sorted((ROOT / "data" / "raw").glob(f"{slug}_openmeteo_metno_*.csv"))
             if not files:
@@ -69,8 +70,13 @@ def history(start, end):
             r = scores(to_obs_frame(w).reset_index(names="tid"), obs, by_lead=False)
             r.insert(0, "værserie", f"MET Nordic ved {slug}")
             rows.append(r)
+            vinduer.append({"værserie": f"MET Nordic ved {slug}", **rain_windows(w["precipitation"], obs["nedbor_mm"])})
         res = pd.concat(rows).drop(columns="ledetid")
         print(res.to_string(**PD))
+        vin = pd.DataFrame(vinduer)
+        print("\nRegn over lengre vinduer (>= 0.5 mm i vinduet), og korrelasjon for døgnsum:")
+        print(vin.to_string(**PD))
+        vin.to_csv(ROOT / "outputs" / f"kontroll_{station}_historikk_vinduer.csv", index=False)
         print("\nLes: traff_regn = andel av timene med målt regn der serien også hadde regn. Forskjellen mellom\n"
               "første rad og feltradene viser hvor mye lokalt vær betyr: hvis feltradene treffer stasjonen dårligere,\n"
               "er stasjonen en dårlig erstatning for feltets eget vær.")

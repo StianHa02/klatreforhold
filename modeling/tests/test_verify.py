@@ -58,6 +58,16 @@ def test_kontroll_does_not_touch_model_input(monkeypatch=None):
         P.with_observations = orig
 
 
+def test_rain_windows_tolerate_timing():
+    from klatreforhold.verify import rain_windows
+    w = _w(hours=96)
+    obs = w["precipitation"]
+    shifted = obs.shift(1).fillna(0)  # varselet bommer med én time
+    hourly = scores(to_obs_frame(w.assign(precipitation=shifted)).reset_index(names="tid"), to_obs_frame(w), by_lead=False)
+    win = rain_windows(shifted, obs)
+    assert hourly["traff_regn"].iloc[0] == 0.0 and win["traff_regn_24t"] == 1.0
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -131,3 +131,22 @@ Derfor bruker vi målestasjoner til å **kontrollere** varselet, ikke til å ers
 `modeling/scripts/verify_forecast.py` viser treff på regntimer, temperatur, fuktighet og vind per ledetid
 (fra arkivet), eller med `--historikk START SLUTT` for flere år: modellen ved stasjonen mot målingene, og
 hvert felts vær mot samme stasjon. Krever `FROST_CLIENT_ID` i `.env` (lokalt) og som secret i GitHub.
+
+### Første resultat: MET Nordic mot Bergen–Florida (SN50540), 2025-01-01 til 2026-10-26
+
+| Værserie | Temp. feil (°C) | RF feil / skjevhet (%-poeng) | Regntimer truffet | Varslet regn som uteble | Nedbør, andel av målt |
+|---|---|---|---|---|---|
+| MET Nordic ved stasjonen | 0.19 | 8.4 / +2.2 | 66 % | 32 % | 0.89 |
+| ved Ekstraveggen (5.5 km) | 0.65 | 7.6 / +3.2 | 63 % | 31 % | 0.82 |
+| ved Helleneset (6.4 km) | 0.78 | 7.7 / +2.0 | 62 % | 30 % | 0.80 |
+| ved Sandviken (3.8 km) | 0.76 | 8.2 / +2.2 | 65 % | 32 % | 0.88 |
+
+Hva vi lærer:
+- **Regn time for time er usikkert selv ved stasjonen** (66 % truffet). Usikkerheten i modellen er større enn
+  forskjellen mellom feltpunktene, så for regn hjelper det lite å velge et annet gridpunkt. Rutenettet glatter
+  likevel ut lokale byger, så de ekte lokale forskjellene kan være større enn dette viser.
+- **Temperaturen er lokal, men forskjellene er små** (under 1 °C).
+- **Modellen er for fuktig** (+2–3 %-poeng relativ fuktighet). Det betyr at den trolig tørker berget litt for sakte.
+  Kalibreringen tar delvis opp dette.
+- Om stasjonsmålinger er bedre enn feltets eget gridpunkt kan bare avgjøres mot tilbakemeldinger fra feltet:
+  kalibrer med begge og se hvilken som forutsier rapportene best.
