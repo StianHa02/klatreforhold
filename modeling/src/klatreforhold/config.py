@@ -57,6 +57,23 @@ def _num(v):
         return v
 
 
+def rh_correction_for_station(station: str | None, config_dir: Path) -> dict:
+    f = config_dir / "stasjoner" / "rh_korreksjon.yaml"
+    if not station or not f.exists():
+        return {}
+    with open(f, encoding="utf-8") as fh:
+        st = (yaml.safe_load(fh) or {}).get(station) or {}
+    if st.get("maned"):
+        out = {"rh_korreksjon_maned": [float(v) for v in st["maned"]]}
+        if st.get("doegn_cos") and st.get("doegn_sin"):
+            out["rh_korreksjon_doegn_cos"] = [float(v) for v in st["doegn_cos"]]
+            out["rh_korreksjon_doegn_sin"] = [float(v) for v in st["doegn_sin"]]
+        return out
+    if st.get("konstant") is not None:
+        return {"rh_korreksjon": float(st["konstant"])}
+    return {}
+
+
 def load_config(path: str | Path) -> tuple[Crag, dict]:
     """Leser en felt-konfig (yaml) og returnerer (Crag, modellparametre)."""
     with open(path, encoding="utf-8") as f:
@@ -77,6 +94,10 @@ def load_config(path: str | Path) -> tuple[Crag, dict]:
         frost_bruk=str(c.get("frost_bruk", "kontroll")),
     )
     params = {k: _num(v) for k, v in cfg.get("model", {}).items()}
+    # Fuktighetskorreksjon for værvarselet, målt mot feltets Frost-stasjon over flere år
+    # (scripts/verify_forecast.py --historikk --skriv-rh). Står den i feltets egen konfig, vinner den.
+    if "rh_korreksjon" not in params and "rh_korreksjon_maned" not in params:
+        params.update(rh_correction_for_station(crag.frost_station, Path(path).parent))
     # Kalibrerte parametre (scripts/calibrate.py --write) overstyrer startverdiene
     kal = Path(path).parent / "kalibrert" / Path(path).name
     if kal.exists():

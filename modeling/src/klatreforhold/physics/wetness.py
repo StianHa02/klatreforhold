@@ -15,6 +15,11 @@ Energibalanse for et tynt berglag (temperatur Ts):
 der h_c = 5.7 + 3.8*U (McAdams), og fordampning/kondens E følger av Lewis-relasjonen:
   E = h_c/(rho*cp) * (rho_v,sat(Ts) - rho_v,luft).  E < 0 betyr kondens (dugg/"svett" berg).
 
+Luftfuktighet: MET Nordic er for fuktig på ettermiddagen vår og sommer og litt for tørr om natta vinterstid,
+sammenlignet med målestasjoner (se scripts/verify_forecast.py). rh_correction() retter dette før
+energibalansen, med en verdi per måned og en døgnsvingning. Timer som er
+målt (kolonnen rh_malt, satt når Frost-målinger erstatter historikken) korrigeres ikke.
+
 Regn på vertikal vegg (ISO 15927-3, semi-empirisk):
   R_vegg = 2/9 * U * R_h^(8/9) * cos(D - theta)   når vinden blåser mot veggen.
 """
@@ -39,6 +44,8 @@ DEFAULTS = dict(
     albedo=0.30, emissivity=0.95, surface_layer_m=0.05, rock_heat_capacity=2.2e6,
     rock_conductivity=2.5, conduction_depth_m=0.25, deep_temp_timescale_h=120.0, sky_view_factor=0.5,
     wet_threshold_mm=0.05, damp_threshold_mm=0.01,
+    rh_korreksjon=0.0, rh_korreksjon_maned=None, rh_korreksjon_doegn_cos=None, rh_korreksjon_doegn_sin=None,
+    rh_korreksjon_styrke=1.0,
 )
 
 REQUIRED = ["air_temperature", "relative_humidity", "precipitation", "wind_speed", "wind_direction"]
@@ -54,6 +61,34 @@ def wind_driven_rain(precip, wind_speed, wind_dir, face_azimuth, p) -> np.ndarra
     u = np.asarray(wind_speed) * p["wind_exposure"]
     r = np.clip(np.asarray(precip, dtype=float), 0, None)
     return p["wdr_coefficient"] * u * r ** p["wdr_exponent"] * np.clip(cosang, 0, None)
+
+
+def rh_correction(index: pd.DatetimeIndex, p: dict, timezone: str = "Europe/Oslo") -> np.ndarray:
+    """Prosentpoeng som legges til modellens luftfuktighet, time for time.
+
+    rh_korreksjon_maned: 12 verdier (midten av hver måned, interpolert langs året så det ikke blir hopp).
+    rh_korreksjon_doegn_cos/_sin: valgfri døgnsvingning per måned, b cos(2 pi t/24) + c sin(2 pi t/24),
+    t = lokal klokketime. rh_korreksjon_styrke skalerer alt (1 = som målt mot stasjonen).
+    """
+    styrke = float(p.get("rh_korreksjon_styrke", 1.0))
+    m = p.get("rh_korreksjon_maned")
+    if m is None or len(m) != 12:
+        return np.full(len(index), styrke * float(p.get("rh_korreksjon") or 0.0))
+    local = index.tz_convert(timezone) if index.tz is not None else index
+    dager = np.where(local.is_leap_year, 366.0, 365.0)
+    mnd = 12 * (local.dayofyear.to_numpy() - 1 + local.hour.to_numpy() / 24.0) / dager  # 0-12 gjennom året
+    mid = np.arange(12) + 0.5
+    x = np.concatenate([mid - 12, mid, mid + 12])
+
+    def langs_aaret(v):
+        return np.interp(mnd, x, np.tile(np.asarray(v, dtype=float), 3))
+
+    out = langs_aaret(m)
+    b, c = p.get("rh_korreksjon_doegn_cos"), p.get("rh_korreksjon_doegn_sin")
+    if b is not None and c is not None and len(b) == 12 and len(c) == 12:
+        t = 2 * np.pi * local.hour.to_numpy() / 24.0
+        out = out + langs_aaret(b) * np.cos(t) + langs_aaret(c) * np.sin(t)
+    return styrke * out
 
 
 def run_model(weather: pd.DataFrame, crag: Crag, params: dict | None = None,
@@ -72,6 +107,10 @@ def run_model(weather: pd.DataFrame, crag: Crag, params: dict | None = None,
     w = weather.sort_index().copy()
     w[REQUIRED] = w[REQUIRED].interpolate(limit=3).ffill().bfill()
     w["precipitation"] = w["precipitation"].fillna(0).clip(lower=0)
+    korr = rh_correction(w.index, p, crag.timezone)
+    if "rh_malt" in w:  # målt fuktighet (Frost) skal ikke korrigeres
+        korr = np.where(w["rh_malt"].fillna(False).to_numpy(bool), 0.0, korr)
+    w["relative_humidity"] = (w["relative_humidity"] + korr).clip(0, 100)
 
     rad = face_irradiance(w, crag)
     ta = w["air_temperature"].to_numpy(float)
@@ -177,6 +216,7 @@ def run_model(weather: pd.DataFrame, crag: Crag, params: dict | None = None,
     res = pd.DataFrame(out, index=w.index)
     res["rain_on_face_mm"] = rain_face
     res["wind_driven_rain_mm"] = wdr
+    res["rh_brukt"] = rh
     res["dew_point"] = dew_point_c(ta, rh)
     res["rock_minus_dewpoint"] = res["rock_temp"] - res["dew_point"]
     res = res.join(rad[["sw_face", "sun_on_face", "sun_elevation", "cloud_cover_used"]])

@@ -7,25 +7,23 @@ timesjobben og nettsiden plukker opp nye filer automatisk.
 - Hvordan modellen fungerer: [`docs/MODEL.md`](docs/MODEL.md)
 - Research bak valgene (fysikk, analoge modeller, datakilder): [`docs/RESEARCH.md`](docs/RESEARCH.md)
 - Deploy (Vercel + Supabase + GitHub Actions, uten eget API): [`docs/DEPLOY.md`](docs/DEPLOY.md)
+- Overlevering (status, funn, beslutninger, neste steg): [`docs/OVERLEVERING.md`](docs/OVERLEVERING.md)
 
 ## Status (oktober 2026)
 
+Full overlevering med status, funn, beslutninger og gjenstående arbeid: [`docs/OVERLEVERING.md`](docs/OVERLEVERING.md).
+
 | Del | Status |
 |---|---|
-| Fysisk modell (regn mot veggen, sol, bergtemperatur, kondens, fordampning, siging) | ✅ fungerer, enkle tester OK |
-| Datahenting: Open-Meteo (MET Nordic), api.met.no, Frost, MET Nordic thredds | ✅ Open-Meteo-historikk kjørt (2023–2026, ingen hull). De andre er testet med falske svar, ikke mot ekte API-er |
-| Varsel nå + hver time neste 24 t, med forklaringer | ✅ `src/klatreforhold/predict.py` |
-| API (FastAPI) med tilbakemeldinger | ✅ testet |
-| Web-UI (Next.js) med 24-timers stripe og "stemmer varselet?" | ✅ bygget og testet |
-| Docker (api + web) | ✅ skrevet, ikke kjørt (ingen Docker der det ble laget) |
-| Supabase (siste varsel, varselarkiv, observasjoner) | ✅ prosjekt opprettet og migrert |
-| Timesjobb (GitHub Actions → Supabase) | ⏳ klar, trenger secrets i GitHub, se docs/DEPLOY.md |
-| Vercel (kun Next.js-siden) | ⏳ klar til deploy, se docs/DEPLOY.md |
-| Trening/sammenligning: fysikk vs regler vs scikit-learn vs PyTorch (GRU) | ✅ kjørt (PyTorch på CPU). GPU-trening ikke testet på 5070 ennå |
-| Horisont/sol fra Kartverket DOM1 | ✅ kjørt (scripts/download_dom.py + horizon_from_dem.py). Sol på veggen fra ca. kl 16–17 april–august, ingen direkte sol oktober–februar. Himmelsynsfaktor 0.36 |
-| Kalibrering | ❌ venter på ekte observasjoner av tørt/vått |
+| Fysisk modell for tre felt, geometri fra Kartverket DOM1 | ✅ i drift |
+| Nettside (Vercel) og Supabase | ✅ i drift |
+| Timesjobb (GitHub Actions) | ⚠️ virker ved manuell start, planlagt kjøring har ikke startet av seg selv |
+| Kontroll mot Frost (Florida), 2023-2026 | ✅ resultater i docs/MODEL.md |
+| Fuktighetskorreksjon (måned + døgn) | ✅ |
+| Tilbakemeldinger fra brukere | ❌ ingen ennå |
+| Kalibrering og ML-trening | ❌ venter på tilbakemeldinger |
 
-Alle modellparametre er startverdier fra litteraturen (se `modeling/config/ekstraveggen.yaml`). Kalibrerte verdier havner i `modeling/config/kalibrert/`.
+Modellparametrene er startverdier fra litteraturen. Kalibrerte verdier havner i `modeling/config/kalibrert/`.
 
 ## Repoet
 

@@ -1,0 +1,13 @@
+# Korreksjon av luftfuktigheten i MET Nordic (prosentpoeng som legges til), per Frost-stasjon.
+# Gjelder alle felt med denne frost_station. Skrevet av:
+#   python scripts/verify_forecast.py --historikk --skriv-rh
+# maned (jan-des) brukes når den finnes, ellers konstant. Glatt overgang mellom månedene.
+# doegn_cos/doegn_sin: døgnsvingning per måned, b*cos(2 pi t/24) + c*sin(2 pi t/24), t = lokal time.
+SN50540:
+  kilde: MET Nordic mot SN50540, alle timer, 2023-01-01 – 2026-10-25
+  timer: 33456
+  konstant: -1.8
+  maned: [0.87, -1.23, -2.83, -3.09, -3.43, -3.45, -2.8, -2.22, -1.72, -1.15, -0.08,
+    1.16]
+  doegn_cos: [0.64, 0.56, 0.05, -0.02, 0.66, 1.17, 1.04, 1.0, 1.2, 0.97, 0.56, 0.48]
+  doegn_sin: [1.65, 2.6, 3.51, 3.92, 3.49, 2.92, 2.88, 3.49, 4.0, 3.34, 1.9, 1.18]

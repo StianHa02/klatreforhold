@@ -116,3 +116,138 @@ def rain_windows(fc_mm: pd.Series, obs_mm: pd.Series) -> dict:
 def to_obs_frame(w: pd.DataFrame) -> pd.DataFrame:
     """Gjør en værramme (Open-Meteo/Frost-kolonner) om til tabellkolonnene."""
     return w.rename(columns=VAR)[[c for c in VAR.values() if c in w.rename(columns=VAR)]]
+
+
+# ---------------------------------------------------------------------------------------------------
+# Sesong og år: er feilene de samme hele året, og er de stabile fra år til år?
+
+TZ = "Europe/Oslo"
+SESONG = {12: "vinter", 1: "vinter", 2: "vinter", 3: "vår", 4: "vår", 5: "vår",
+          6: "sommer", 7: "sommer", 8: "sommer", 9: "høst", 10: "høst", 11: "høst"}
+SESONGER = ["vinter", "vår", "sommer", "høst"]
+MANEDER = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"]
+
+
+def period_key(index: pd.DatetimeIndex, by: str) -> pd.Index:
+    local = pd.DatetimeIndex(index).tz_convert(TZ)
+    if by == "sesong":
+        return pd.Index([SESONG[m] for m in local.month])
+    if by == "maned":
+        return pd.Index([MANEDER[m - 1] for m in local.month])
+    if by == "aar":
+        return pd.Index(local.year.astype(str))
+    if by == "doegn":
+        return pd.Index(pd.cut(local.hour, [-1, 5, 11, 17, 23], labels=["00-06", "06-12", "12-18", "18-24"]).astype(str))
+    raise ValueError(by)
+
+
+def _order(by: str, keys) -> list:
+    ref = {"sesong": SESONGER, "maned": MANEDER}.get(by)
+    return [k for k in ref if k in set(keys)] if ref else sorted(set(keys))
+
+
+def scores_by(fc: pd.DataFrame, obs: pd.DataFrame, by: str) -> pd.DataFrame:
+    """Samme tall som scores(), men per sesong, måned, år eller tid på døgnet."""
+    fc = fc.copy()
+    fc["tid"] = pd.to_datetime(fc["tid"], utc=True)
+    key = period_key(pd.DatetimeIndex(fc["tid"]), by)
+    rows = []
+    for k in _order(by, key):
+        r = scores(fc[(key == k)], obs, by_lead=False)
+        if not r.empty:
+            r["ledetid"] = k
+            rows.append(r)
+    return pd.concat(rows).rename(columns={"ledetid": by}) if rows else pd.DataFrame()
+
+
+def rain_windows_by(fc_mm: pd.Series, obs_mm: pd.Series, by: str) -> pd.DataFrame:
+    key = period_key(fc_mm.index, by)
+    rows = []
+    for k in _order(by, key):
+        m = np.asarray(key == k)
+        rows.append({by: k, **rain_windows(fc_mm[m], obs_mm.reindex(fc_mm.index)[m])})
+    return pd.DataFrame(rows)
+
+
+def _rh_pair(fc_rh: pd.Series, obs_rh: pd.Series) -> pd.DataFrame:
+    j = pd.concat({"v": fc_rh, "m": obs_rh}, axis=1).dropna()
+    j.index = pd.to_datetime(j.index, utc=True)
+    j["d"] = j["v"] - j["m"]
+    return j
+
+
+# Merk om fuktighet: sorterer man timene etter hva VARSELET sa, ser varselet alltid for fuktig ut i de fuktige
+# timene og for tørt i de tørre, bare fordi tilfeldige feil er store (MAE ~8). Sorterer man etter det som ble
+# MÅLT, snur fortegnet. Korreksjonen beregnes derfor fra ALLE timer, ikke fra et utvalg valgt på varselet.
+
+def rh_bias_table(fc_rh: pd.Series, obs_rh: pd.Series, by: str) -> pd.DataFrame:
+    """Skjevhet i luftfuktighet (varsel - målt) per periode, over alle timer."""
+    j = _rh_pair(fc_rh, obs_rh)
+    key = period_key(j.index, by)
+    rows = []
+    for k in _order(by, key):
+        g = j[np.asarray(key == k)]
+        rows.append({by: k, "timer": len(g), "skjevhet": round(g["d"].mean(), 2),
+                     "median_varsel": round(g["v"].median(), 1), "median_malt": round(g["m"].median(), 1),
+                     "andel_varsel>=95": round((g["v"] >= 95).mean(), 3), "andel_malt>=95": round((g["m"] >= 95).mean(), 3),
+                     "mae": round(g["d"].abs().mean(), 2)})
+    return pd.DataFrame(rows)
+
+
+def rh_bias_year_month(fc_rh: pd.Series, obs_rh: pd.Series) -> pd.DataFrame:
+    """Skjevhet over alle timer, år x måned. Viser om sesongmønsteret går igjen hvert år."""
+    j = _rh_pair(fc_rh, obs_rh)
+    t = pd.DataFrame({"aar": period_key(j.index, "aar"), "maned": period_key(j.index, "maned"), "d": j["d"].to_numpy()})
+    tab = t.pivot_table(index="aar", columns="maned", values="d", aggfunc="mean").round(1)
+    return tab[[m for m in MANEDER if m in tab.columns]]
+
+
+def rh_bias_by_level(fc_rh: pd.Series, obs_rh: pd.Series) -> pd.DataFrame:
+    """Skjevhet etter fuktighetsnivå, sortert etter varselet og etter målingen.
+
+    Snur fortegnet mellom de to kolonnene, er forskjellen mest tilfeldig feil og ikke en fast skjevhet.
+    """
+    j = _rh_pair(fc_rh, obs_rh)
+    bins = [0, 60, 70, 80, 90, 95, 101]
+    lab = ["<60", "60-70", "70-80", "80-90", "90-95", ">=95"]
+    v = j.groupby(pd.cut(j["v"], bins, labels=lab, right=False), observed=False)["d"]
+    m = j.groupby(pd.cut(j["m"], bins, labels=lab, right=False), observed=False)["d"]
+    return pd.DataFrame({"rh": lab, "timer_varslet": v.size().to_numpy(), "skjevhet_etter_varslet": v.mean().round(2).to_numpy(),
+                         "timer_malt": m.size().to_numpy(), "skjevhet_etter_malt": m.mean().round(2).to_numpy()})
+
+
+def rh_quantiles(fc_rh: pd.Series, obs_rh: pd.Series) -> pd.DataFrame:
+    """Fordelingen av varslet og målt fuktighet. Systematisk skjevhet uten tilfeldig feil."""
+    j = _rh_pair(fc_rh, obs_rh)
+    q = [0.05, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]
+    return pd.DataFrame({"varsel": j["v"].quantile(q).round(1), "malt": j["m"].quantile(q).round(1)}).T.rename(
+        columns=lambda x: f"p{int(round(x * 100))}")
+
+
+def _smooth12(x: np.ndarray) -> np.ndarray:
+    return 0.25 * np.roll(x, 1) + 0.5 * x + 0.25 * np.roll(x, -1)
+
+
+def rh_correction_fit(fc_rh: pd.Series, obs_rh: pd.Series, min_hours: int = 300) -> dict:
+    """Korreksjon (legges til varselet) per måned med døgnsvingning, fra alle timer over alle år.
+
+    For hver måned tilpasses  skjevhet(t) = a + b cos(2 pi t/24) + c sin(2 pi t/24)  (t = lokal klokketime),
+    og korreksjonen er minus dette. Månedsverdiene glattes med nabomånedene, fordi enkeltmåneder varierer
+    mye fra år til år mens sesongmønsteret og døgnsvingningen går igjen.
+    """
+    j = _rh_pair(fc_rh, obs_rh)
+    if j.empty:
+        return {}
+    loc = j.index.tz_convert(TZ)
+    h = loc.hour.to_numpy()
+    X = np.c_[np.ones(len(j)), np.cos(2 * np.pi * h / 24), np.sin(2 * np.pi * h / 24)]
+    alle = np.linalg.lstsq(X, j["d"].to_numpy(), rcond=None)[0]
+    coef = []
+    for mnd in range(1, 13):
+        m = loc.month == mnd
+        coef.append(np.linalg.lstsq(X[m], j["d"].to_numpy()[m], rcond=None)[0] if m.sum() >= min_hours else alle)
+    coef = -np.array(coef)  # korreksjon = minus skjevheten
+    a, b, c = (_smooth12(coef[:, k]) for k in range(3))
+    r = lambda x: [round(float(v), 2) for v in x]
+    return {"konstant": round(float(-alle[0]), 1), "maned": r(a), "doegn_cos": r(b), "doegn_sin": r(c),
+            "timer": int(len(j)), "fra": str(j.index.min().date()), "til": str(j.index.max().date())}

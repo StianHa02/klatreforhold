@@ -74,6 +74,8 @@ def with_observations(w: pd.DataFrame, crag: Crag) -> pd.DataFrame:
     obs = obs.reindex(w.index)
     for col in obs.columns.intersection(w.columns):
         w[col] = obs[col].where(obs[col].notna(), w[col])
+    if "relative_humidity" in obs:  # målt fuktighet korrigeres ikke i run_model
+        w["rh_malt"] = obs["relative_humidity"].notna()
     if "dew_point_2m" in w:  # ikke la et modell-duggpunkt henge igjen ved siden av målt temp/fuktighet
         w = w.drop(columns="dew_point_2m")
     w.attrs["frost_station"] = crag.frost_station
