@@ -128,6 +128,40 @@ const PREDIKERT = ['tort', 'fuktig', 'vatt', 'is'] as const
 
 export type NyObservasjon = { status: string; tid?: string | null; predikert_status?: string | null; kommentar?: string | null; kilde?: string }
 
+/** Tid uten tidssone (f.eks. "2026-10-27T14:30:00") tolkes som norsk tid. */
+export function tolkTid(s: string): Date {
+  if (/[zZ]$|[+-]\d\d:?\d\d$/.test(s)) return new Date(s)
+  const m = s.match(/^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d))?$/)
+  if (!m) return new Date(NaN)
+  const somUtc = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? 0))
+  const offset = (t: number) => {
+    const navn = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Oslo', timeZoneName: 'shortOffset' })
+      .formatToParts(new Date(t)).find((p) => p.type === 'timeZoneName')?.value ?? 'GMT'
+    const o = navn.match(/GMT([+-]\d+)(?::(\d+))?/)
+    return o ? (Number(o[1]) * 60 + Math.sign(Number(o[1])) * Number(o[2] ?? 0)) * 60e3 : 0
+  }
+  const forste = somUtc - offset(somUtc)
+  return new Date(somUtc - offset(forste)) // andre runde håndterer sommertid-skiftet
+}
+
+/** Varselets status for timen `tid` faller i, slik det så ut sist før tidspunktet (minst ledetid). */
+async function predikertFra(slug: string, tid: Date): Promise<string | null> {
+  const timeslutt = new Date(Math.ceil(tid.getTime() / 3600e3) * 3600e3).toISOString()
+  try {
+    const q = (filter: string) =>
+      sb<{ status: string }[]>(
+        `varsel?felt=eq.${encodeURIComponent(slug)}&tid=eq.${encodeURIComponent(timeslutt)}${filter}&select=status&limit=1`,
+      )
+    const forFor = await q(`&generert=lte.${encodeURIComponent(tid.toISOString())}&order=generert.desc`)
+    if (forFor.length) return forFor[0].status
+    const senere = await q('&order=generert.asc') // f.eks. rett etter at arkivet startet
+    return senere[0]?.status ?? null
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}
+
 /** Validerer og lagrer. Returnerer [http-status, svar]. */
 export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promise<[number, unknown]> {
   if (!brukerSupabase) {
@@ -141,7 +175,7 @@ export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promis
   if (!STATUSER.includes(obs.status as (typeof STATUSER)[number])) return [422, { detail: 'Ugyldig status' }]
   if (obs.predikert_status && !PREDIKERT.includes(obs.predikert_status as (typeof PREDIKERT)[number]))
     return [422, { detail: 'Ugyldig predikert_status' }]
-  const tid = obs.tid ? new Date(obs.tid) : new Date()
+  const tid = obs.tid ? tolkTid(obs.tid) : new Date()
   if (Number.isNaN(tid.getTime())) return [422, { detail: 'Ugyldig tid' }]
   const nå = Date.now()
   if (tid.getTime() > nå + 5 * 60e3) return [422, { detail: 'Kan ikke registrere observasjoner fram i tid' }]
@@ -149,12 +183,14 @@ export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promis
   const kommentar = (obs.kommentar ?? '').replace(/\s+/g, ' ').trim().slice(0, 500) || null
   const felt = await hentFelt()
   if (!felt?.some((f) => f.slug === slug)) return [404, { detail: `Ukjent felt: ${slug}` }]
-  const riktig = obs.predikert_status ? (obs.predikert_status === 'tort') === (obs.status === 'tort') : null
+  // Hva sa varselet for denne timen? Slås opp i arkivet; klientens verdi er bare reserve.
+  const predikert = (await predikertFra(slug, tid)) ?? obs.predikert_status ?? null
+  const riktig = predikert ? (predikert === 'tort') === (obs.status === 'tort') : null
   const rad = {
     felt: slug,
     tid: tid.toISOString(),
     status: obs.status,
-    predikert_status: obs.predikert_status ?? null,
+    predikert_status: predikert,
     riktig,
     kommentar,
     kilde: (obs.kilde ?? 'web').slice(0, 40),

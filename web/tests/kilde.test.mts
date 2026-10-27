@@ -7,6 +7,7 @@ globalThis.fetch = (async (url: string, init: RequestInit = {}) => {
   kall.push({ url, init })
   let body: unknown = []
   if (url.includes('varsel_siste')) body = [{ data: lagret }]
+  else if (url.includes('/varsel?')) body = [{ status: 'vatt' }] // arkivet sier vått
   if (url.includes('rpc/treffsikkerhet')) body = { antall: 3, antall_vurdert: 2, andel_riktig: 0.5 }
   if (url.includes('observasjoner?felt')) body = [{ tid: '2026-10-26T10:00:00Z', status: 'tort', predikert_status: 'vatt', riktig: false, kommentar: null }]
   if (init.method === 'POST' && url.endsWith('/observasjoner')) return new Response('', { status: 201 })
@@ -38,3 +39,17 @@ const [s3] = await k.lagreObservasjon('ekstraveggen', { status: 'tort', tid: '20
 assert(s3 === 422, 'avviser framtid')
 const [s4] = await k.lagreObservasjon('ukjent', { status: 'tort' })
 assert(s4 === 404, 'avviser ukjent felt')
+
+// tid uten tidssone tolkes som norsk tid (vinter UTC+1, sommer UTC+2)
+assert(k.tolkTid('2026-10-27T14:30:00').toISOString() === '2026-10-27T13:30:00.000Z', 'vintertid')
+assert(k.tolkTid('2026-07-15T14:30:00').toISOString() === '2026-07-15T12:30:00.000Z', 'sommertid')
+assert(k.tolkTid('2026-07-15T14:30:00Z').toISOString() === '2026-07-15T14:30:00.000Z', 'eksplisitt UTC beholdes')
+assert(Number.isNaN(k.tolkTid('i går').getTime()), 'tull gir ugyldig dato')
+
+// predikert status hentes fra arkivet, ikke fra klienten
+kall.length = 0
+const [s5, svar5] = await k.lagreObservasjon('ekstraveggen', { status: 'tort', tid: new Date(Date.now() - 3 * 3600e3).toISOString(), predikert_status: 'tort' })
+const arkivKall = kall.find((c) => c.url.includes('/varsel?'))
+const rad5 = JSON.parse(kall.find((c) => c.init.method === 'POST' && c.url.endsWith('/observasjoner'))!.init.body as string)
+assert(s5 === 201 && arkivKall && rad5.predikert_status === 'vatt' && rad5.riktig === false, 'arkivet vinner over klienten')
+assert(arkivKall!.url.includes('generert=lte.') && /tid=eq\.\d{4}-\d\d-\d\dT\d\d%3A00%3A00\.000Z/.test(arkivKall!.url), 'slår opp riktig time i arkivet')

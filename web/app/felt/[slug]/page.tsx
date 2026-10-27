@@ -36,7 +36,7 @@ export default async function FeltSide({
       )}
       <StatusHero varsel={varsel} />
       <HourStrip timer={varsel.timer} />
-      <Feedback slug={slug} na={varsel.timer[0]} siste={varsel.siste_timer} />
+      <Feedback slug={slug} na={varsel.timer[0]} />
       <ForecastChart timer={varsel.timer} />
       <section className="rounded-xl bg-surface-default p-md text-sm shadow-sm">
         <h2 className="font-medium">Tilbakemeldinger</h2>

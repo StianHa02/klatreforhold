@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { type Status, type Time, klokke } from '@/lib/api'
+import { useMemo, useState } from 'react'
+import { type Status, type Time } from '@/lib/api'
 
 type Valg = Exclude<Status, 'is'>
 const VALG: { verdi: Valg; tekst: string; farge: string }[] = [
@@ -10,30 +10,52 @@ const VALG: { verdi: Valg; tekst: string; farge: string }[] = [
   { verdi: 'fuktig', tekst: 'Fuktig', farge: 'bg-forhold-fuktig' },
   { verdi: 'vatt', tekst: 'Vått', farge: 'bg-forhold-vatt' },
 ]
+const TIMER = Array.from({ length: 18 }, (_, i) => i + 6) // kl 06–23
 
-// Brukeren forteller hvordan det faktisk var. Vi sender med hva varselet sa for samme time,
-// så API-et kan regne ut hvor ofte varselet stemmer, og observasjonen blir treningsdata.
-export default function Feedback({ slug, na, siste }: { slug: string; na: Time; siste: Time[] }) {
+// Dato og time i Oslo, uavhengig av hvilken tidssone nettleseren står i
+function osloNa() {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Oslo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+    }).formatToParts(new Date()).map((x) => [x.type, x.value]),
+  )
+  return { dato: `${p.year}-${p.month}-${p.day}`, time: Number(p.hour) }
+}
+
+const MAKS_DAGER_BAKOVER = 13 // serveren tar imot inntil 14 dager gamle observasjoner
+
+function datoMinusDager(iso: string, dager: number) {
+  return new Date(new Date(`${iso}T12:00:00Z`).getTime() - dager * 864e5).toISOString().slice(0, 10)
+}
+
+// Brukeren forteller hvordan det faktisk var, for nå eller et tidspunkt de siste dagene.
+// Vi viser IKKE hva varselet sa her, for ikke å påvirke svaret. Serveren slår opp varselet
+// for samme time i varselarkivet og regner ut om det stemte.
+export default function Feedback({ slug, na }: { slug: string; na: Time }) {
   const router = useRouter()
-  const valgbareTimer = [na, ...[...siste].reverse()]
-  const [tid, setTid] = useState(na.tid)
+  const iDagIso = useMemo(() => osloNa().dato, [])
+  const tidligst = datoMinusDager(iDagIso, MAKS_DAGER_BAKOVER)
+  const [dag, setDag] = useState(iDagIso)
+  const [time, setTime] = useState<'na' | number>('na')
   const [kommentar, setKommentar] = useState('')
   const [sender, setSender] = useState(false)
   const [svar, setSvar] = useState<{ ok: boolean; tekst: string } | null>(null)
-  const valgtTime = valgbareTimer.find((t) => t.tid === tid) ?? na
+  const iDag = dag === iDagIso
+  const naTime = osloNa().time
 
   async function send(status: Valg) {
     setSender(true)
     setSvar(null)
+    const erNa = iDag && time === 'na'
     try {
       const res = await fetch(`/api/felt/${slug}/observasjoner`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        // tidsstempelet er slutten av timen; vi lagrer midt i timen
         body: JSON.stringify({
           status,
-          tid: new Date(new Date(valgtTime.tid).getTime() - 30 * 60 * 1000).toISOString(),
-          predikert_status: valgtTime.status,
+          // lokal Oslo-tid midt i timen, uten tidssone; serveren tolker den som Europe/Oslo
+          tid: erNa ? null : `${dag}T${String(time === 'na' ? 12 : time).padStart(2, '0')}:30:00`,
+          predikert_status: erNa ? na.status : null, // reserve; serveren slår opp i arkivet
           kommentar: kommentar || null,
           kilde: 'web',
         }),
@@ -57,24 +79,44 @@ export default function Feedback({ slug, na, siste }: { slug: string; na: Time; 
 
   return (
     <section className="rounded-xl bg-surface-default p-md shadow-sm">
-      <h2 className="font-medium">Stemmer varselet?</h2>
+      <h2 className="font-medium">Har du vært på feltet?</h2>
       <p className="mt-xs text-sm text-text-subtle">
-        Er du på feltet, eller var du der nylig? Si hvordan fjellet faktisk var. Det er dette modellen lærer av.
+        Si hvordan fjellet faktisk var, også om det var tørt. Det er dette modellen lærer av.
       </p>
-      <label className="mt-md flex flex-col gap-xs text-sm">
-        Når var du der?
-        <select
-          className="rounded-md border border-border-default bg-surface-default p-sm"
-          value={tid}
-          onChange={(e) => setTid(e.target.value)}
-        >
-          {valgbareTimer.map((t, i) => (
-            <option key={t.tid} value={t.tid}>
-              {i === 0 ? 'Nå' : `kl ${klokke(new Date(new Date(t.tid).getTime() - 3600e3).toISOString())}–${klokke(t.tid)}`} (varsel: {t.status_tekst.toLowerCase()})
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="mt-md grid grid-cols-1 gap-sm sm:grid-cols-2">
+        <label className="flex flex-col gap-xs text-sm">
+          Dato
+          <input
+            type="date"
+            className="rounded-md border border-border-default bg-surface-default p-sm"
+            value={dag}
+            min={tidligst}
+            max={iDagIso}
+            required
+            onChange={(e) => {
+              const v = e.target.value
+              if (!v || v < tidligst || v > iDagIso) return // utenfor tillatt periode
+              setDag(v)
+              if (v !== iDagIso && time === 'na') setTime(14)
+            }}
+          />
+        </label>
+        <label className="flex flex-col gap-xs text-sm">
+          Når
+          <select
+            className="rounded-md border border-border-default bg-surface-default p-sm"
+            value={String(time)}
+            onChange={(e) => setTime(e.target.value === 'na' ? 'na' : Number(e.target.value))}
+          >
+            {iDag && <option value="na">Akkurat nå</option>}
+            {TIMER.filter((h) => !iDag || h <= naTime).map((h) => (
+              <option key={h} value={h}>
+                kl {String(h).padStart(2, '0')}–{String(h + 1).padStart(2, '0')}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <label className="mt-sm flex flex-col gap-xs text-sm">
         Kommentar (valgfritt)
         <input
@@ -85,7 +127,8 @@ export default function Feedback({ slug, na, siste }: { slug: string; na: Time; 
           onChange={(e) => setKommentar(e.target.value)}
         />
       </label>
-      <div className="mt-md grid grid-cols-3 gap-sm">
+      <p className="mt-md text-sm">Hvordan var fjellet?</p>
+      <div className="mt-xs grid grid-cols-3 gap-sm">
         {VALG.map((v) => (
           <button
             key={v.verdi}
