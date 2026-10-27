@@ -31,7 +31,7 @@ og oppsettet i [`DEPLOY.md`](DEPLOY.md). For agenter: se også [`../CLAUDE.md`](
 | Timesjobb (GitHub Actions) | ⚠️ fungerer når den startes for hånd, men den planlagte kjøringen har ikke startet av seg selv. Per 27.10 kveld: 3 kjøringer i arkivet |
 | Frost-kontroll i timesjobben | ⚠️ koden er klar, men `stasjon_varsel` og `stasjon_maling` er tomme. Sjekk at `FROST_CLIENT_ID` er lagt inn som secret i GitHub |
 | Flerårig kontroll mot Frost (2023-2026) | ✅ kjørt lokalt, resultater i MODEL.md |
-| Fuktighetskorreksjon (måned + døgn) | ✅ laget og testet. Committes sammen med denne overleveringen |
+| Fuktighetskorreksjon (måned + døgn) | ✅ laget, testet og committet. Brukes fra neste timesjobb etter push |
 | Tilbakemeldinger i `observasjoner` | ❌ 0 rader (testradene er fjernet) |
 | Kalibrering per felt | ❌ venter på ~150-400 tilbakemeldinger |
 | Trente ML-modeller (`modeling/models/`) | ❌ tom med vilje (ingen ekte etiketter ennå) |
@@ -357,7 +357,7 @@ select count(*) from public.stasjon_maling;
 1. **Få timesjobben til å gå av seg selv.** Sjekk Actions-fanen. Hvis GitHub fortsatt ikke starter den, kjør
    `supabase/valgfritt/cron_starter_github_jobb.sql` (krever et fine-grained GitHub-token med Actions: Read and write, lagt i Supabase Vault som `github_dispatch_token`).
 2. **Legg inn `FROST_CLIENT_ID` som secret i GitHub**, så arkivkontrollen (`stasjon_varsel`/`stasjon_maling`) begynner å fylles.
-3. **Commit fuktighetskorreksjonen og kjør `export_site_stats.py` på nytt** så «Om modellen» viser tall med korreksjonen.
+3. **Kjør `export_site_stats.py` på nytt** og commit `web/data/modellstatistikk.json`, så «Om modellen» viser tall med fuktighetskorreksjonen.
 4. **Få inn tilbakemeldinger.** Spre siden i klubben. Mål: 150-400 per felt, også etter regn og i dårlig vær.
 5. **Kalibrer per felt** (3 parametre) når det er nok, og vurder å kalibrere `rh_korreksjon_styrke`.
 6. **Vis usikkerheten** i nettsiden: «Tørt fra ca. kl 14 (± 2 t)» eller myke overganger i timestripa. Sommervarsler
