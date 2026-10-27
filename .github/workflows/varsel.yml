@@ -2,7 +2,7 @@ name: Oppdater varsel
 
 # Kjører modellen hver time og skriver resultatet til Supabase.
 # Secrets (Settings → Secrets and variables → Actions):
-#   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, KLATREFORHOLD_CONTACT
+#   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, KLATREFORHOLD_CONTACT, FROST_CLIENT_ID (valgfri: målt historikk)
 on:
   schedule:
     - cron: '7 * * * *'   # hvert time, 7 min over (GitHub kan forsinke eller hoppe over kjøringer)
@@ -32,4 +32,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           KLATREFORHOLD_CONTACT: ${{ secrets.KLATREFORHOLD_CONTACT }}
+          FROST_CLIENT_ID: ${{ secrets.FROST_CLIENT_ID }}
         run: python scripts/publish_forecast.py

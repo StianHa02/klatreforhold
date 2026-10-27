@@ -3,11 +3,12 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'nøkkel'
 import { readFileSync } from 'node:fs'
 const lagret = JSON.parse(readFileSync(new URL('./varsel_eksempel.json', import.meta.url), 'utf8'))
 const kall: { url: string; init: RequestInit }[] = []
+let arkivTomt = false
 globalThis.fetch = (async (url: string, init: RequestInit = {}) => {
   kall.push({ url, init })
   let body: unknown = []
   if (url.includes('varsel_siste')) body = [{ data: lagret }]
-  else if (url.includes('/varsel?')) body = [{ status: 'vatt' }] // arkivet sier vått
+  else if (url.includes('/varsel?')) body = arkivTomt ? [] : [{ status: 'vatt' }] // arkivet sier vått
   if (url.includes('rpc/treffsikkerhet')) body = { antall: 3, antall_vurdert: 2, andel_riktig: 0.5 }
   if (url.includes('observasjoner?felt')) body = [{ tid: '2026-10-26T10:00:00Z', status: 'tort', predikert_status: 'vatt', riktig: false, kommentar: null }]
   if (init.method === 'POST' && url.endsWith('/observasjoner')) return new Response('', { status: 201 })
@@ -60,3 +61,13 @@ kall.length = 0
 await k.lagreObservasjon('ekstraveggen', { status: 'tort', kilde: 'web' })
 const rad6 = JSON.parse(kall.find((c) => c.init.method === 'POST' && c.url.endsWith('/observasjoner'))!.init.body as string)
 assert(rad6.kilde === 'dev', 'dev-merking fra miljøet')
+
+// før arkivet startet: bruk siste varsels anslag for timen
+arkivTomt = true
+kall.length = 0
+const time = lagret.siste_timer[3] // en time i siste_timer i eksempelvarselet
+const midtITimen = new Date(Date.parse(time.tid) - 30 * 60e3).toISOString()
+const [s7] = await k.lagreObservasjon('ekstraveggen', { status: 'tort', tid: midtITimen })
+const rad7 = JSON.parse(kall.find((c) => c.init.method === 'POST' && c.url.endsWith('/observasjoner'))!.init.body as string)
+assert(s7 === 201 && rad7.predikert_status === time.status, `reserve fra varsel_siste (${rad7.predikert_status} = ${time.status})`)
+arkivTomt = false

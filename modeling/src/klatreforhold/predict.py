@@ -47,7 +47,36 @@ def get_weather(crag: Crag, source: str = "openmeteo") -> pd.DataFrame:
         from .data.metno import fetch_locationforecast
         return fetch_locationforecast(crag.lat, crag.lon)
     from .data.openmeteo import fetch_forecast
-    return fetch_forecast(crag.lat, crag.lon, past_days=7, forecast_days=3)
+    w = fetch_forecast(crag.lat, crag.lon, past_days=7, forecast_days=3)
+    return with_observations(w, crag)
+
+
+def with_observations(w: pd.DataFrame, crag: Crag) -> pd.DataFrame:
+    """Bytter ut historikken i w med målinger fra feltets Frost-stasjon der de finnes.
+
+    Varseltimene (etter siste måling) og stråling/skydekke beholdes fra modellen. Uten
+    FROST_CLIENT_ID, stasjon eller nett brukes w som den er, så varselet virker alltid.
+    """
+    w.attrs["frost_station"] = None
+    if not crag.frost_station or not os.environ.get("FROST_CLIENT_ID"):
+        return w
+    from .data.frost import fetch_recent
+    try:
+        obs = fetch_recent(crag.frost_station, hours=len(w.loc[:pd.Timestamp.now(tz="UTC")]) + 1)
+    except Exception as err:  # Frost nede skal ikke ta ned varselet
+        print(f"Frost feilet, bruker modellhistorikk: {err}")
+        return w
+    if obs.empty:
+        return w
+    w = w.copy()
+    obs = obs.reindex(w.index)
+    for col in obs.columns.intersection(w.columns):
+        w[col] = obs[col].where(obs[col].notna(), w[col])
+    if "dew_point_2m" in w:  # ikke la et modell-duggpunkt henge igjen ved siden av målt temp/fuktighet
+        w = w.drop(columns="dew_point_2m")
+    w.attrs["frost_station"] = crag.frost_station
+    w.attrs["frost_last_obs"] = obs.dropna(how="all").index.max()
+    return w
 
 
 def _reasons(row: pd.Series, res: pd.DataFrame, t) -> list[str]:
@@ -133,6 +162,14 @@ def _format_hours(frame: pd.DataFrame, res: pd.DataFrame, w: pd.DataFrame, p_ml,
     return timer
 
 
+def _kilde(source: str, w: pd.DataFrame) -> str:
+    if source != "openmeteo":
+        return "MET Norway Locationforecast"
+    if w.attrs.get("frost_station"):
+        return f"Målinger fra MET ({w.attrs['frost_station']}) + MET Nordic-varsel via Open-Meteo"
+    return "MET Norway (MET Nordic) via Open-Meteo"
+
+
 def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source: str = "openmeteo",
             weather: pd.DataFrame | None = None, history_hours: int = 12) -> dict:
     crag, params = load_crag(slug)
@@ -167,7 +204,7 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
                  "orientering": crag.face_azimuth_deg},
         "generert": pd.Timestamp.now(tz=crag.timezone).isoformat(),
         "na": now.tz_convert(crag.timezone).isoformat(),
-        "kilde": "MET Norway (MET Nordic) via Open-Meteo" if source == "openmeteo" else "MET Norway Locationforecast",
+        "kilde": _kilde(source, w),
         "ml_modell": p_ml is not None,
         "sammendrag": sammendrag,
         "timer": timer,

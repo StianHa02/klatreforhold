@@ -41,6 +41,7 @@ class Crag:
     horizon: list = field(default_factory=lambda: [[0, 0], [360, 0]])
     felt_id: int | None = None
     rain_sheltered: bool = False
+    frost_station: str | None = None  # målestasjon (Frost) for historikken før varselet
 
 
 def _num(v):
@@ -69,6 +70,7 @@ def load_config(path: str | Path) -> tuple[Crag, dict]:
         horizon=c.get("horizon", [[0, 0], [360, 0]]),
         felt_id=c.get("felt_id"),
         rain_sheltered=bool(c.get("rain_sheltered", False)),
+        frost_station=c.get("frost_station"),
     )
     params = {k: _num(v) for k, v in cfg.get("model", {}).items()}
     # Kalibrerte parametre (scripts/calibrate.py --write) overstyrer startverdiene

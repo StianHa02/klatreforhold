@@ -155,7 +155,12 @@ async function predikertFra(slug: string, tid: Date): Promise<string | null> {
     const forFor = await q(`&generert=lte.${encodeURIComponent(tid.toISOString())}&order=generert.desc`)
     if (forFor.length) return forFor[0].status
     const senere = await q('&order=generert.asc') // f.eks. rett etter at arkivet startet
-    return senere[0]?.status ?? null
+    if (senere.length) return senere[0].status
+    // Reserve: siste varsel inneholder modellens anslag for de siste 24 timene (dekker tiden før arkivet)
+    const siste = await sb<{ data: Varsel }[]>(`varsel_siste?felt=eq.${encodeURIComponent(slug)}&select=data`)
+    const v = siste[0]?.data
+    const treff = v && [...v.siste_timer, ...v.timer].find((t) => Date.parse(t.tid) === Date.parse(timeslutt))
+    return treff?.status ?? null
   } catch (e) {
     console.log(e)
     return null
@@ -201,3 +206,30 @@ export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promis
 }
 
 export type { Time }
+
+// ---- statistikk til "Om modellen" ----
+
+export type FeltStatistikk = {
+  felt: string
+  observasjoner: number
+  tort: number
+  fuktig: number
+  vatt: number
+  vurdert: number
+  andel_riktig: number | null
+  kjoringer: number
+  forste_varsel: string
+  siste_varsel: string
+}
+
+/** Antall observasjoner (uten dev/test) og størrelsen på varselarkivet per felt. Null uten Supabase. */
+export async function hentStatistikk(): Promise<FeltStatistikk[] | null> {
+  if (!brukerSupabase) return null
+  try {
+    const res = await sb<{ felt: FeltStatistikk[] }>('rpc/statistikk', { method: 'POST', body: '{}' })
+    return res.felt
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}

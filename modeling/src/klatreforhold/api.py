@@ -113,7 +113,10 @@ def ny_observasjon(slug: str, obs: Observasjon):
 @app.get("/api/felt/{slug}/observasjoner")
 def observasjoner(slug: str, siste: int = Query(50, ge=1, le=1000)):
     _known(slug)
-    df = storage.list_observations(slug, limit=siste)
+    try:
+        df = storage.list_observations(slug, limit=siste)
+    except Exception as err:
+        raise HTTPException(502, f"Klarte ikke å hente observasjoner: {err}") from err
     vurdert = df[df["riktig"].astype(str) != ""] if len(df) else df
     andel = round(float(vurdert["riktig"].astype(int).mean()), 3) if len(vurdert) else None
     return {"antall": int(len(df)), "antall_vurdert": int(len(vurdert)), "andel_riktig": andel,

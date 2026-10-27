@@ -20,12 +20,18 @@ export default async function FeltSide({
   const [varsel, obs] = await Promise.all([hentVarsel(slug, na), hentObservasjoner(slug)])
   if (!varsel) notFound()
 
+  // Tidsvindu i timestripen og grafene: litt historikk (for å forklare hvorfor det er vått nå) og mest framover
+  const TIMER_BAK = 5
+  const TIMER_FRAM = 19
+  const bak = varsel.siste_timer.slice(-TIMER_BAK)
+  const vindu = [...bak, ...varsel.timer.slice(0, TIMER_FRAM + 1)]
+
   return (
     <div className="flex flex-col gap-md">
       <div>
         <h1 className="font-mabry text-[32px] leading-tight">{varsel.felt.navn}</h1>
         <p className="text-sm text-text-subtle">
-          Varsel for {dag(varsel.na)} kl {klokke(varsel.na)} og 24 timer fram · {varsel.kilde}
+          Varsel for {dag(varsel.na)} kl {klokke(varsel.na)} · {varsel.kilde}
           {varsel.ml_modell ? ' · med ML-modell' : ' · fysisk modell'}
         </p>
       </div>
@@ -36,8 +42,8 @@ export default async function FeltSide({
       )}
       <StatusHero varsel={varsel} />
       <Feedback slug={slug} na={varsel.timer[0]} />
-      <HourStrip timer={varsel.timer} />
-      <ForecastChart timer={varsel.timer} />
+      <HourStrip timer={vindu} naIndeks={bak.length} />
+      <ForecastChart timer={vindu} naIndeks={bak.length} />
       <section className="rounded-xl border border-border-subtle bg-surface-default p-md text-sm">
         <h2 className="h3">Tilbakemeldinger</h2>
         {obs && obs.antall > 0 ? (

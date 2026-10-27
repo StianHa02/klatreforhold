@@ -82,6 +82,21 @@ def fetch_observations(station: str, start: str, end: str, elements: list[str] |
     return wide
 
 
+# Det vi stoler mer på fra en stasjon enn fra MET Nordic. Stråling og skydekke tas fortsatt fra
+# modellen, fordi Frost bare har globalstråling (ikke direkte/diffus) og skydekke mangler på de fleste stasjoner.
+RECENT_ELEMENTS = ["air_temperature", "relative_humidity", "sum(precipitation_amount PT1H)",
+                   "wind_speed", "wind_from_direction"]
+
+
+def fetch_recent(station: str, hours: int = 168) -> pd.DataFrame:
+    """Siste `hours` timer med timesobservasjoner, til bruk som historikk før varselet."""
+    end = pd.Timestamp.now(tz="UTC")
+    start = end - pd.Timedelta(hours=hours)
+    df = fetch_observations(station, start.strftime("%Y-%m-%d"), (end + pd.Timedelta(days=1)).strftime("%Y-%m-%d"),
+                            elements=RECENT_ELEMENTS)
+    return df.loc[start:] if not df.empty else df
+
+
 def _months(start, end):
     s = pd.Timestamp(start)
     e = pd.Timestamp(end)

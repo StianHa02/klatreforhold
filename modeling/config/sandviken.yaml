@@ -8,6 +8,7 @@ crag:
   lon: 5.3190
   elevation_m: 78        # bakkehøyde fra DOM1
   timezone: Europe/Oslo
+  frost_station: SN50540  # Bergen - Florida, brukes som målt historikk (krever FROST_CLIENT_ID)
   face_azimuth_deg: 270
   face_tilt_deg: 90
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)

@@ -47,7 +47,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <img src="/mark.svg" alt="" width={18} height={24} className="h-lg w-auto" />
               <span className="font-mabry text-xl leading-none">Klatreforhold</span>
             </a>
-            <span className="byline">BKK · prototype</span>
+            <nav aria-label="Hovedmeny" className="flex items-center gap-md text-sm">
+              <a href="/om" className="focus rounded-sm underline-offset-4 hover:underline">Om modellen</a>
+              <span className="byline max-sm:hidden">BKK · prototype</span>
+            </nav>
           </div>
         </header>
         <main id="main" className="mx-auto w-full max-w-container grow px-md py-lg">

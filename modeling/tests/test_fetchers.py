@@ -48,6 +48,25 @@ def test_frost_parse():
     assert df["precipitation"].iloc[0] == 0.4 and df["cloud_cover"].iloc[0] == 0.5
 
 
+
+def test_observations_replace_history_only():
+    import os
+    import pandas as pd
+    from klatreforhold import predict
+    from klatreforhold.config import Crag
+    idx = pd.date_range("2026-07-01", periods=4, freq="h", tz="UTC")
+    w = pd.DataFrame({"precipitation": [0.0, 0.0, 0.0, 2.0], "air_temperature": [10.0] * 4,
+                      "dew_point_2m": [5.0] * 4, "ghi": [100.0] * 4}, index=idx)
+    obs = pd.DataFrame({"precipitation": [1.0, None], "air_temperature": [12.0, 13.0]}, index=idx[:2])
+    frost.fetch_recent = lambda *a, **k: obs
+    os.environ.setdefault("FROST_CLIENT_ID", "x")
+    out = predict.with_observations(w, Crag("t", 60, 5, 270, frost_station="SN1"))
+    assert out["precipitation"].tolist() == [1.0, 0.0, 0.0, 2.0]  # hull i målingene fylles fra modellen
+    assert out["air_temperature"].tolist() == [12.0, 13.0, 10.0, 10.0]
+    assert out["ghi"].tolist() == [100.0] * 4 and "dew_point_2m" not in out
+    assert out.attrs["frost_station"] == "SN1"
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
