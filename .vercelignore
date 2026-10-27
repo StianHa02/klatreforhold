@@ -1,11 +1,9 @@
-.venv
-.idea
-docs
-tests
-outputs
-data
-notebooks
-supabase
+# Vercel bygger bare web/ (Root Directory = web). Alt annet trengs ikke i opplastingen.
+# Mønstrene starter med / så de bare gjelder repo-roten (et løst "data" ville også truffet web/data).
+/modeling
+/docs
+/supabase
+/.venv
+/.idea
+/docker-compose.yml
 **/__pycache__
-Dockerfile
-docker-compose.yml
