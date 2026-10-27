@@ -1,0 +1,12 @@
+.venv
+.idea
+web
+docs
+tests
+outputs
+data
+notebooks
+supabase
+**/__pycache__
+Dockerfile
+docker-compose.yml

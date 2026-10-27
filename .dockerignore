@@ -1,0 +1,7 @@
+.venv
+.idea
+data
+models
+outputs
+web
+**/__pycache__

@@ -1,0 +1,77 @@
+@import 'tailwindcss';
+
+/* Tokens hentet fra BKK nettfører (app/globals.css), så komponentene kan flyttes rett over. */
+:root {
+  --color-light-200: hsl(202, 44%, 100%);
+  --color-light-400: hsl(202, 44%, 95%);
+  --color-light-600: hsl(202, 44%, 90%);
+  --color-light-700: hsl(202, 44%, 85%);
+  --color-light-800: hsl(202, 44%, 80%);
+  --color-dark-900: hsl(243, 15%, 5%);
+  --color-dark-600: hsl(243, 15%, 20%);
+  --color-dark-400: hsl(243, 15%, 25%);
+  --color-dark-200: hsl(243, 15%, 45%);
+  --color-accent-red-400: hsl(15, 100%, 50%);
+  --color-accent-blue-400: hsl(223, 100%, 63%);
+  --color-accent-blue-200: hsl(223, 100%, 83%);
+  --color-accent-blue-50: hsl(223, 100%, 93%);
+  --color-accent-yellow-400: hsl(48, 100%, 58%);
+  --color-accent-yellow-50: hsl(48, 100%, 98%);
+  /* Nye for tørt/is (finnes ikke i nettføreren ennå) */
+  --color-accent-green-400: hsl(145, 55%, 42%);
+  --color-accent-green-50: hsl(145, 55%, 94%);
+  --color-accent-violet-400: hsl(265, 60%, 60%);
+}
+
+@theme {
+  --color-*: initial;
+  --color-background-default: var(--color-light-200);
+  --color-background-tinted: var(--color-light-400);
+  --color-surface-default: var(--color-light-200);
+  --color-surface-tinted: var(--color-light-600);
+  --color-surface-hover: var(--color-light-700);
+  --color-text-default: var(--color-dark-400);
+  --color-text-tinted: var(--color-dark-600);
+  --color-text-subtle: var(--color-dark-200);
+  --color-border-subtle: var(--color-light-600);
+  --color-border-default: var(--color-light-700);
+  --color-border-strong: var(--color-light-800);
+  --color-focus: var(--color-accent-red-400);
+  --color-accent-surface-default: var(--color-dark-400);
+  --color-accent-text-default: var(--color-light-400);
+  --color-forhold-tort: var(--color-accent-green-400);
+  --color-forhold-tort-tinted: var(--color-accent-green-50);
+  --color-forhold-fuktig: var(--color-accent-yellow-400);
+  --color-forhold-fuktig-tinted: var(--color-accent-yellow-50);
+  --color-forhold-vatt: var(--color-accent-blue-400);
+  --color-forhold-vatt-tinted: var(--color-accent-blue-50);
+  --color-forhold-is: var(--color-accent-violet-400);
+  --color-white: #fff;
+
+  --spacing-*: initial;
+  --spacing-0: 0;
+  --spacing-px: 1px;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 4rem;
+  --spacing-container: 900px;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 2rem;
+
+  --shadow-*: initial;
+  --shadow-color: 207deg 11% 60%;
+  --shadow-sm: 0.7px 0.3px 1px hsl(var(--shadow-color) / 0.12), 2.3px 1.1px 3.5px -0.8px hsl(var(--shadow-color) / 0.35);
+}
+
+body {
+  background: var(--color-background-tinted);
+  color: var(--color-text-default);
+  font-family: 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

@@ -1,0 +1,28 @@
+# Utvikling: docker compose up --build   ->  UI på http://localhost:3000, API på http://localhost:8000/docs
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      KLATREFORHOLD_CONTACT: ${KLATREFORHOLD_CONTACT:-https://ute.bergenklatreklubb.no}
+      KLATREFORHOLD_CACHE_SECONDS: "1200"
+      # Sett disse (f.eks. i .env) for å lagre i Supabase i stedet for CSV:
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      CRON_SECRET: ${CRON_SECRET:-}
+    volumes:
+      - ./data/labels:/app/data/labels   # tilbakemeldinger lagres på din maskin
+      - ./models:/app/models             # modeller trent lokalt (GPU) brukes av API-et
+      - ./config:/app/config             # endre parametre uten å bygge på nytt
+    restart: unless-stopped
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      KLATREFORHOLD_API_URL: http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
