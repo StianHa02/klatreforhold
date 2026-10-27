@@ -50,6 +50,12 @@ class CsvStorage:
     def save_forecast(self, felt: str, rows: list[dict]) -> int:
         return 0  # varselarkiv lagres bare i Supabase
 
+    def save_station_forecast(self, rows: list[dict]) -> int:
+        return 0
+
+    def save_station_obs(self, rows: list[dict]) -> int:
+        return 0
+
 
 class SupabaseStorage:
     navn = "supabase"
@@ -120,6 +126,26 @@ class SupabaseStorage:
                         headers={"Prefer": "resolution=merge-duplicates,return=minimal"}, timeout=30)
         r.raise_for_status()
 
+    def _upsert(self, table: str, rows: list[dict], conflict: str) -> int:
+        if not rows:
+            return 0
+        r = self.s.post(f"{self.base}/{table}", json=rows, params={"on_conflict": conflict},
+                        headers={"Prefer": "resolution=merge-duplicates,return=minimal"}, timeout=60)
+        r.raise_for_status()
+        return len(rows)
+
+    def save_station_forecast(self, rows: list[dict]) -> int:
+        return self._upsert("stasjon_varsel", rows, "stasjon,generert,tid")
+
+    def save_station_obs(self, rows: list[dict]) -> int:
+        return self._upsert("stasjon_maling", rows, "stasjon,tid")
+
+    def station_forecasts(self, station: str) -> pd.DataFrame:
+        return _paged(self, "stasjon_varsel", {"stasjon": f"eq.{station}", "select": "*", "order": "generert.asc,tid.asc"})
+
+    def station_observations(self, station: str) -> pd.DataFrame:
+        return _paged(self, "stasjon_maling", {"stasjon": f"eq.{station}", "select": "*", "order": "tid.asc"})
+
     def save_forecast(self, felt: str, rows: list[dict]) -> int:
         if not rows:
             return 0
@@ -127,6 +153,19 @@ class SupabaseStorage:
                         headers={"Prefer": "resolution=merge-duplicates,return=minimal"}, timeout=30)
         r.raise_for_status()
         return len(rows)
+
+
+def _paged(storage, table: str, params: dict, page: int = 1000) -> pd.DataFrame:
+    out, start = [], 0
+    while True:
+        r = storage.s.get(f"{storage.base}/{table}", params=params,
+                          headers={"Range-Unit": "items", "Range": f"{start}-{start + page - 1}"}, timeout=60)
+        r.raise_for_status()
+        rows = r.json()
+        out.extend(rows)
+        if len(rows) < page:
+            return pd.DataFrame(out)
+        start += page
 
 
 def get_storage():

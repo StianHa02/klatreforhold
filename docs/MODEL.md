@@ -112,3 +112,22 @@ vann i sprekker) selv om varselet blir bedre.
 **4. Det som virkelig fjerner skjevheten** er data som ikke avhenger av hvem som drar: et tidsforløpskamera
 eller en billig fuktsensor på én vegg ville gitt en observasjon hver time. Et par måneder på Ekstraveggen
 er verdt mer enn et år med brukerrapporter.
+
+## Kontroll mot målestasjoner (Frost)
+
+Været i Bergen er svært lokalt. I MET Nordic-dataene (1 km) korrelerer timesnedbøren på Ekstraveggen og
+Sandviken bare 0.86, og i 22 % av regntimene regner det bare det ene stedet. Kjører vi Ekstraveggen-modellen
+på byvær i stedet for sitt eget, blir svaret et annet i 5 % av timene (mest «tørt» der det egentlig er vått).
+
+Derfor bruker vi målestasjoner til å **kontrollere** varselet, ikke til å erstatte feltets vær:
+
+- `frost_bruk: kontroll` (standard): timesjobben lagrer varselet for **stasjonens egne koordinater** og
+  stasjonens målinger (`stasjon_varsel`, `stasjon_maling`). Da måler vi varselets feil, ikke forskjellen
+  mellom to steder. Modellen kjører fortsatt på MET Nordic for feltet, som allerede bruker stasjonene,
+  radar og Netatmo.
+- `frost_bruk: erstatt`: målingene erstatter historikken modellen kjører på. Bare for stasjoner 1–2 km
+  fra feltet.
+
+`modeling/scripts/verify_forecast.py` viser treff på regntimer, temperatur, fuktighet og vind per ledetid
+(fra arkivet), eller med `--historikk START SLUTT` for flere år: modellen ved stasjonen mot målingene, og
+hvert felts vær mot samme stasjon. Krever `FROST_CLIENT_ID` i `.env` (lokalt) og som secret i GitHub.

@@ -48,7 +48,9 @@ def get_weather(crag: Crag, source: str = "openmeteo") -> pd.DataFrame:
         return fetch_locationforecast(crag.lat, crag.lon)
     from .data.openmeteo import fetch_forecast
     w = fetch_forecast(crag.lat, crag.lon, past_days=7, forecast_days=3)
-    return with_observations(w, crag)
+    if crag.frost_bruk == "erstatt":
+        return with_observations(w, crag)
+    return w  # "kontroll": stasjonen sammenlignes i timesjobben (verify.py), modellen bruker værdata for feltet
 
 
 def with_observations(w: pd.DataFrame, crag: Crag) -> pd.DataFrame:

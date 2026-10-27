@@ -47,6 +47,14 @@ def nearby_stations(lat: float, lon: float, n: int = 15) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def station_info(station: str) -> dict:
+    """Navn og koordinater for en stasjon, f.eks. 'SN50540'."""
+    js = get(SOURCES_URL, params={"ids": station}, auth=_auth()).json()
+    s = js["data"][0]
+    lon, lat = s["geometry"]["coordinates"][:2]
+    return {"id": s["id"], "navn": s.get("name"), "lat": float(lat), "lon": float(lon), "masl": s.get("masl")}
+
+
 def available_elements(station: str) -> pd.DataFrame:
     js = get(AVAILABLE_URL, params={"sources": station}, auth=_auth()).json()
     return pd.DataFrame(js["data"])[["elementId", "timeResolution", "validFrom"]].drop_duplicates()

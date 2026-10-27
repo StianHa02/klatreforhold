@@ -9,7 +9,9 @@ import json
 
 import pandas as pd
 
-from .predict import list_crags, predict
+import os
+
+from .predict import list_crags, load_crag, predict
 
 
 def archive_rows(slug: str, v: dict) -> list[dict]:
@@ -39,4 +41,10 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False)
             result[slug] = {"timer": len(rows), "status_na": v["sammendrag"]["status_na"]}
         except Exception as err:  # ett felt som feiler skal ikke stoppe resten
             result[slug] = {"feil": str(err)}
+    # Kontroll av værvarselet mot målestasjoner (bare med FROST_CLIENT_ID). Feil her stopper ikke jobben.
+    stations = [load_crag(c["slug"])[0].frost_station for c in list_crags()]
+    stations = [s for s in stations if s]
+    if stations and os.environ.get("FROST_CLIENT_ID") and not dry_run:
+        from .verify import collect
+        result["_kontroll"] = collect(storage, stations, now=now)
     return result
