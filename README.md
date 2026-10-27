@@ -1,7 +1,7 @@
 # klatreforhold
 
 Predikerer om fjellet på et klatrefelt er **vått eller tørt**, time for time, bare fra offentlige
-værdata. Felt: **Ekstraveggen** (Bønes), **Sandviken** og **Helleneset** (Bergen). Ett felt = én fil i `config/`;
+værdata. Felt: **Ekstraveggen** (Bønes), **Sandviken** og **Helleneset** (Bergen). Ett felt = én fil i `modeling/config/`;
 timesjobben og nettsiden plukker opp nye filer automatisk.
 
 - Hvordan modellen fungerer: [`docs/MODEL.md`](docs/MODEL.md)
@@ -25,7 +25,19 @@ timesjobben og nettsiden plukker opp nye filer automatisk.
 | Horisont/sol fra Kartverket DOM1 | ✅ kjørt (scripts/download_dom.py + horizon_from_dem.py). Sol på veggen fra ca. kl 16–17 april–august, ingen direkte sol oktober–februar. Himmelsynsfaktor 0.36 |
 | Kalibrering | ❌ venter på ekte observasjoner av tørt/vått |
 
-Alle modellparametre er startverdier fra litteraturen (se `config/ekstraveggen.yaml`).
+Alle modellparametre er startverdier fra litteraturen (se `modeling/config/ekstraveggen.yaml`). Kalibrerte verdier havner i `modeling/config/kalibrert/`.
+
+## Repoet
+
+```
+modeling/   Python: fysikkmodell, datahenting, kalibrering, trening, timesjobb, lokalt API
+web/        Next.js-nettsiden (Vercel, root directory = web)
+supabase/   database-migrasjoner
+docs/       modell, research, deploy
+.github/    timesjobben (GitHub Actions, kjører i modeling/)
+```
+
+**Alle Python-kommandoer under kjøres fra `modeling\`** (`cd modeling`). `.env` ligger i repo-roten.
 
 ## Kom i gang
 
@@ -47,6 +59,8 @@ Tren rett fra databasen:
 
 ```powershell
 python scripts\fetch_history.py --start 2023-01-01 --end 2026-10-26
+python scripts\evaluate.py  --config config\ekstraveggen.yaml --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase
+python scripts\calibrate.py --config config\ekstraveggen.yaml --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase --write
 python scripts\train.py --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase --torch --save
 ```
 
@@ -59,12 +73,13 @@ docker compose up --build
 - Web-UI: http://localhost:3000 (gå til Ekstraveggen)
 - API + dokumentasjon: http://localhost:8000/docs
 
-Tilbakemeldinger fra UI-et lagres i `data\labels\ekstraveggen_observasjoner.csv` på din maskin, og
-modeller du trener lokalt i `models\` blir brukt av API-et automatisk.
+Uten Supabase-variabler lagres tilbakemeldinger i `modeling\data\labels\`, og modeller du trener lokalt i
+`modeling\models\` blir brukt av API-et automatisk.
 
 ### Uten Docker
 
 ```powershell
+cd modeling
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements-dev.txt
@@ -92,8 +107,8 @@ tilbakemeldinger (grovt sett et par hundre, spredt over vær og årstider).
 ### Tester
 
 ```powershell
-python tests\test_physics.py
-python tests\test_fetchers.py
+cd modeling
+for %t in (tests\test_*.py) do python %t        # eller én og én: python tests\test_physics.py
 ```
 
 ## API (for nettføreren senere)
@@ -115,18 +130,21 @@ som nettføreren).
 ## Mappestruktur
 
 ```
-config/ekstraveggen.yaml      feltets geometri og modellparametre
-src/klatreforhold/physics/    sol på veggen (solar.py) og vannbalanse/energibalanse (wetness.py)
-src/klatreforhold/data/       henting fra Open-Meteo, api.met.no, Frost, thredds, stasjons-CSV
-src/klatreforhold/ml/         features, sklearn- og PyTorch-trening (torch_model.py)
-src/klatreforhold/predict.py  varsel nå + 24 t
-src/klatreforhold/api.py      HTTP-API
-web/                          Next.js-UI
-Dockerfile, docker-compose.yml
-scripts/                      kommandolinjeverktøy
-data/raw, data/labels         data (ikke i git)
-outputs/                      figurer og CSV fra kjøringer
-docs/                         modellbeskrivelse og research
+modeling/config/<felt>.yaml             feltets geometri og modellparametre (kalibrert/ overstyrer)
+modeling/src/klatreforhold/physics/     sol på veggen (solar.py) og vannbalanse/energibalanse (wetness.py)
+modeling/src/klatreforhold/data/        henting fra Open-Meteo, api.met.no, Frost, thredds, stasjons-CSV
+modeling/src/klatreforhold/ml/          features, evaluering (evaluate.py), kalibrering (calibrate.py),
+                                        sklearn- og PyTorch-trening (torch_model.py)
+modeling/src/klatreforhold/predict.py   varsel nå + 24 t
+modeling/src/klatreforhold/publish.py   timesjobben (skriver til Supabase)
+modeling/src/klatreforhold/api.py       lokalt HTTP-API
+modeling/scripts/                       kommandolinjeverktøy
+modeling/data/raw, modeling/data/labels data (raw ikke i git)
+modeling/outputs/                       figurer og CSV fra kjøringer (ikke i git)
+web/                                    Next.js-nettsiden
+supabase/migrations/                    databaseskjema
+docs/                                   modellbeskrivelse, research, deploy
+docker-compose.yml                      API (modeling/) + web lokalt
 ```
 
 ## Første resultater (Open-Meteo 2023-01-01 → 2026-10-26)

@@ -1,11 +1,17 @@
+# Python
 __pycache__/
 *.pyc
 .venv/
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-outputs/*
-!outputs/.gitkeep
+
+# Data og resultater (modeling/)
+modeling/data/raw/*
+!modeling/data/raw/.gitkeep
+modeling/data/processed/*
+!modeling/data/processed/.gitkeep
+modeling/outputs/*
+!modeling/outputs/.gitkeep
+
+# Hemmeligheter og editor
 .env
 .idea/
 .vercel/

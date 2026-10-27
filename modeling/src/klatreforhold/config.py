@@ -9,10 +9,15 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _load_dotenv(path: Path = ROOT / ".env") -> None:
+def _load_dotenv(path: Path | None = None) -> None:
     """Leser KEY=verdi fra .env i prosjektroten inn i miljøet (overstyrer ikke det som allerede er satt)."""
-    if not path.exists():
-        return
+    paths = [path] if path else [ROOT / ".env", ROOT.parent / ".env"]  # modeling/.env, så repo-roten
+    for p in paths:
+        if p.exists():
+            _read_env(p)
+
+
+def _read_env(path: Path) -> None:
     for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
@@ -66,4 +71,9 @@ def load_config(path: str | Path) -> tuple[Crag, dict]:
         rain_sheltered=bool(c.get("rain_sheltered", False)),
     )
     params = {k: _num(v) for k, v in cfg.get("model", {}).items()}
+    # Kalibrerte parametre (scripts/calibrate.py --write) overstyrer startverdiene
+    kal = Path(path).parent / "kalibrert" / Path(path).name
+    if kal.exists():
+        with open(kal, encoding="utf-8") as f:
+            params.update({k: _num(v) for k, v in (yaml.safe_load(f) or {}).get("model", {}).items()})
     return crag, params

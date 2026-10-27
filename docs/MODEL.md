@@ -68,3 +68,47 @@ RH ≥ 90 % (eller regn) og duggpunktsdifferanse < 2 °C (eller regn).
   ingen sol før kl 16").
 - Når vi får observasjoner, brukes de til å (1) kalibrere parametrene og (2) trene en ML-modell som
   får fysikkmodellens tilstand som input (hybridmodell), som trenger langt færre etiketter.
+
+## Skjeve data: folk er mest på feltet når det er tørt
+
+Tilbakemeldingene blir skjeve. Folk drar når de tror det er tørt (ofte fordi varselet sier det),
+snur når det er vått, og rapporterer det som overrasker dem. Det håndterer vi slik:
+
+**1. Rettferdig evaluering** (`modeling/scripts/evaluate.py`). Total treffprosent lyver: i lange
+tørkeperioder treffer alle modeller. Vi deler opp etter situasjon og måler treff på vått og tørt hver
+for seg:
+
+| Situasjon | Hva den sier |
+|---|---|
+| `under_regn` | det regner nå: lett |
+| `etter_regn` | 0–48 t etter regn: **her avgjøres det om modellen kan tørking** |
+| `torkeperiode` | mer enn 48 t etter regn: lett, sier lite |
+
+Med observasjoner fra Supabase vises også treff etter ledetid (hvor godt varselet var 6, 12, 24 t før).
+
+**2. Kalibrering som tåler skjevheten** (`modeling/scripts/calibrate.py`). Hver observasjon er et
+vitnesbyrd om hvor mye vann det burde vært på veggen akkurat da ("tørt 8 t etter 5 mm regn" setter en
+grense for tørketiden). Vi tilpasser tre parametre (slagregnkoeffisient, vann i tak/sprekker og hvor
+fort de tørker) med en prior mot litteraturverdiene. Observasjoner i tørkeperioder påvirker nesten
+ikke resultatet, så det er ikke et problem at det er mange av dem. `wind_exposure` kalibreres ikke
+fordi den ikke kan skilles fra slagregnkoeffisienten. Valgfritt (`--vekter`): vekt observasjonene etter
+hvor sannsynlig det var å bli observert (helg, dagtid, nylig regn).
+
+**3. Simulering** (`modeling/scripts/simulate_bias.py`, `simulate_sweep.py`). En "sann" vegg som
+tørker saktere enn startverdiene, og brukere som drar på dagtid, mest i helger og mest når vårt varsel
+sier tørt, og som sjeldnere rapporterer når det er vått. Resultat (balansert treff etter regn, testet på
+jevnt fordelte observasjoner neste sesong, 3 frø):
+
+| Observasjoner | Startverdier | Kalibrert | Kalibrert + vekter |
+|---|---|---|---|
+| 150 | 0.79 | 0.84 (0.78–0.92) | 0.85 (0.81–0.87) |
+| 400 | 0.78 | 0.93 (0.91–0.95) | 0.91 (0.87–0.95) |
+
+Kalibrering hjelper tydelig fra noen hundre observasjoner, selv med skjeve data. Vektingen gir lite og
+er derfor av som standard. Forbehold: simuleringen bruker samme modellstruktur som "sannheten", så den
+viser et beste tilfelle. Med 150 observasjoner kan parametrene veksle mot hverandre (mer slagregn ↔ mer
+vann i sprekker) selv om varselet blir bedre.
+
+**4. Det som virkelig fjerner skjevheten** er data som ikke avhenger av hvem som drar: et tidsforløpskamera
+eller en billig fuktsensor på én vegg ville gitt en observasjon hver time. Et par måneder på Ekstraveggen
+er verdt mer enn et år med brukerrapporter.

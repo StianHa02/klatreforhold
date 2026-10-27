@@ -74,11 +74,12 @@ Hvis siden viser et gult banner om at varselet er gammelt, har GitHub-jobben sto
 ## 4. Trene modell når det har kommet tilbakemeldinger
 
 ```powershell
-$env:SUPABASE_URL = "https://nmiydpcmfxkhtztzgzfx.supabase.co"
-$env:SUPABASE_SERVICE_ROLE_KEY = "<secret>"
+# med SUPABASE_URL og SUPABASE_SERVICE_ROLE_KEY i .env i repo-roten
+cd modeling
+python scripts\calibrate.py --config config\ekstraveggen.yaml --weather data\raw\<vær>.csv --labels supabase --write
 python scripts\export_observations.py
 python scripts\train.py --weather data\raw\<vær>.csv --labels data\labels\ekstraveggen_observasjoner_supabase.csv --torch --save
-git add models; git commit -m "Ny modell"; git push
+git add models config\kalibrert; git commit -m "Ny modell"; git push
 ```
 
 Timesjobben på GitHub bruker sklearn-modellen (PyTorch installeres ikke der, for å holde jobben rask).

@@ -1,7 +1,7 @@
 # Utvikling: docker compose up --build   ->  UI på http://localhost:3000, API på http://localhost:8000/docs
 services:
   api:
-    build: .
+    build: ./modeling
     ports:
       - "8000:8000"
     environment:
@@ -12,9 +12,9 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       KLATREFORHOLD_KILDE: ${KLATREFORHOLD_KILDE:-dev}
     volumes:
-      - ./data/labels:/app/data/labels   # tilbakemeldinger lagres på din maskin
-      - ./models:/app/models             # modeller trent lokalt (GPU) brukes av API-et
-      - ./config:/app/config             # endre parametre uten å bygge på nytt
+      - ./modeling/data/labels:/app/data/labels   # tilbakemeldinger lagres på din maskin
+      - ./modeling/models:/app/models             # modeller trent lokalt (GPU) brukes av API-et
+      - ./modeling/config:/app/config             # endre parametre uten å bygge på nytt
     restart: unless-stopped
 
   web:

@@ -98,6 +98,21 @@ class SupabaseStorage:
             start += page
         return pd.DataFrame(out)
 
+    def forecast_archive(self, felt: str) -> pd.DataFrame:
+        """Hele varselarkivet for feltet (tid, generert, ledetid_timer, status), sidevis."""
+        out, start, page = [], 0, 1000
+        while True:
+            r = self.s.get(f"{self.base}/varsel", params={
+                "felt": f"eq.{felt}", "select": "tid,generert,ledetid_timer,status", "order": "generert.asc,tid.asc"},
+                headers={"Range-Unit": "items", "Range": f"{start}-{start + page - 1}"}, timeout=60)
+            r.raise_for_status()
+            rows = r.json()
+            out.extend(rows)
+            if len(rows) < page:
+                break
+            start += page
+        return pd.DataFrame(out)
+
     def save_latest(self, felt: str, varsel: dict) -> None:
         """Overskriver siste komplette varsel for feltet (leses av nettsiden)."""
         body = {"felt": felt, "generert": varsel["generert"], "data": varsel}
