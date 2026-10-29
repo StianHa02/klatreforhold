@@ -114,7 +114,7 @@ modeling/
   tests/             test_physics, test_fetchers, test_storage, test_bias_tools, test_verify
 web/                 Next.js-siden
 supabase/migrations/ kjørt mot databasen. supabase/valgfritt/ er IKKE kjørt
-docs/                MODEL, RESEARCH, DEPLOY, OVERLEVERING
+docs/                MODEL, RESEARCH, RESEARCH_2 (tørking, usikkerhet, fasit, historikkvisning), DEPLOY, OVERLEVERING
 .github/workflows/varsel.yml   timesjobben
 docker-compose.yml   api (modeling/) + web
 ```
@@ -180,6 +180,14 @@ vanlig regn, ikke bare slagregn.
 
 - Feltsiden viser status nå, en timestripe fra 5 t bak til 19 t fram (valgt etter testing av ±12 og 2/22),
   grafer med vann på veggen og regn mot veggen, og bergtemperatur mot duggpunkt, med en stiplet «nå»-linje.
+- **Siste 7 døgn** (`components/Historikk.tsx`, hjelpere i `lib/historikk.ts`): så hver klatrer selv kan
+  sjekke om varselet holder. Oppsummering («Sist regn … t siden … t sol på veggen siden»), én rad per døgn
+  (status kl 08-20, regn, soltimer, sterkeste vind), og timegrafer på felles tidsakse: modellen kjørt i
+  etterkant på været slik det ble, varselet slik det så ut 1-6 t før (fra arkivet `varsel`, finnes fra
+  2026-10-27), tilbakemeldinger med ✓/✗, regn (nedbør og mot veggen), stråling på veggen (`sol_wm2`) og
+  vind med retning og luftfuktighet. Bokstaver i tillegg til farger. På mobil rulles grafen sideveis og
+  starter ved «nå». Kildene: `siste_timer` i `varsel_siste` har nå 7 døgn (timesjobben henter 14 døgn bakover,
+  så vannlagrene er varmet opp), `vinduFraNa` legger dem i `historikk`, `hentTidligereVarsel` leser arkivet.
 - Banner om varselet er mer enn 3 timer gammelt (timesjobben har stoppet).
 - **Tilbakemelding:** datovelger (opptil 13 dager bak), klokkeslett 06-23, status tørt/fuktig/vått og valgfri
   kommentar. Varselet vises ikke i skjemaet, så folk ikke lar seg styre av det. Serveren slår opp hva varselet
@@ -367,9 +375,22 @@ select count(*) from public.stasjon_maling;
    (høyre side er delvis sva), og bergarten via NGUs berggrunnskart.
 9. **Tren ML** når det er nok etiketter. Legg `torch` (CPU) i workflowen hvis PyTorch-modellen skal i produksjon.
 10. **Data uten skjevhet:** tidsforløpskamera eller billig fuktsensor på én vegg i et par måneder.
-11. **Valgfritt:** bryter i Docker for å lese live-data fra Supabase i stedet for lokalt API
-    (`KLATREFORHOLD_DATAKILDE`, berører `web/lib/kilde.ts`); rydding av varselarkivet eldre enn ett år.
-12. **Senere:** integrasjon i nettføreren. FastAPI kan deployes som egen tjeneste, observasjonene kan flyttes til
+11. **Valgfritt:** rydding av varselarkivet eldre enn ett år. (Bryteren `KLATREFORHOLD_DATAKILDE` er laget:
+    Docker bruker `api` som standard, altså varselet fra API-containeren; sett `supabase` i `.env` for å lese
+    `varsel_siste` som produksjon. Arkivet og statistikken leses fra Supabase uansett når nøklene finnes.)
+12. **Modellforbedringer fra `RESEARCH_2.md`** (ikke gjort):
+    - Kalibrer én tørkeparameter per felt (log-multiplikator på fordampningen), lagrene faste, delvis
+      pooling mellom feltene (half-normal(0, 0.5)), ordinal likelihood for tørt/fuktig/vått. Tell regnbyger,
+      ikke rapporter; 10-20 rapporter 2-30 t etter regn per felt flytter én parameter.
+    - Ett-trykks «stemte»-knapp, så ikke bare overraskelser blir rapportert, og planlagte sjekker etter regn.
+    - Evaluering: RPS/Brier, CORP-pålitelighetsdiagram, lag etter timer siden regn (0-6/6-24/24-72/>72),
+      kryssvalidering per regnbyge, «timer siden regn > X» som grunnlinje.
+    - Usikkerhet: Open-Meteo har ikke MEPS. Billigst: kjør modellen på varselet forskjøvet −3…+3 t (feilen er
+      mest timing). Legg til `probability_of_precipitation` fra Locationforecast (MEPS). Kalibrer på arkivet.
+    - Fasit uten skjevhet: solcelle-4G-kamera (ca. €200-280) mot én vegg, bilde hver 30. min, merket av 2-3
+      medlemmer; valgfritt Dragino LMS01 bladfuktsensor (ca. €90, LoRaWAN).
+    - Små ting: et lite slagregn-gulv for le-vegger; vurder en fjerde rapportklasse «siger».
+13. **Senere:** integrasjon i nettføreren. FastAPI kan deployes som egen tjeneste, observasjonene kan flyttes til
     nettførerens database, og komponentene i `web/components` bruker samme design-tokens.
 
 ## 12. Kreditering

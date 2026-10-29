@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import Feedback from '@/components/Feedback'
 import ForecastChart from '@/components/ForecastChart'
+import Historikk from '@/components/Historikk'
 import HourStrip from '@/components/HourStrip'
 import StatusHero from '@/components/StatusHero'
 import { dag, klokke } from '@/lib/api'
-import { hentObservasjoner, hentVarsel } from '@/lib/kilde'
+import { hentObservasjoner, hentTidligereVarsel, hentVarsel } from '@/lib/kilde'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,14 @@ export default async function FeltSide({
 }) {
   const { slug } = await params
   const { na } = await searchParams // ?na=2026-10-03T15:00 for å se på en gammel dag (testing)
-  const [varsel, obs] = await Promise.all([hentVarsel(slug, na), hentObservasjoner(slug)])
+  const naTid = na ? new Date(na) : new Date()
+  const uke = new Date(naTid.getTime() - 7 * 24 * 3600e3) // historikken: siste 7 døgn
+  const [varsel, obs, obsUke, tidligere] = await Promise.all([
+    hentVarsel(slug, na),
+    hentObservasjoner(slug),
+    hentObservasjoner(slug, uke),
+    hentTidligereVarsel(slug, uke),
+  ])
   if (!varsel) notFound()
 
   // Tidsvindu i timestripen og grafene: litt historikk (for å forklare hvorfor det er vått nå) og mest framover
@@ -44,6 +52,12 @@ export default async function FeltSide({
       <Feedback slug={slug} na={varsel.timer[0]} />
       <HourStrip timer={vindu} naIndeks={bak.length} />
       <ForecastChart timer={vindu} naIndeks={bak.length} />
+      <Historikk
+        timer={varsel.historikk ?? varsel.siste_timer}
+        na={varsel.na}
+        tidligere={tidligere}
+        obs={(obsUke?.observasjoner ?? []).filter((o) => Date.parse(o.time) <= naTid.getTime())}
+      />
       <section className="rounded-xl border border-border-subtle bg-surface-default p-md text-sm">
         <h2 className="h3">Tilbakemeldinger</h2>
         {obs && obs.antall > 0 ? (

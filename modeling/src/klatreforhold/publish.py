@@ -1,6 +1,6 @@
 """Timesjobben: kjør modellen for alle felt og skriv resultatet til Supabase.
 
-- varsel_siste: hele varselet (nå, 48 t fram, 24 t bakover) som nettsiden leser
+- varsel_siste: hele varselet (nå, 48 t fram, 7 døgn bakover) som nettsiden leser
 - varsel:       én rad per time, for å måle treffsikkerhet per ledetid senere
 """
 from __future__ import annotations
@@ -12,6 +12,8 @@ import pandas as pd
 import os
 
 from .predict import list_crags, load_crag, predict
+
+HISTORIKK_TIMER = 7 * 24  # historikken på feltsiden
 
 
 def archive_rows(slug: str, v: dict) -> list[dict]:
@@ -31,7 +33,7 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False)
     for c in list_crags():
         slug = c["slug"]
         try:
-            v = predict(slug, now=now, hours=48, history_hours=24)
+            v = predict(slug, now=now, hours=48, history_hours=HISTORIKK_TIMER)
             rows = archive_rows(slug, v)
             if dry_run:
                 result[slug] = {"timer": len(v["timer"]), "bytes": len(json.dumps(v))}

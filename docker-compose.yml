@@ -23,6 +23,8 @@ services:
       - "3000:3000"
     environment:
       KLATREFORHOLD_API_URL: http://api:8000
+      # api: varselet hentes fra API-containeren (lokal kode). supabase: les varsel_siste som produksjon
+      KLATREFORHOLD_DATAKILDE: ${KLATREFORHOLD_DATAKILDE:-api}
       SUPABASE_URL: ${SUPABASE_URL:-}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       KLATREFORHOLD_KILDE: ${KLATREFORHOLD_KILDE:-dev}

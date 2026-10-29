@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .predict import list_crags, predict
+from .publish import HISTORIKK_TIMER
 from .storage import get_storage
 
 CACHE_SECONDS = int(os.environ.get("KLATREFORHOLD_CACHE_SECONDS", "1200"))  # MET: ikke hent oftere enn nødvendig
@@ -59,7 +60,7 @@ def _varsel(slug: str, timer: int = 24, kilde: str = "openmeteo", na: datetime |
     now = pd.Timestamp(na) if na else None
     if now is not None and now.tzinfo is None:
         now = now.tz_localize("Europe/Oslo")
-    res = predict(slug, now=now, hours=timer, source=kilde)
+    res = predict(slug, now=now, hours=timer, source=kilde, history_hours=HISTORIKK_TIMER)
     with _lock:
         _cache[key] = (time.time(), res)
     return res

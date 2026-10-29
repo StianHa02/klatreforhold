@@ -2,12 +2,15 @@
 //  - Supabase (produksjon): SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY er satt. Leser siste varsel som
 //    timesjobben har skrevet, og lagrer observasjoner. Nøkkelen brukes bare på serveren.
 //  - Python-API (lokal utvikling): KLATREFORHOLD_API_URL, standard http://localhost:8000
-import type { Felt, Observasjoner, Status, Time, Varsel } from './api'
+//    Brukes også med Supabase-nøkler hvis KLATREFORHOLD_DATAKILDE=api (Docker), så varselet regnes ut
+//    på nytt med koden du har lokalt. Arkivet og statistikken leses fortsatt fra Supabase når nøklene finnes.
+import type { Felt, Observasjoner, Status, TidligereVarsel, Time, Varsel } from './api'
 
 const SB_URL = process.env.SUPABASE_URL
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const API_URL = process.env.KLATREFORHOLD_API_URL ?? 'http://localhost:8000'
-export const brukerSupabase = Boolean(SB_URL && SB_KEY)
+const harSupabase = Boolean(SB_URL && SB_KEY)
+export const brukerSupabase = harSupabase && process.env.KLATREFORHOLD_DATAKILDE !== 'api'
 
 async function sb<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
@@ -40,7 +43,8 @@ export function vinduFraNa(v: Varsel, na: Date = new Date(), timer = 24): Varsel
   if (naTime.getTime() < na.getTime()) naTime.setUTCHours(naTime.getUTCHours() + 1) // tidsstempel = slutten av timen
   const alle = [...v.siste_timer, ...v.timer].sort((a, b) => Date.parse(a.tid) - Date.parse(b.tid))
   const fram = alle.filter((t) => Date.parse(t.tid) >= naTime.getTime()).slice(0, timer + 1)
-  const bak = alle.filter((t) => Date.parse(t.tid) < naTime.getTime()).slice(-12)
+  const tidligere = alle.filter((t) => Date.parse(t.tid) < naTime.getTime())
+  const bak = tidligere.slice(-12)
   if (fram.length === 0) return { ...v, utdatert: true }
   const torre = fram.filter((t) => t.tort)
   const vate = fram.filter((t) => !t.tort)
@@ -50,6 +54,7 @@ export function vinduFraNa(v: Varsel, na: Date = new Date(), timer = 24): Varsel
     na: forste.tid,
     timer: fram,
     siste_timer: bak,
+    historikk: tidligere,
     utdatert: na.getTime() - Date.parse(v.na) > 3 * 3600e3, // v.na = timen modellen ble kjørt for
     sammendrag: {
       status_na: forste.status,
@@ -91,9 +96,37 @@ export async function hentVarsel(slug: string, na?: string): Promise<Varsel | nu
   }
 }
 
+/** For hver time: den korteste ledetiden fra 1 til 6 timer (arkivet har hull når timesjobben ikke har gått). */
+export function velgTidligereVarsel(rader: TidligereVarsel[]): TidligereVarsel[] {
+  const perTime = new Map<number, TidligereVarsel>()
+  for (const r of rader) {
+    if (r.ledetid_timer < 1 || r.ledetid_timer > 6) continue
+    const t = Date.parse(r.tid)
+    const har = perTime.get(t)
+    if (!har || r.ledetid_timer < har.ledetid_timer) perTime.set(t, r)
+  }
+  return [...perTime.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r)
+}
+
+/** Varselet slik det så ut 1-6 timer før, for timene etter `fra`. Tom liste uten arkiv (lokalt API). */
+export async function hentTidligereVarsel(slug: string, fra: Date): Promise<TidligereVarsel[]> {
+  if (!harSupabase) return []
+  try {
+    const rader = await sb<TidligereVarsel[]>(
+      `varsel?felt=eq.${encodeURIComponent(slug)}&tid=gte.${encodeURIComponent(fra.toISOString())}` +
+        '&ledetid_timer=gte.1&ledetid_timer=lte.6&select=tid,status,ledetid_timer&order=tid.asc&limit=5000',
+    )
+    return velgTidligereVarsel(rader)
+  } catch (e) {
+    console.log(e)
+    return []
+  }
+}
+
 // ---- observasjoner ----
 
-export async function hentObservasjoner(slug: string): Promise<Observasjoner | null> {
+/** Siste 10 observasjoner, eller alle etter `fra` (til historikken). */
+export async function hentObservasjoner(slug: string, fra?: Date): Promise<Observasjoner | null> {
   try {
     if (brukerSupabase) {
       const [stats, rows] = await Promise.all([
@@ -102,7 +135,8 @@ export async function hentObservasjoner(slug: string): Promise<Observasjoner | n
           body: JSON.stringify({ p_felt: slug }),
         }),
         sb<{ tid: string; status: Status; predikert_status: string | null; riktig: boolean | null; kommentar: string | null }[]>(
-          `observasjoner?felt=eq.${encodeURIComponent(slug)}&select=tid,status,predikert_status,riktig,kommentar&order=registrert.desc&limit=10`,
+          `observasjoner?felt=eq.${encodeURIComponent(slug)}&select=tid,status,predikert_status,riktig,kommentar` +
+            (fra ? `&tid=gte.${encodeURIComponent(fra.toISOString())}&order=tid.asc&limit=500` : '&order=registrert.desc&limit=10'),
         ),
       ])
       return {
@@ -116,7 +150,9 @@ export async function hentObservasjoner(slug: string): Promise<Observasjoner | n
         })),
       }
     }
-    return await api<Observasjoner>(`/api/felt/${slug}/observasjoner?siste=10`)
+    const res = await api<Observasjoner>(`/api/felt/${slug}/observasjoner?siste=${fra ? 500 : 10}`)
+    if (fra) res.observasjoner = res.observasjoner.filter((o) => Date.parse(o.time) >= fra.getTime())
+    return res
   } catch (e) {
     console.log(e)
     return null
@@ -224,7 +260,7 @@ export type FeltStatistikk = {
 
 /** Antall observasjoner (uten dev/test) og størrelsen på varselarkivet per felt. Null uten Supabase. */
 export async function hentStatistikk(): Promise<FeltStatistikk[] | null> {
-  if (!brukerSupabase) return null
+  if (!harSupabase) return null
   try {
     const res = await sb<{ felt: FeltStatistikk[] }>('rpc/statistikk', { method: 'POST', body: '{}' })
     return res.felt

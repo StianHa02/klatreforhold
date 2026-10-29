@@ -37,7 +37,7 @@ def load_crag(slug: str) -> tuple[Crag, dict]:
 
 
 def get_weather(crag: Crag, source: str = "openmeteo") -> pd.DataFrame:
-    """Henter siste 7 døgn + 2 døgn varsel. Kan overstyres med KLATREFORHOLD_OFFLINE_WEATHER (CSV) for testing."""
+    """Henter siste 14 døgn + 2 døgn varsel (7 døgn vises, 7 til oppvarming av vannlagrene). Kan overstyres med KLATREFORHOLD_OFFLINE_WEATHER (CSV) for testing."""
     offline = os.environ.get("KLATREFORHOLD_OFFLINE_WEATHER")
     if offline:
         df = pd.read_csv(offline, index_col=0)
@@ -47,7 +47,7 @@ def get_weather(crag: Crag, source: str = "openmeteo") -> pd.DataFrame:
         from .data.metno import fetch_locationforecast
         return fetch_locationforecast(crag.lat, crag.lon)
     from .data.openmeteo import fetch_forecast
-    w = fetch_forecast(crag.lat, crag.lon, past_days=7, forecast_days=3)
+    w = fetch_forecast(crag.lat, crag.lon, past_days=14, forecast_days=3)
     if crag.frost_bruk == "erstatt":
         return with_observations(w, crag)
     return w  # "kontroll": stasjonen sammenlignes i timesjobben (verify.py), modellen bruker værdata for feltet
@@ -159,6 +159,7 @@ def _format_hours(frame: pd.DataFrame, res: pd.DataFrame, w: pd.DataFrame, p_ml,
             "vind_ms": round(float(w.loc[t, "wind_speed"]), 1),
             "vindretning": round(float(w.loc[t, "wind_direction"]), 0),
             "sol_pa_veggen": bool(row["sun_on_face"]),
+            "sol_wm2": round(float(row["sw_face"])),  # all kortbølget stråling på flaten
             "timer_til_tort": None if pd.isna(row["hours_until_dry"]) else int(row["hours_until_dry"]),
             "grunner": _reasons(row, res, t),
         })

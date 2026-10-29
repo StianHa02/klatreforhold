@@ -17,6 +17,7 @@ export type Time = {
   vind_ms: number
   vindretning: number
   sol_pa_veggen: boolean
+  sol_wm2?: number // stråling på flaten; mangler i varsler laget før historikken kom
   timer_til_tort: number | null
   grunner: string[]
 }
@@ -39,9 +40,13 @@ export type Varsel = {
   }
   timer: Time[]
   siste_timer: Time[]
+  historikk?: Time[] // alle timer før nå (opptil 7 døgn), modellen kjørt på været slik det ble
   forbehold: string
   utdatert?: boolean
 }
+
+/** Varselet for en time slik det så ut noen timer før (fra arkivet). */
+export type TidligereVarsel = { tid: string; status: Status; ledetid_timer: number }
 
 export type Felt = { slug: string; navn: string; felt_id: number | null; lat: number; lon: number; orientering: number }
 
