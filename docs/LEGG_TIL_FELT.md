@@ -49,6 +49,11 @@ Slugen er ikke alltid feltnavnet i ASCII: Bolstadøyri er `bolstadoeyri`. Finn d
   Hent DTM i en linje gjennom punktet langs veggretningen (f.eks. −20, −10, −5, 0, 3, 6, 10, 20 m). Et sprang
   på titalls meter rundt punktet betyr at det ligger i veggen. Sett da `elevation_m` til bakken ved foten og
   bruk tilsvarende `--offset-m` i steg 4. Bolstadøyri: punktet er på 203 m, foten på ~169 m, 6 m ut.
+  Ligger punktet ute foran veggen (flat bakke, så stiger det brått 10–20 m bak), står observatøren ute i
+  skogen og får altfor lav `sky_view_factor`. Bruk negativ offset så den står 3 m fra foten:
+  Trollkona `--offset-m=-10` (foten 13 m bak punktet), Loddefjord `--offset-m=-12` (15 m bak).
+  En `sky_view_factor` under ~0.15 er et varsel om at noe er galt; sjekk med større `--min-dist-m` hvor mye
+  som er trær helt inntil.
 - `model:`: behold standardverdiene. Sett `wind_exposure` etter terrenget (skjermet skog ~0.4–0.5,
   åpen kyst ~0.8) og skriv at det er et anslag. Ikke legg inn kalibrerte verdier for hånd.
 
