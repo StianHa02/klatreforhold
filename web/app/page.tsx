@@ -55,16 +55,16 @@ export default async function Home() {
           </ul>
         }
         liste={
-          <ul className="flex flex-col divide-y divide-border-subtle overflow-hidden rounded-xl border border-border-subtle bg-surface-default">
+          <ul className="flex flex-col gap-sm">
             {varsler.map((v) => (
               <li key={v.felt.slug}>
                 <a
                   href={`/felt/${v.felt.slug}`}
-                  className="focus flex items-center justify-between gap-md px-md py-sm transition hover:bg-surface-tinted"
+                  className="focus flex items-center justify-between gap-md rounded-xl border border-border-subtle bg-surface-default px-md py-sm transition hover:bg-surface-tinted hover:shadow-sm"
                 >
                   <span>
                     <span className="font-medium">{v.felt.navn}</span>
-                    <span className="ml-sm text-sm text-text-subtle">vender mot {kompass(v.felt.orientering)}</span>
+                    <span className="ml-sm text-sm text-text-subtle">vender mot {v.felt.orientering}°</span>
                   </span>
                   <span aria-hidden className="text-text-subtle">→</span>
                 </a>
