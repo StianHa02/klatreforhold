@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import Feedback from '@/components/Feedback'
-import FeltVelger from '@/components/FeltVelger'
 import ForecastChart from '@/components/ForecastChart'
 import Historikk from '@/components/Historikk'
 import HourStrip from '@/components/HourStrip'
@@ -8,7 +7,7 @@ import NesteDogn from '@/components/NesteDogn'
 import StatusHero from '@/components/StatusHero'
 import { dag, klokke } from '@/lib/api'
 import { dagBokser, statusPerTime } from '@/lib/dager'
-import { hentFelt, hentObservasjoner, hentTidligereVarsel, hentVarsel, tolkTid } from '@/lib/kilde'
+import { hentObservasjoner, hentTidligereVarsel, hentVarsel, tolkTid } from '@/lib/kilde'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,12 +22,11 @@ export default async function FeltSide({
   const { na } = await searchParams // ?na=2026-10-03T15:00 for å se på en gammel dag (testing)
   const naTid = na ? tolkTid(na) : new Date() // tid uten tidssone er norsk tid
   const uke = new Date(naTid.getTime() - 7 * 24 * 3600e3) // historikken: siste 7 døgn
-  const [varsel, obs, obsUke, tidligere, alleFelt] = await Promise.all([
+  const [varsel, obs, obsUke, tidligere] = await Promise.all([
     hentVarsel(slug, na),
     hentObservasjoner(slug),
     hentObservasjoner(slug, uke),
     hentTidligereVarsel(slug, uke),
-    hentFelt(),
   ])
   if (!varsel) notFound()
 
@@ -42,7 +40,6 @@ export default async function FeltSide({
 
   return (
     <div className="flex flex-col gap-md">
-      <FeltVelger felt={alleFelt ?? []} slug={slug} />
       <div>
         <h1 className="font-mabry text-[32px] leading-tight">{varsel.felt.navn}</h1>
         <p className="text-sm text-text-subtle">
