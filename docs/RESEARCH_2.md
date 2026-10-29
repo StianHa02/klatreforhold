@@ -184,13 +184,23 @@ We found no paper that validates a surface-wetness model on natural crag rock ag
 
 ## What we did with this
 
-The crag page now has a **7-day history** (`web/components/Historikk.tsx`):
-- a summary line ("Sist regn … t siden … t sol på veggen siden");
-- a day row;
-- hourly small multiples: the model re-run on the weather as it happened, the archived forecast 1-6 h
-  ahead, climber reports with ✓/✗, rain (total and onto the wall), sun on the wall (W/m²), and wind
-  with direction and humidity;
-- letters as well as colours;
-- a plain hit rate for the last 7 days.
+The first version (a sideways-scrolling 7-day chart with six rows) was too busy. The second version,
+from 2026-10-29, follows the findings above more closely:
+
+- **Day boxes** on the front page and at the top of each crag page: Nå, I morgen and three more days,
+  coloured by status, with the dry window in climbing hours («kl 13–21»). Days 3–4 come from ECMWF and are
+  marked «usikkert». This is the planning view climbers asked for.
+- **«Neste 4 døgn» and «Siste 7 døgn» as week grids** (`web/components/Ukerutenett.tsx`): one row per day,
+  24 hours, no sideways scrolling.
+  - Each row shows a sun-on-the-wall line, status runs with letters, rain bars on a fixed scale, and day
+    sums (rain, sun hours, mean wind).
+  - Tapping a day opens an hour table, which is the table twin the dataviz guidance asks for.
+- **History toggle.** «I etterkant» is the model re-run on the weather as it happened. «Varslet dagen før»
+  is the forecast as issued about 24 h ahead, from the archive. That keeps the meteoblue distinction
+  between hindcast and forecast-as-issued. Climber reports show as markers with ✓/✗ against whichever view
+  is selected, and the hit rate is counted per view in plain words.
+- **Summary line** with the last rain and «tørt igjen etter 9 t», so each crag's drying speed is visible.
+- **Fixed 0–2 mm scale** for water and rain in the forecast chart. The area between rock temperature and
+  dew point is shaded green (rock warmer) or blue (condensation), stronger with the gap (full at 4 °C).
 
 The model recommendations above are listed as future work in `OVERLEVERING.md` §11.

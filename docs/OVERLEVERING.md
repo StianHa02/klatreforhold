@@ -178,20 +178,33 @@ vanlig regn, ikke bare slagregn.
 
 ## 6. Hva som skjer i nettsiden
 
-- Feltsiden viser status nå, en timestripe fra 5 t bak til 19 t fram (valgt etter testing av ±12 og 2/22),
-  grafer med vann på veggen og regn mot veggen, og bergtemperatur mot duggpunkt, med en stiplet «nå»-linje.
-- **Siste 7 døgn** (`components/Historikk.tsx`, hjelpere i `lib/historikk.ts`): så hver klatrer selv kan
-  sjekke om varselet holder. Oppsummering («Sist regn … t siden … t sol på veggen siden»), én rad per døgn
-  (status kl 08-20, regn, soltimer, sterkeste vind), og timegrafer på felles tidsakse: modellen kjørt i
-  etterkant på været slik det ble, varselet slik det så ut 1-6 t før (fra arkivet `varsel`, finnes fra
-  2026-10-27), tilbakemeldinger med ✓/✗, regn (nedbør og mot veggen), stråling på veggen (`sol_wm2`) og
-  vind med retning og luftfuktighet. Bokstaver i tillegg til farger. På mobil rulles grafen sideveis og
-  starter ved «nå». Kildene: `siste_timer` i `varsel_siste` har nå 7 døgn (timesjobben henter 14 døgn bakover,
-  så vannlagrene er varmet opp), `vinduFraNa` legger dem i `historikk`, `hentTidligereVarsel` leser arkivet.
+- **Dag for dag** (`components/DagBokser.tsx`, logikk i `lib/dager.ts`): fem bokser, Nå, I morgen og tre
+  dager til, farget etter status. På forsiden for hvert felt, og øverst på feltsiden. Folk planlegger og
+  avtaler med partnere opptil fire dager fram. En dag er «tørt» med et tørt vindu på minst 3 t i klatretiden
+  kl 08-21 («kl 13–21», «hele dagen»), ellers «fuktig» («beste kl 12–17»), «is» eller «vått» (regn i mm).
+  Dager over 60 t fram (etter MET Nordic, ECMWF 9 km) merkes «usikkert».
+- Feltsiden viser så tilbakemeldingsskjemaet, en timestripe fra 5 t bak til 19 t fram (valgt etter testing av
+  ±12 og 2/22), og grafer med vann på veggen og regn mot veggen, og bergtemperatur mot duggpunkt, med en stiplet
+  «nå»-linje. **Vann på veggen har fast skala 0–2 mm** (vann i mm og regn i mm/t på samme akse; modellens maks
+  er film + sprekker, 0.7 mm på Ekstraveggen). **Mellom berg og duggpunkt** er det grønt når berget er
+  varmere, blått når det er kaldere (kondens), sterkere jo større avstand (full ved 4 °C). Begge etter innspill
+  fra lederen.
+- **Neste 4 døgn** og **Siste 7 døgn** (`components/NesteDogn.tsx`, `Historikk.tsx`, felles
+  `Ukerutenett.tsx`): én rad per døgn med 24 timer, uten sideveis rulling. Sol på veggen som strek øverst,
+  status per time (bokstav i tillegg til farge), regn som søyler under (full søyle 2 mm/t), sum til høyre
+  (regn, soltimer, snittvind). Trykk på en dag for tabell time for time (status, varslet dagen før, regn,
+  sol, vind med retning, fukt). «Siste 7 døgn» har oppsummering («Sist regn … tørt igjen etter 9 t») og en
+  bryter **I etterkant** (modellen kjørt på været slik det ble) / **Varslet dagen før** (arkivet, ledetid
+  nærmest 24 t). Tilbakemeldingene vises som prikker med ✓/✗ mot det som vises, og treffet telles per visning.
+- Kildene: `varsel_siste` har 7 døgn bakover og ut dag +4 fram (timesjobben henter 14 døgn bakover, så
+  vannlagrene er varmet opp, og 6 døgn fram). `vinduFraNa` gir `timer` (neste døgn), `framover` og `historikk`.
+  Døgn regnes fra timens start i norsk tid (tidsstempelet er slutten av timen); sommertidsdøgnet med 25 timer
+  slår sammen den doble timen.
 - Banner om varselet er mer enn 3 timer gammelt (timesjobben har stoppet).
 - **Tilbakemelding:** datovelger (opptil 13 dager bak), klokkeslett 06-23, status tørt/fuktig/vått og valgfri
-  kommentar. Varselet vises ikke i skjemaet, så folk ikke lar seg styre av det. Serveren slår opp hva varselet
-  sa for den timen (`predikertFra`: arkivet først, så `varsel_siste`) og lagrer `predikert_status` og `riktig`.
+  kommentar. **Fra 2026-10-29 har timeknappene en strek i fargen modellen mener timen hadde** (eierens valg, se 8).
+  Serveren slår opp hva varselet sa for den timen (`predikertFra`: arkivet først, så `varsel_siste`) og lagrer
+  `predikert_status` og `riktig`.
 - «Om modellen» forklarer modellen med et snitt av veggen og grafer fra `modellstatistikk.json` og `statistikk()`.
 - Styling og fonter (Work Sans + Mabry) er laget i en egen frontend-økt. Samme design-tokens som nettføreren,
   så komponentene kan flyttes over senere.
@@ -295,7 +308,10 @@ MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 202
 | Vekting av skjeve data av som standard | Simuleringen viste liten gevinst |
 | Fuktighetskorreksjon fra stasjonen, ikke fra tilbakemeldinger | ~33 000 målte timer er et sikrere grunnlag enn noen hundre rapporter. Styrken kan kalibreres senere |
 | Timestripe 5 t bak / 19 t fram | Gir sammenheng bakover uten å skyve varselet ut av skjermen |
-| Varselet skjult i tilbakemeldingsskjemaet | Unngår at brukerne svarer det varselet sa |
+| Varselet skjult i tilbakemeldingsskjemaet (til 2026-10-28) | Unngår at brukerne svarer det varselet sa |
+| Fra 2026-10-29: modellens status som strek på timeknappene | Eierens valg etter innspill fra klubben. Kan gi flere «det stemte»-rapporter (bra mot skjevheten i 7.3), men også forankring. **Vurder rapporter før og etter datoen hver for seg** |
+| Dagbokser og 4 døgn fram | Folk planlegger og avtaler med partnere opptil fire dager fram. MET Nordic rekker ~2.5 døgn, resten er ECMWF (`metno_seamless`), merket «usikkert» |
+| Arkivet lagrer bare ledetid ≤ 48 t | Varselet går 120 t fram, men arkivet ville vokst 2.5 ganger. «Varslet dagen før» trenger bare ~24 t |
 | Monorepo `modeling/` + `web/` | Tydelig skille mellom Python og Next.js; Vercel bruker root `web` |
 
 ## 9. Feil og fallgruver vi har gått i
@@ -316,6 +332,11 @@ MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 202
 - **Gamle observasjoner uten `predikert_status`** fantes fra før varselarkivet. `predikertFra` faller nå tilbake
   til `varsel_siste`.
 - **`next/font/google` trenger nett ved bygging.** I miljøer uten nett: typesjekk med `npx tsc --noEmit`.
+- **PostgREST gir maks 1000 rader per kall.** `limit=5000` hjelper ikke. Spør etter færre rader (f.eks.
+  `ledetid_timer=in.(22,23,24,25,26)`) eller bla med `Range`.
+- **Kommentar på samme linje i `.env` blir med i verdien** for Python-lesingen (`config._read_env`), f.eks.
+  `SUPABASE_SERVICE_ROLE_KEY=... # →` gir «'latin-1' codec can't encode» når API-et kaller Supabase. Docker
+  leser fila riktig. Legg kommentarer på egne linjer.
 - **DOM1-flisa er 1.2 GB** og ligger i `modeling/data/raw/` (ikke i git). Én flis (33-104-120) dekker alle tre felt.
 - **Torch-installasjon** fyller disken raskt (cache). Bruk CUDA 12.8-hjulene for RTX 50-serien.
 
@@ -372,13 +393,19 @@ select count(*) from public.stasjon_maling;
    er mer usikre enn vintervarsler.
 7. **Følg med på 2026-fuktigheten** (7.6). Kjør `--historikk --skriv-rh` på nytt om et halvt år.
 8. **Sjekk geometrien:** helningen på Helleneset (70° er anslått), om Ekstraveggen bør deles i bratt del og sva
-   (høyre side er delvis sva), og bergarten via NGUs berggrunnskart.
-9. **Tren ML** når det er nok etiketter. Legg `torch` (CPU) i workflowen hvis PyTorch-modellen skal i produksjon.
-10. **Data uten skjevhet:** tidsforløpskamera eller billig fuktsensor på én vegg i et par måneder.
-11. **Valgfritt:** rydding av varselarkivet eldre enn ett år. (Bryteren `KLATREFORHOLD_DATAKILDE` er laget:
+   (høyre side er delvis sva), og bergarten via NGUs berggrunnskart. **Retningene i nettføreren er oppdatert**
+   (2026-10-29, noen med store forskjeller), også for Loddefjord, Trollkona og Bymuren: oppdater
+   `face_azimuth_deg` i `modeling/config/*.yaml` og vurder de tre som nye felt (koordinater, `felt_id`,
+   helning, DOM-horisont). Verdiene må komme fra eieren; nettførerens database skal ikke røres.
+9. **Fargene for «is» og «vått»** (fiolett og blå) kan nesten ikke skilles for fargeblinde (protanopi, ΔE 2.7,
+   målt med dataviz-validatoren), og gul «fuktig» har kontrast 1.4:1 mot hvitt. Nettsiden bruker derfor
+   bokstaver og tabell i tillegg, men paletten bør vurderes (`globals.css`, `forhold-*`).
+10. **Tren ML** når det er nok etiketter. Legg `torch` (CPU) i workflowen hvis PyTorch-modellen skal i produksjon.
+11. **Data uten skjevhet:** tidsforløpskamera eller billig fuktsensor på én vegg i et par måneder.
+12. **Valgfritt:** rydding av varselarkivet eldre enn ett år. (Bryteren `KLATREFORHOLD_DATAKILDE` er laget:
     Docker bruker `api` som standard, altså varselet fra API-containeren; sett `supabase` i `.env` for å lese
     `varsel_siste` som produksjon. Arkivet og statistikken leses fra Supabase uansett når nøklene finnes.)
-12. **Modellforbedringer fra `RESEARCH_2.md`** (ikke gjort):
+13. **Modellforbedringer fra `RESEARCH_2.md`** (ikke gjort):
     - Kalibrer én tørkeparameter per felt (log-multiplikator på fordampningen), lagrene faste, delvis
       pooling mellom feltene (half-normal(0, 0.5)), ordinal likelihood for tørt/fuktig/vått. Tell regnbyger,
       ikke rapporter; 10-20 rapporter 2-30 t etter regn per felt flytter én parameter.
@@ -390,7 +417,7 @@ select count(*) from public.stasjon_maling;
     - Fasit uten skjevhet: solcelle-4G-kamera (ca. €200-280) mot én vegg, bilde hver 30. min, merket av 2-3
       medlemmer; valgfritt Dragino LMS01 bladfuktsensor (ca. €90, LoRaWAN).
     - Små ting: et lite slagregn-gulv for le-vegger; vurder en fjerde rapportklasse «siger».
-13. **Senere:** integrasjon i nettføreren. FastAPI kan deployes som egen tjeneste, observasjonene kan flyttes til
+14. **Senere:** integrasjon i nettføreren. FastAPI kan deployes som egen tjeneste, observasjonene kan flyttes til
     nettførerens database, og komponentene i `web/components` bruker samme design-tokens.
 
 ## 12. Kreditering
