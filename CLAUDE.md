@@ -10,7 +10,8 @@ handover: what has been built, what has been found, the decisions and why, and w
 standalone project for Bergen Klatreklubb (BKK). It will eventually feed BKK's nettfører (digital climbing
 guide), but **for now it must not touch the nettfører repo or its database**.
 
-Crags: Ekstraveggen (felt_id 137), Sandviken (33), Helleneset (5). One crag = one YAML file in `modeling/config/`.
+Crags: Ekstraveggen (felt_id 137), Sandviken (33), Helleneset (5), Neseveggen (11), Bolstadøyri (64),
+Trollkona (114), Loddefjord (2), Bymuren (1). One crag = one YAML file in `modeling/config/`.
 
 ## Architecture (no dedicated API in production)
 
@@ -50,7 +51,8 @@ web/                      Next.js 16 app (React 19, Tailwind 4). See web/CLAUDE.
   lib/kilde.ts            data source: Supabase mode (prod) or Python API mode (local)
   app/felt/[slug]/        crag page; app/om/ about page; app/api/felt/[slug]/observasjoner/ feedback route
 supabase/migrations/      applied schema. supabase/valgfritt/ = optional SQL, NOT applied
-docs/                     MODEL.md (model + results), RESEARCH.md, DEPLOY.md, OVERLEVERING.md (handover)
+docs/                     MODEL.md (model + results), RESEARCH.md, DEPLOY.md, OVERLEVERING.md (handover),
+                          LEGG_TIL_FELT.md (how to add a crag)
 .github/workflows/varsel.yml   hourly job
 ```
 

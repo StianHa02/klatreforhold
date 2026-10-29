@@ -1,0 +1,125 @@
+# Loddefjord (felt_id 2), Bergen vest
+# Kilde: BKK nettfører 2026-10-29: orientering 266, bratthet 4, regnsikkert = true.
+crag:
+  name: Loddefjord
+  felt_id: 2
+  lat: 60.362831
+  lon: 5.238142
+  elevation_m: 55.53     # Kartverket DTM1 (høydedata-API), kontrollert 2026-10-29
+  geology: ukjent           # ikke sjekket mot NGU ennå
+  geometry_source: https://ute.bergenklatreklubb.no/felt/loddefjord
+  geometry_checked: '2026-10-29'
+  timezone: Europe/Oslo
+  frost_station: SN50540  # Bergen - Florida (krever FROST_CLIENT_ID)
+  frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
+  face_azimuth_deg: 266   # nettfører
+  face_tilt_deg: 110      # bratt overheng/tak (bratthet_id 4): anslått helning, juster ved behov
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
+  horizon:
+    - [0, 19.24]
+    - [5, 29.64]
+    - [10, 35.41]
+    - [15, 46.72]
+    - [20, 51.73]
+    - [25, 55.71]
+    - [30, 58.57]
+    - [35, 60.69]
+    - [40, 61.33]
+    - [45, 63.30]
+    - [50, 64.22]
+    - [55, 65.42]
+    - [60, 65.98]
+    - [65, 66.95]
+    - [70, 67.84]
+    - [75, 67.84]
+    - [80, 68.89]
+    - [85, 68.69]
+    - [90, 68.84]
+    - [95, 69.86]
+    - [100, 68.33]
+    - [105, 68.07]
+    - [110, 68.76]
+    - [115, 68.26]
+    - [120, 67.25]
+    - [125, 66.17]
+    - [130, 64.56]
+    - [135, 62.37]
+    - [140, 61.16]
+    - [145, 58.92]
+    - [150, 53.45]
+    - [155, 49.25]
+    - [160, 42.23]
+    - [165, 41.21]
+    - [170, 24.93]
+    - [175, 29.10]
+    - [180, 24.63]
+    - [185, 22.57]
+    - [190, 13.83]
+    - [195, 23.87]
+    - [200, 27.57]
+    - [205, 24.29]
+    - [210, 30.25]
+    - [215, 35.85]
+    - [220, 38.95]
+    - [225, 34.34]
+    - [230, 29.09]
+    - [235, 23.24]
+    - [240, 27.00]
+    - [245, 22.20]
+    - [250, 25.38]
+    - [255, 25.27]
+    - [260, 25.87]
+    - [265, 34.90]
+    - [270, 32.28]
+    - [275, 18.81]
+    - [280, 17.62]
+    - [285, 13.48]
+    - [290, 16.98]
+    - [295, 20.67]
+    - [300, 30.04]
+    - [305, 37.19]
+    - [310, 36.89]
+    - [315, 21.53]
+    - [320, 17.79]
+    - [325, 26.01]
+    - [330, 38.56]
+    - [335, 36.40]
+    - [340, 20.75]
+    - [345, 25.10]
+    - [350, 24.04]
+    - [355, 17.28]
+    - [360, 19.24]
+  rain_sheltered: true   # regnsikkert i nettføreren
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.5  # foreløpig lokalt anslag (skogkledd li), ikke kalibrert
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  holds_capacity_mm: 0.6        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 0.5      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.5        # reservoar over dette gir siging på veggen
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.1085  # kontrollverdi; beregnes fra horisont og helning
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01
