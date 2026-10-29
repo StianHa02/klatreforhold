@@ -41,6 +41,7 @@ export type Varsel = {
   timer: Time[]
   siste_timer: Time[]
   historikk?: Time[] // alle timer før nå (opptil 7 døgn), modellen kjørt på været slik det ble
+  framover?: Time[] // alle timer fra nå (ut dag +4); `timer` er bare neste døgn
   forbehold: string
   utdatert?: boolean
 }

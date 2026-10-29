@@ -1,9 +1,10 @@
-import { type Varsel, klokke, dag, statusFarge, statusTint } from '@/lib/api'
+import DagBokser from '@/components/DagBokser'
+import { type Varsel, statusFarge, statusTint } from '@/lib/api'
+import type { DagBoks } from '@/lib/dager'
 
-export default function StatusHero({ varsel }: { varsel: Varsel }) {
+// Status nå, grunnene, og dagboksene (Nå, I morgen og tre dager til) under.
+export default function StatusHero({ varsel, bokser }: { varsel: Varsel; bokser: DagBoks[] }) {
   const s = varsel.sammendrag
-  const om24 = varsel.timer[varsel.timer.length - 1]
-  const nesteTort = s.neste_torre_time
   return (
     <section className={`rounded-xl border border-border-subtle p-md ${statusTint[s.status_na]}`}>
       <div className="flex items-center gap-md">
@@ -20,28 +21,9 @@ export default function StatusHero({ varsel }: { varsel: Varsel }) {
           ))}
         </ul>
       )}
-      <dl className="mt-md grid grid-cols-1 gap-sm text-sm sm:grid-cols-3">
-        <div className="rounded-lg bg-surface-default p-sm">
-          <dt className="text-text-subtle">Om 24 timer</dt>
-          <dd className="font-medium">{om24 ? `${om24.status_tekst} (${dag(om24.tid)} kl ${klokke(om24.tid)})` : '–'}</dd>
-        </div>
-        <div className="rounded-lg bg-surface-default p-sm">
-          <dt className="text-text-subtle">Tørre timer neste døgn</dt>
-          <dd className="font-medium">{s['tørre_timer_neste_24']} av 24</dd>
-        </div>
-        <div className="rounded-lg bg-surface-default p-sm">
-          <dt className="text-text-subtle">{s.tort_na ? 'Blir vått' : 'Tørt igjen'}</dt>
-          <dd className="font-medium">
-            {s.tort_na
-              ? s.neste_vate_time
-                ? `${dag(s.neste_vate_time)} kl ${klokke(s.neste_vate_time)}`
-                : 'Ikke neste døgn'
-              : nesteTort
-                ? `${dag(nesteTort)} kl ${klokke(nesteTort)}`
-                : 'Ikke neste døgn'}
-          </dd>
-        </div>
-      </dl>
+      <div className="mt-md">
+        <DagBokser bokser={bokser} paFarge />
+      </div>
     </section>
   )
 }

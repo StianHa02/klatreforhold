@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { type ButtonHTMLAttributes, useMemo, useState } from 'react'
-import { type Status, type Time } from '@/lib/api'
+import { type Status, type Time, statusFarge } from '@/lib/api'
+import { STATUS_TEKST } from '@/lib/dager'
 
 type Valg = Exclude<Status, 'is'>
 const VALG: { verdi: Valg; tekst: string; farge: string }[] = [
@@ -37,9 +38,14 @@ function beskrivDag(iso: string, iDag: string, iGar: string) {
 }
 
 // Brukeren forteller hvordan det faktisk var, for nå eller et tidspunkt de siste dagene.
-// Vi viser IKKE hva varselet sa her, for ikke å påvirke svaret. Serveren slår opp varselet
+// Timeknappene har en strek i fargen modellen mener timen hadde (eierens valg fra 2026-10-29; før det
+// var varselet skjult for ikke å påvirke svaret, se OVERLEVERING §8). Serveren slår opp varselet
 // for samme time i varselarkivet og regner ut om det stemte.
-export default function Feedback({ slug, na }: { slug: string; na: Time }) {
+export default function Feedback({ slug, na, statusPerTime = {} }: {
+  slug: string
+  na: Time
+  statusPerTime?: Record<string, Status> // nøkkel «YYYY-MM-DDTHH» i norsk tid
+}) {
   const router = useRouter()
   const iDagIso = useMemo(() => osloNa().dato, [])
   const tidligst = datoMinusDager(iDagIso, MAKS_DAGER_BAKOVER)
@@ -136,21 +142,30 @@ export default function Feedback({ slug, na }: { slug: string; na: Time }) {
           </Chip>
         )}
         <div className="grid grid-cols-6 gap-xs sm:grid-cols-9">
-          {TIMER.map((h) => (
-            <Chip
-              key={h}
-              valgt={time === h}
-              disabled={iDag && h > naTime}
-              onClick={() => setTime(h)}
-              aria-label={`kl ${pad(h)}–${pad(h + 1)}`}
-            >
-              {pad(h)}
-            </Chip>
-          ))}
+          {TIMER.map((h) => {
+            const modell = iDag && h > naTime ? undefined : statusPerTime[`${dag}T${pad(h)}`]
+            return (
+              <Chip
+                key={h}
+                valgt={time === h}
+                disabled={iDag && h > naTime}
+                onClick={() => setTime(h)}
+                farge={modell}
+                aria-label={`kl ${pad(h)}–${pad(h + 1)}${modell ? `, modellen: ${STATUS_TEKST[modell].toLowerCase()}` : ''}`}
+              >
+                {pad(h)}
+              </Chip>
+            )
+          })}
         </div>
         <p className="mt-xs text-xs text-text-subtle">
           Valgt: {beskrivDag(dag, iDagIso, iGarIso)}, {time === 'na' ? 'akkurat nå' : `kl ${pad(time)}–${pad(time + 1)}`}
         </p>
+        {TIMER.some((h) => statusPerTime[`${dag}T${pad(h)}`]) && (
+          <p className="mt-xs text-xs text-text-subtle">
+            Streken under timen viser hva modellen mener (grønn tørt, gul fuktig, blå vått). Si fra uansett om det stemte eller ikke.
+          </p>
+        )}
       </fieldset>
       <label className="mt-sm flex flex-col gap-xs text-sm">
         Kommentar (valgfritt)
@@ -182,8 +197,8 @@ export default function Feedback({ slug, na }: { slug: string; na: Time }) {
   )
 }
 
-// Valgknapp i BKK-stil: mørk når valgt, ellers lys med kant
-function Chip({ valgt, className = '', ...rest }: { valgt: boolean } & ButtonHTMLAttributes<HTMLButtonElement>) {
+// Valgknapp i BKK-stil: mørk når valgt, ellers lys med kant. `farge`: strek i modellens status for timen.
+function Chip({ valgt, farge, className = '', children, ...rest }: { valgt: boolean; farge?: Status } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
@@ -194,6 +209,9 @@ function Chip({ valgt, className = '', ...rest }: { valgt: boolean } & ButtonHTM
           : 'border-border-default bg-surface-default hover:bg-surface-tinted disabled:hover:bg-surface-default'
       } ${className}`}
       {...rest}
-    />
+    >
+      {children}
+      {farge && <span aria-hidden className={`mx-auto mt-[2px] block h-[3px] w-full rounded-full ${statusFarge[farge]}`} />}
+    </button>
   )
 }

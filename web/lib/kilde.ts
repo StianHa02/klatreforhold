@@ -36,13 +36,15 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 // ---- varsel ----
 
-/** Klipper det lagrede varselet (laget for opptil en time siden) til "nå + 24 t" og 12 t bakover. */
+/** Klipper det lagrede varselet (laget for opptil en time siden) til "nå + 24 t" og 12 t bakover.
+ *  `framover` og `historikk` får alle timene fra og før nå (dagboksene og ukerutenettene). */
 export function vinduFraNa(v: Varsel, na: Date = new Date(), timer = 24): Varsel {
   const naTime = new Date(na)
   naTime.setUTCMinutes(0, 0, 0)
   if (naTime.getTime() < na.getTime()) naTime.setUTCHours(naTime.getUTCHours() + 1) // tidsstempel = slutten av timen
   const alle = [...v.siste_timer, ...v.timer].sort((a, b) => Date.parse(a.tid) - Date.parse(b.tid))
-  const fram = alle.filter((t) => Date.parse(t.tid) >= naTime.getTime()).slice(0, timer + 1)
+  const framover = alle.filter((t) => Date.parse(t.tid) >= naTime.getTime())
+  const fram = framover.slice(0, timer + 1)
   const tidligere = alle.filter((t) => Date.parse(t.tid) < naTime.getTime())
   const bak = tidligere.slice(-12)
   if (fram.length === 0) return { ...v, utdatert: true }
@@ -55,6 +57,7 @@ export function vinduFraNa(v: Varsel, na: Date = new Date(), timer = 24): Varsel
     timer: fram,
     siste_timer: bak,
     historikk: tidligere,
+    framover,
     utdatert: na.getTime() - Date.parse(v.na) > 3 * 3600e3, // v.na = timen modellen ble kjørt for
     sammendrag: {
       status_na: forste.status,
@@ -84,37 +87,63 @@ export async function hentFelt(): Promise<Felt[] | null> {
 
 export async function hentVarsel(slug: string, na?: string): Promise<Varsel | null> {
   try {
+    const naTid = na ? tolkTid(na) : new Date()
     if (brukerSupabase) {
       const rows = await sb<{ data: Varsel }[]>(`varsel_siste?felt=eq.${encodeURIComponent(slug)}&select=data`)
       if (!rows.length) return null
-      return vinduFraNa(rows[0].data, na ? new Date(na) : new Date())
+      return vinduFraNa(rows[0].data, naTid)
     }
-    return await api<Varsel>(`/api/felt/${slug}/varsel${na ? `?na=${encodeURIComponent(na)}` : ''}`)
+    // samme form i begge moduser: be API-et om ut dag +4 og klipp på samme måte
+    const v = await api<Varsel>(`/api/felt/${slug}/varsel?timer=120${na ? `&na=${encodeURIComponent(na)}` : ''}`)
+    return vinduFraNa(v, naTid)
   } catch (e) {
     console.log(e)
     return null
   }
 }
 
-/** For hver time: den korteste ledetiden fra 1 til 6 timer (arkivet har hull når timesjobben ikke har gått). */
-export function velgTidligereVarsel(rader: TidligereVarsel[]): TidligereVarsel[] {
+/** Alle felt med varselet klippet fra nå, til forsiden. */
+export async function hentOversikt(): Promise<Varsel[] | null> {
+  try {
+    if (brukerSupabase) {
+      const rows = await sb<{ data: Varsel }[]>('varsel_siste?select=data&order=felt.asc')
+      return rows.map((r) => vinduFraNa(r.data))
+    }
+    const felt = await api<Felt[]>('/api/felt')
+    const varsler = await Promise.all(felt.map((f) => hentVarsel(f.slug)))
+    return varsler.filter((v): v is Varsel => v !== null)
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}
+
+const DAGEN_FOR = 24 // «varslet dagen før»: ledetiden nærmest 24 t
+const SLINGRING = 2 // timesjobben har hull, så 22-26 t godtas
+
+/** For hver time: varselet med ledetid nærmest `mal` (innenfor ± SLINGRING), ved likt den korteste. */
+export function velgTidligereVarsel(rader: TidligereVarsel[], mal = DAGEN_FOR): TidligereVarsel[] {
   const perTime = new Map<number, TidligereVarsel>()
   for (const r of rader) {
-    if (r.ledetid_timer < 1 || r.ledetid_timer > 6) continue
+    const avvik = Math.abs(r.ledetid_timer - mal)
+    if (avvik > SLINGRING) continue
     const t = Date.parse(r.tid)
     const har = perTime.get(t)
-    if (!har || r.ledetid_timer < har.ledetid_timer) perTime.set(t, r)
+    const harAvvik = har ? Math.abs(har.ledetid_timer - mal) : Infinity
+    if (!har || avvik < harAvvik || (avvik === harAvvik && r.ledetid_timer < har.ledetid_timer)) perTime.set(t, r)
   }
   return [...perTime.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r)
 }
 
-/** Varselet slik det så ut 1-6 timer før, for timene etter `fra`. Tom liste uten arkiv (lokalt API). */
+/** Varselet slik det så ut dagen før, for timene etter `fra`. Tom liste uten Supabase-nøkler.
+ *  PostgREST gir maks 1000 rader per kall, så vi spør bare etter 5 ledetider (5 × 168 = 840). */
 export async function hentTidligereVarsel(slug: string, fra: Date): Promise<TidligereVarsel[]> {
   if (!harSupabase) return []
+  const ledetider = Array.from({ length: 2 * SLINGRING + 1 }, (_, i) => DAGEN_FOR - SLINGRING + i).join(',')
   try {
     const rader = await sb<TidligereVarsel[]>(
       `varsel?felt=eq.${encodeURIComponent(slug)}&tid=gte.${encodeURIComponent(fra.toISOString())}` +
-        '&ledetid_timer=gte.1&ledetid_timer=lte.6&select=tid,status,ledetid_timer&order=tid.asc&limit=5000',
+        `&ledetid_timer=in.(${ledetider})&select=tid,status,ledetid_timer&order=tid.asc&limit=1000`,
     )
     return velgTidligereVarsel(rader)
   } catch (e) {

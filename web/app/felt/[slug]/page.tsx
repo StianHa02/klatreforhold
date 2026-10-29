@@ -3,9 +3,11 @@ import Feedback from '@/components/Feedback'
 import ForecastChart from '@/components/ForecastChart'
 import Historikk from '@/components/Historikk'
 import HourStrip from '@/components/HourStrip'
+import NesteDogn from '@/components/NesteDogn'
 import StatusHero from '@/components/StatusHero'
 import { dag, klokke } from '@/lib/api'
-import { hentObservasjoner, hentTidligereVarsel, hentVarsel } from '@/lib/kilde'
+import { dagBokser, statusPerTime } from '@/lib/dager'
+import { hentObservasjoner, hentTidligereVarsel, hentVarsel, tolkTid } from '@/lib/kilde'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +20,7 @@ export default async function FeltSide({
 }) {
   const { slug } = await params
   const { na } = await searchParams // ?na=2026-10-03T15:00 for å se på en gammel dag (testing)
-  const naTid = na ? new Date(na) : new Date()
+  const naTid = na ? tolkTid(na) : new Date() // tid uten tidssone er norsk tid
   const uke = new Date(naTid.getTime() - 7 * 24 * 3600e3) // historikken: siste 7 døgn
   const [varsel, obs, obsUke, tidligere] = await Promise.all([
     hentVarsel(slug, na),
@@ -33,6 +35,8 @@ export default async function FeltSide({
   const TIMER_FRAM = 19
   const bak = varsel.siste_timer.slice(-TIMER_BAK)
   const vindu = [...bak, ...varsel.timer.slice(0, TIMER_FRAM + 1)]
+  const historikk = varsel.historikk ?? varsel.siste_timer
+  const framover = varsel.framover ?? varsel.timer
 
   return (
     <div className="flex flex-col gap-md">
@@ -48,13 +52,14 @@ export default async function FeltSide({
           Varselet ble sist oppdatert {dag(varsel.generert)} kl {klokke(varsel.generert)}. Timesjobben har kanskje stoppet.
         </p>
       )}
-      <StatusHero varsel={varsel} />
-      <Feedback slug={slug} na={varsel.timer[0]} />
+      <StatusHero varsel={varsel} bokser={dagBokser(varsel, naTid.getTime())} />
+      <Feedback slug={slug} na={varsel.timer[0]} statusPerTime={statusPerTime([...historikk, ...framover.slice(0, 1)])} />
       <HourStrip timer={vindu} naIndeks={bak.length} />
       <ForecastChart timer={vindu} naIndeks={bak.length} />
+      <NesteDogn timer={framover} naMs={naTid.getTime()} />
       <Historikk
-        timer={varsel.historikk ?? varsel.siste_timer}
-        na={varsel.na}
+        timer={historikk}
+        naMs={naTid.getTime()}
         tidligere={tidligere}
         obs={(obsUke?.observasjoner ?? []).filter((o) => Date.parse(o.time) <= naTid.getTime())}
       />

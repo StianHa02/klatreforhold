@@ -76,19 +76,21 @@ arkivTomt = false
 const vh = await k.hentVarsel('ekstraveggen', '2026-10-26T14:20:00+01:00')
 const forNa = [...lagret.siste_timer, ...lagret.timer].filter((t: { tid: string }) => Date.parse(t.tid) < Date.parse('2026-10-26T15:00:00+01:00'))
 assert(vh!.historikk!.length === forNa.length && vh!.historikk!.at(-1)!.tid === '2026-10-26T14:00:00+01:00', `historikk har alle ${forNa.length} timer før nå`)
+const etterNa = [...lagret.siste_timer, ...lagret.timer].filter((t: { tid: string }) => Date.parse(t.tid) >= Date.parse('2026-10-26T15:00:00+01:00'))
+assert(vh!.framover!.length === etterNa.length && vh!.timer.length === Math.min(25, etterNa.length), 'framover har alle timer fra nå, timer bare neste døgn')
 
-// tidligere varsel: korteste ledetid 1-6 t per time, hull er greit
+// varslet dagen før: ledetiden nærmest 24 t per time (22-26 t godtas), ved likt den korteste
 const valgt = k.velgTidligereVarsel([
-  { tid: '2026-10-28T10:00:00Z', status: 'vatt', ledetid_timer: 3 },
-  { tid: '2026-10-28T10:00:00Z', status: 'tort', ledetid_timer: 1 },
-  { tid: '2026-10-28T10:00:00Z', status: 'fuktig', ledetid_timer: 0 },
-  { tid: '2026-10-28T13:00:00Z', status: 'fuktig', ledetid_timer: 6 },
-  { tid: '2026-10-28T09:00:00Z', status: 'vatt', ledetid_timer: 7 },
+  { tid: '2026-10-28T10:00:00Z', status: 'vatt', ledetid_timer: 26 },
+  { tid: '2026-10-28T10:00:00Z', status: 'tort', ledetid_timer: 23 },
+  { tid: '2026-10-28T10:00:00Z', status: 'fuktig', ledetid_timer: 25 },
+  { tid: '2026-10-28T13:00:00Z', status: 'fuktig', ledetid_timer: 22 },
+  { tid: '2026-10-28T09:00:00Z', status: 'vatt', ledetid_timer: 12 },
 ])
-assert(valgt.length === 2 && valgt[0].status === 'tort' && valgt[1].tid === '2026-10-28T13:00:00Z', 'velger korteste ledetid 1-6 t')
+assert(valgt.length === 2 && valgt[0].status === 'tort' && valgt[1].tid === '2026-10-28T13:00:00Z', 'velger ledetid nærmest 24 t, hull er greit')
 kall.length = 0
 await k.hentTidligereVarsel('ekstraveggen', new Date('2026-10-22T00:00:00Z'))
-assert(kall.some((c) => c.url.includes('/varsel?') && c.url.includes('ledetid_timer=gte.1') && c.url.includes('tid=gte.2026-10-22')), 'spør arkivet om ledetid 1-6 t')
+assert(kall.some((c) => c.url.includes('/varsel?') && c.url.includes('ledetid_timer=in.(22,23,24,25,26)') && c.url.includes('tid=gte.2026-10-22')), 'spør arkivet om 5 ledetider (under 1000 rader)')
 kall.length = 0
 await k.hentObservasjoner('ekstraveggen', new Date('2026-10-22T00:00:00Z'))
 assert(kall.some((c) => c.url.includes('observasjoner?felt') && c.url.includes('tid=gte.') && !c.url.includes('limit=10&')), 'observasjoner etter en dato')
