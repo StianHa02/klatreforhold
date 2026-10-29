@@ -37,7 +37,8 @@ def load_crag(slug: str) -> tuple[Crag, dict]:
 
 
 def get_weather(crag: Crag, source: str = "openmeteo") -> pd.DataFrame:
-    """Henter siste 14 døgn + 2 døgn varsel (7 døgn vises, 7 til oppvarming av vannlagrene). Kan overstyres med KLATREFORHOLD_OFFLINE_WEATHER (CSV) for testing."""
+    """Henter siste 14 døgn + 5 døgn varsel (7 døgn vises, 7 til oppvarming av vannlagrene; dag +4 dekkes også
+    når døgnskiftet i UTC og norsk tid ikke faller sammen). Kan overstyres med KLATREFORHOLD_OFFLINE_WEATHER (CSV) for testing."""
     offline = os.environ.get("KLATREFORHOLD_OFFLINE_WEATHER")
     if offline:
         df = pd.read_csv(offline, index_col=0)
@@ -47,7 +48,7 @@ def get_weather(crag: Crag, source: str = "openmeteo") -> pd.DataFrame:
         from .data.metno import fetch_locationforecast
         return fetch_locationforecast(crag.lat, crag.lon)
     from .data.openmeteo import fetch_forecast
-    w = fetch_forecast(crag.lat, crag.lon, past_days=14, forecast_days=3)
+    w = fetch_forecast(crag.lat, crag.lon, past_days=14, forecast_days=6)
     if crag.frost_bruk == "erstatt":
         return with_observations(w, crag)
     return w  # "kontroll": stasjonen sammenlignes i timesjobben (verify.py), modellen bruker værdata for feltet
@@ -192,16 +193,17 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
     siste = _format_hours(res.loc[now - pd.Timedelta(hours=history_hours): now - pd.Timedelta(hours=1)], res, w, p_ml, crag)
 
     first = timer[0] if timer else None
-    dry_idx = [i for i, h in enumerate(timer) if h["tort"]]
-    wet_idx = [i for i, h in enumerate(timer) if not h["tort"]]
+    dogn = timer[:25]  # sammendraget gjelder neste døgn, også når varselet går lenger fram
+    dry_idx = [i for i, h in enumerate(dogn) if h["tort"]]
+    wet_idx = [i for i, h in enumerate(dogn) if not h["tort"]]
     sammendrag = {
         "status_na": first["status"] if first else None,
         "status_na_tekst": first["status_tekst"] if first else None,
         "tort_na": first["tort"] if first else None,
-        "tort_om_24t": timer[-1]["tort"] if timer else None,
+        "tort_om_24t": dogn[-1]["tort"] if dogn else None,
         "tørre_timer_neste_24": len(dry_idx),
-        "neste_torre_time": timer[dry_idx[0]]["tid"] if dry_idx else None,
-        "neste_vate_time": timer[wet_idx[0]]["tid"] if wet_idx else None,
+        "neste_torre_time": dogn[dry_idx[0]]["tid"] if dry_idx else None,
+        "neste_vate_time": dogn[wet_idx[0]]["tid"] if wet_idx else None,
         "grunner_na": first["grunner"] if first else [],
     }
     return {

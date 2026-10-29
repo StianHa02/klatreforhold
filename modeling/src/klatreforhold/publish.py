@@ -1,7 +1,7 @@
 """Timesjobben: kjør modellen for alle felt og skriv resultatet til Supabase.
 
-- varsel_siste: hele varselet (nå, 48 t fram, 7 døgn bakover) som nettsiden leser
-- varsel:       én rad per time, for å måle treffsikkerhet per ledetid senere
+- varsel_siste: hele varselet (nå, ut dag +4 fram, 7 døgn bakover) som nettsiden leser
+- varsel:       én rad per time og ledetid (maks 48 t), for å måle treffsikkerhet per ledetid
 """
 from __future__ import annotations
 
@@ -14,6 +14,8 @@ import os
 from .predict import list_crags, load_crag, predict
 
 HISTORIKK_TIMER = 7 * 24  # historikken på feltsiden
+FRAM_TIMER = 5 * 24  # rekker alltid ut dag +4 i norsk tid (folk planlegger fire dager fram)
+ARKIV_MAKS_LEDETID = 48  # lengre ledetider arkiveres ikke, så arkivet ikke vokser 2.5 ganger
 
 
 def archive_rows(slug: str, v: dict) -> list[dict]:
@@ -25,7 +27,7 @@ def archive_rows(slug: str, v: dict) -> list[dict]:
         "status": h["status"], "vann_mm": h["vann_mm"], "p_vatt": h["p_vatt"], "bergtemp": h["bergtemp"],
         "duggpunkt": h["duggpunkt"], "nedbor_mm": h["nedbor_mm"],
         "regn_mot_veggen_mm": h["regn_mot_veggen_mm"], "sol_pa_veggen": h["sol_pa_veggen"],
-    } for h in v["timer"]]
+    } for h in v["timer"] if (pd.Timestamp(h["tid"]) - generert) <= pd.Timedelta(hours=ARKIV_MAKS_LEDETID)]
 
 
 def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False) -> dict:
@@ -33,10 +35,10 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False)
     for c in list_crags():
         slug = c["slug"]
         try:
-            v = predict(slug, now=now, hours=48, history_hours=HISTORIKK_TIMER)
+            v = predict(slug, now=now, hours=FRAM_TIMER, history_hours=HISTORIKK_TIMER)
             rows = archive_rows(slug, v)
             if dry_run:
-                result[slug] = {"timer": len(v["timer"]), "bytes": len(json.dumps(v))}
+                result[slug] = {"timer": len(v["timer"]), "arkivrader": len(rows), "bytes": len(json.dumps(v))}
                 continue
             storage.save_latest(slug, v)
             storage.save_forecast(slug, rows)

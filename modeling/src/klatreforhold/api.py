@@ -77,7 +77,7 @@ def felt():
 
 
 @app.get("/api/felt/{slug}/varsel")
-def varsel(slug: str, timer: int = Query(24, ge=1, le=48), kilde: Literal["openmeteo", "metno"] = "openmeteo",
+def varsel(slug: str, timer: int = Query(24, ge=1, le=120), kilde: Literal["openmeteo", "metno"] = "openmeteo",
            na: datetime | None = Query(None, description="for testing: late som om klokka er dette")):
     _known(slug)
     try:
