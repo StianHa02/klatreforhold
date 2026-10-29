@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 import DagBokser from '@/components/DagBokser'
 import VisningsBryter from '@/components/VisningsBryter'
 import { dag, klokke } from '@/lib/api'
-import { dagBokser, kompass } from '@/lib/dager'
+import { dagBokser } from '@/lib/dager'
 import { hentOversikt } from '@/lib/kilde'
 
 export const dynamic = 'force-dynamic'
@@ -38,7 +38,7 @@ export default async function Home() {
                     <span>
                       <span className="h3">{v.felt.navn}</span>
                       <span className="ml-sm text-sm text-text-subtle">
-                        vender mot {kompass(v.felt.orientering)} ({v.felt.orientering}°)
+                        vender mot {v.felt.orientering}°
                       </span>
                     </span>
                     <span aria-hidden className="text-text-subtle">→</span>
