@@ -24,7 +24,7 @@ og oppsettet i [`DEPLOY.md`](DEPLOY.md). For agenter: se også [`../CLAUDE.md`](
 
 | Del | Status |
 |---|---|
-| Fysisk modell, tre felt med geometri fra Kartverket DOM1 | ✅ i drift |
+| Fysisk modell, ni felt med geometri fra Kartverket DOM1 (seks lagt til 2026-10-29) | ✅ i drift |
 | Varsel 48 t fram + 24 t bak, med forklaringer | ✅ |
 | Nettside (Vercel, gratisnivå): forside, feltside, «Om modellen», tilbakemeldingsskjema | ✅ i drift |
 | Supabase (tabeller, RLS, funksjoner) | ✅ 4 migrasjoner kjørt |
@@ -172,7 +172,8 @@ Detaljer og formler i `MODEL.md`. Hovedtrekk:
 | Andel tørre timer juni / desember | 67 % / 28 % | 65 % / 35 % | 60 % / 28 % |
 | Frost-stasjon | SN50540 Florida, `kontroll` | samme | samme |
 
-Tallene er fra `export_site_stats.py` (2023-2026, før fuktighetskorreksjonen). Ekstraveggen får ingen direkte
+Tallene er fra `export_site_stats.py` (2023-2026, før fuktighetskorreksjonen). De seks feltene som kom
+2026-10-29 (se 11.8) er ikke med i tabellen; kjør `export_site_stats.py` på nytt for dem. Ekstraveggen får ingen direkte
 sol oktober-februar og sol fra ca. kl 16-17 april-august. Helleneset fanger mye mer regn fordi svaet tar imot
 vanlig regn, ikke bare slagregn.
 
@@ -337,7 +338,7 @@ MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 202
 - **Kommentar på samme linje i `.env` blir med i verdien** for Python-lesingen (`config._read_env`), f.eks.
   `SUPABASE_SERVICE_ROLE_KEY=... # →` gir «'latin-1' codec can't encode» når API-et kaller Supabase. Docker
   leser fila riktig. Legg kommentarer på egne linjer.
-- **DOM1-flisa er 1.2 GB** og ligger i `modeling/data/raw/` (ikke i git). Én flis (33-104-120) dekker alle tre felt.
+- **DOM1-flisa er 1.2 GB** og ligger i `modeling/data/raw/` (ikke i git). Én flis (33-104-120) dekker de tre første feltene; de nye trenger flere fliser (`download_dom.py` setter dem sammen).
 - **Torch-installasjon** fyller disken raskt (cache). Bruk CUDA 12.8-hjulene for RTX 50-serien.
 
 ## 10. Vanlige oppgaver
@@ -394,8 +395,8 @@ select count(*) from public.stasjon_maling;
 7. **Følg med på 2026-fuktigheten** (7.6). Kjør `--historikk --skriv-rh` på nytt om et halvt år.
 8. **Sjekk geometrien:** helningen på Helleneset (70° er anslått), om Ekstraveggen bør deles i bratt del og sva
    (høyre side er delvis sva), og bergarten via NGUs berggrunnskart. **Retningene i nettføreren er oppdatert**
-   (2026-10-29, noen med store forskjeller). Fem nye felt er lagt til (2026-10-29): Neseveggen
-   (felt_id 11), Bolstadøyri (64), Trollkona (114), Loddefjord (2) og Bymuren (1), med oppskrift i
+   (2026-10-29, noen med store forskjeller). Seks nye felt er lagt til (2026-10-29): Neseveggen
+   (felt_id 11), Bolstadøyri (64), Trollkona (114), Loddefjord (2), Bymuren (1) og Fabrikkveggen (77), med oppskrift i
    `docs/LEGG_TIL_FELT.md`. Gjenstår: `face_azimuth_deg` for de tre første feltene etter de nye retningene.
    Verdiene må komme fra eieren; nettførerens database skal ikke røres.
 9. **Fargene for «is» og «vått»** (fiolett og blå) kan nesten ikke skilles for fargeblinde (protanopi, ΔE 2.7,
@@ -403,9 +404,9 @@ select count(*) from public.stasjon_maling;
    bokstaver og tabell i tillegg, men paletten bør vurderes (`globals.css`, `forhold-*`).
 10. **Tren ML** når det er nok etiketter. Legg `torch` (CPU) i workflowen hvis PyTorch-modellen skal i produksjon.
 11. **Data uten skjevhet:** tidsforløpskamera eller billig fuktsensor på én vegg i et par måneder.
-12. **Rydd varselarkivet før det fyller gratisnivået.** Målt 210 byte per rad med indekser; med 8 felt × 49
-    ledetider × 24 kjøringer blir det ca. 2 MB/døgn, ca. 720 MB/år, mot 500 MB i Supabase gratis (ca. 90 MB/år
-    per felt). Slett rader eldre enn ca. 120 dager, eller lagre færre ledetider (`ARKIV_MAKS_LEDETID`;
+12. **Rydd varselarkivet før det fyller gratisnivået.** Målt 210 byte per rad med indekser; med 9 felt × 49
+    ledetider × 24 kjøringer blir det ca. 2.2 MB/døgn, ca. 810 MB/år, mot 500 MB i Supabase gratis (fullt om ca.
+    7 måneder; ca. 90 MB/år per felt). Slett rader eldre enn ca. 120 dager, eller lagre færre ledetider (`ARKIV_MAKS_LEDETID`;
     «Varslet dagen før» trenger bare ~24 t). (Bryteren `KLATREFORHOLD_DATAKILDE` er laget:
     Docker bruker `api` som standard, altså varselet fra API-containeren; sett `supabase` i `.env` for å lese
     `varsel_siste` som produksjon. Arkivet og statistikken leses fra Supabase uansett når nøklene finnes.)
