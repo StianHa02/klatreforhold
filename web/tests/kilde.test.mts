@@ -7,7 +7,8 @@ let arkivTomt = false
 globalThis.fetch = (async (url: string, init: RequestInit = {}) => {
   kall.push({ url, init })
   let body: unknown = []
-  if (url.includes('varsel_siste')) body = [{ data: lagret }]
+  if (url.includes('select=felt:data->felt')) body = [{ felt: lagret.felt }] // hentFelt: bare felt-delen
+  else if (url.includes('varsel_siste')) body = [{ data: lagret }]
   else if (url.includes('/varsel?')) body = arkivTomt ? [] : [{ status: 'vatt' }] // arkivet sier vått
   if (url.includes('rpc/treffsikkerhet')) body = { antall: 3, antall_vurdert: 2, andel_riktig: 0.5 }
   if (url.includes('observasjoner?felt')) body = [{ tid: '2026-10-26T10:00:00Z', status: 'tort', predikert_status: 'vatt', riktig: false, kommentar: null }]

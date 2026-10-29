@@ -75,8 +75,9 @@ export function vinduFraNa(v: Varsel, na: Date = new Date(), timer = 24): Varsel
 export async function hentFelt(): Promise<Felt[] | null> {
   try {
     if (brukerSupabase) {
-      const rows = await sb<{ data: Varsel }[]>('varsel_siste?select=data')
-      return rows.map((r) => r.data.felt)
+      // Bare felt-delen av jsonb-en; hele varselet er ~130 kB per felt
+      const rows = await sb<{ felt: Felt }[]>('varsel_siste?select=felt:data->felt&order=felt.asc')
+      return rows.map((r) => r.felt)
     }
     return await api<Felt[]>('/api/felt')
   } catch (e) {
