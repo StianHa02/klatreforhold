@@ -1,0 +1,125 @@
+# Fabrikkveggen (felt_id 77), Askøy/Lillesotra
+# Kilde: BKK nettfører 2026-10-29: orientering 193, bratthet 2, regnsikkert = false.
+crag:
+  name: Fabrikkveggen
+  felt_id: 77
+  lat: 60.397949
+  lon: 5.200333
+  elevation_m: 11.70     # veggfot: Kartverket DTM1 3-10 m foran nettførerpunktet (punktet ligger i veggen, 21 m), kontrollert 2026-10-29
+  geology: ukjent           # ikke sjekket mot NGU ennå
+  geometry_source: https://ute.bergenklatreklubb.no/felt/fabrikkveggen
+  geometry_checked: '2026-10-29'
+  timezone: Europe/Oslo
+  frost_station: SN50540  # Bergen - Florida (krever FROST_CLIENT_ID); nærmeste er vegstasjoner ved Sotrabrua
+  frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
+  face_azimuth_deg: 193   # nettfører
+  face_tilt_deg: 90      # vertikalt (bratthet_id 2)
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 6 m ut (veggfoten), avstander 10–3000 m.
+  horizon:
+    - [0, 58.38]
+    - [5, 59.10]
+    - [10, 59.67]
+    - [15, 59.30]
+    - [20, 60.50]
+    - [25, 59.53]
+    - [30, 59.63]
+    - [35, 58.38]
+    - [40, 57.22]
+    - [45, 55.42]
+    - [50, 52.77]
+    - [55, 53.28]
+    - [60, 45.38]
+    - [65, 43.78]
+    - [70, 39.17]
+    - [75, 30.43]
+    - [80, 31.59]
+    - [85, 27.07]
+    - [90, 29.40]
+    - [95, 25.39]
+    - [100, 21.58]
+    - [105, 15.32]
+    - [110, 10.67]
+    - [115, 4.47]
+    - [120, 4.78]
+    - [125, 5.48]
+    - [130, 5.20]
+    - [135, 5.47]
+    - [140, 5.06]
+    - [145, 3.84]
+    - [150, 3.64]
+    - [155, 5.70]
+    - [160, 16.11]
+    - [165, 20.77]
+    - [170, 21.16]
+    - [175, 20.78]
+    - [180, 22.45]
+    - [185, 9.66]
+    - [190, 5.75]
+    - [195, 7.33]
+    - [200, 5.42]
+    - [205, 6.93]
+    - [210, 8.12]
+    - [215, 7.38]
+    - [220, 10.18]
+    - [225, 22.73]
+    - [230, 19.84]
+    - [235, 13.36]
+    - [240, 15.10]
+    - [245, 15.30]
+    - [250, 18.13]
+    - [255, 21.06]
+    - [260, 19.57]
+    - [265, 17.68]
+    - [270, 14.81]
+    - [275, 14.40]
+    - [280, 19.58]
+    - [285, 17.96]
+    - [290, 29.93]
+    - [295, 25.29]
+    - [300, 31.54]
+    - [305, 27.21]
+    - [310, 36.99]
+    - [315, 35.72]
+    - [320, 39.94]
+    - [325, 41.45]
+    - [330, 43.21]
+    - [335, 47.50]
+    - [340, 52.54]
+    - [345, 53.60]
+    - [350, 56.21]
+    - [355, 58.38]
+    - [360, 58.38]
+  rain_sheltered: false   # regnsikkert i nettføreren
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.6  # foreløpig lokalt anslag (lavt ved sjøen, Lillesotra), ikke kalibrert
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  holds_capacity_mm: 0.6        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 0.5      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.5        # reservoar over dette gir siging på veggen
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.3683  # kontrollverdi; beregnes fra horisont og helning
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01

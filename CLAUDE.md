@@ -11,7 +11,7 @@ standalone project for Bergen Klatreklubb (BKK). It will eventually feed BKK's n
 guide), but **for now it must not touch the nettfører repo or its database**.
 
 Crags: Ekstraveggen (felt_id 137), Sandviken (33), Helleneset (5), Neseveggen (11), Bolstadøyri (64),
-Trollkona (114), Loddefjord (2), Bymuren (1). One crag = one YAML file in `modeling/config/`.
+Trollkona (114), Loddefjord (2), Bymuren (1), Fabrikkveggen (77). One crag = one YAML file in `modeling/config/`.
 
 ## Architecture (no dedicated API in production)
 
