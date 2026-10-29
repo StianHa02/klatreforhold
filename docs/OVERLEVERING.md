@@ -342,7 +342,7 @@ MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 202
 
 ## 10. Vanlige oppgaver
 
-**Legge til et felt**
+**Legge til et felt** (utfyllende oppskrift for agenter i `docs/LEGG_TIL_FELT.md`, kommer med `feat/nye-felt`)
 1. Kopier en `modeling/config/<felt>.yaml`, sett navn, `felt_id`, koordinater (maks 4 desimaler), veggretning,
    helning og `frost_station`.
 2. `python scripts/download_dom.py --config config/<felt>.yaml` (eller `--tile` hvis flisa finnes).
@@ -394,9 +394,10 @@ select count(*) from public.stasjon_maling;
 7. **Følg med på 2026-fuktigheten** (7.6). Kjør `--historikk --skriv-rh` på nytt om et halvt år.
 8. **Sjekk geometrien:** helningen på Helleneset (70° er anslått), om Ekstraveggen bør deles i bratt del og sva
    (høyre side er delvis sva), og bergarten via NGUs berggrunnskart. **Retningene i nettføreren er oppdatert**
-   (2026-10-29, noen med store forskjeller), også for Loddefjord, Trollkona og Bymuren: oppdater
-   `face_azimuth_deg` i `modeling/config/*.yaml` og vurder de tre som nye felt (koordinater, `felt_id`,
-   helning, DOM-horisont). Verdiene må komme fra eieren; nettførerens database skal ikke røres.
+   (2026-10-29, noen med store forskjeller). Fem nye felt legges til på grenen `feat/nye-felt`: Neseveggen
+   (felt_id 11), Bolstadøyri (64), Trollkona (114), Loddefjord (2) og Bymuren (1), med oppskrift i
+   `docs/LEGG_TIL_FELT.md`. Gjenstår: `face_azimuth_deg` for de tre første feltene etter de nye retningene.
+   Verdiene må komme fra eieren; nettførerens database skal ikke røres.
 9. **Fargene for «is» og «vått»** (fiolett og blå) kan nesten ikke skilles for fargeblinde (protanopi, ΔE 2.7,
    målt med dataviz-validatoren), og gul «fuktig» har kontrast 1.4:1 mot hvitt. Nettsiden bruker derfor
    bokstaver og tabell i tillegg, men paletten bør vurderes (`globals.css`, `forhold-*`).
