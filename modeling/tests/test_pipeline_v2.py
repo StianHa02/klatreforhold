@@ -27,6 +27,14 @@ def test_native_forecast_accumulated_radiation_and_first_rain(monkeypatch):
     np.testing.assert_allclose(frame.ghi.iloc[1:], [100., 200.])
     assert np.isnan(frame.precipitation.iloc[0])
     assert frame.relative_humidity.iloc[0] == 80.
+    solar_key = ('integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time.'
+                 'integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time')
+    # Live Bymuren: et lite negativt solbidrag ved skumring skal ikke avvise hele MET-varselet.
+    data[solar_key] = np.array([0., 100., 99.86])*3600
+    assert met._point('test', 60.33, 5.31, 'forecast').ghi.iloc[2] == 0.
+    data[solar_key] = np.array([0., 100., 1.])*3600
+    with pytest.raises(ValueError, match='nullstilling.*ghi'):
+        met._point('test', 60.33, 5.31, 'forecast')
 
 
 def test_provider_failure_keeps_full_reserve_and_reports_it(monkeypatch):

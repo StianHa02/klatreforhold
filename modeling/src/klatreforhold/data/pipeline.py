@@ -51,7 +51,7 @@ def fetch_weather(crag, source="auto", start=None, now=None, history_hours=24):
                 max(begin, now.floor("h") - pd.Timedelta(hours=12)), now.floor("h") - pd.Timedelta(hours=1))
             w = overlay(w, analyses)
         except Exception as err:
-            log.warning("Direkte MET utilgjengelig (%s); bruker reserve", type(err).__name__)
+            log.warning("Direkte MET utilgjengelig for %s (%s: %s); bruker reserve", crag.name, type(err).__name__, err)
             fallback.append("metnordic")
     elif source == "metno":
         from .metno import fetch_locationforecast

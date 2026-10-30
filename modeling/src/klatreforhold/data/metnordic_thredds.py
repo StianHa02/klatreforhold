@@ -88,8 +88,10 @@ def _point(url, lat, lon, kind):
             # Prognosefilene akkumulerer fra modellstart (verifisert mot live data).
             # Analysefilen har én foregående time. Første prognoseintervall er ukjent.
             df[name] = df[name].diff() / 3600 if kind == "forecast" else df[name] / 3600
-            if (df[name].dropna() < -1e-3).any():
-                raise ValueError("Uventet nullstilling i strålingsakkumulasjonen")
+            # MET kan ha små negative differanser ved skumring (målt −0.14 W/m²).
+            # Opptil 1 W/m² behandles som null; større fall kan være en ekte nullstilling.
+            if (df[name].dropna() < -1.0).any():
+                raise ValueError(f"Uventet nullstilling i strålingsakkumulasjonen for {name}: {df[name].min():.2f} W/m²")
             df[name] = df[name].clip(lower=0)
     df["weather_source"] = "metnordic"
     df["weather_kind"] = kind

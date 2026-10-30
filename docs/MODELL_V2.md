@@ -119,6 +119,10 @@ null regn eller null stråling. Manglende nedbør fylles aldri med null. Korte i
 fuktighet og vind kan interpoleres; vindretning behandles sirkulært. Udekkede nødvendige værdata
 avbryter det aktuelle feltet slik at siste publiserte prognose beholdes.
 
+Produksjonskontrollen viste små negative differanser i akkumulert solstråling ved skumring
+(Bymuren: −0,14 W/m²). Inntil 1 W/m² negativ differanse settes til null; større negative sprang
+avvises fortsatt som mulig nullstilling. Reserveloggen oppgir felt og konkret feilmelding.
+
 Fuktighetskorreksjonen som ble tilpasset Open-Meteo mot Frost brukes bare på den kilden.
 Den overføres ikke ukritisk til direkte MET. Hver time har vær- og nedbørskilde, og prognose,
 arkiv, kalibrering og lagrede tilstander har modellversjon/konfigurasjonssignatur.
