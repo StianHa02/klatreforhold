@@ -9,7 +9,10 @@ import { BOKSTAV, SKALA_MM, STATUS_TEKST, type UkeRad, biter, pad } from '@/lib/
 // Trykk på en dag for time for time (tabellen er også den tilgjengelige versjonen av rutenettet).
 // All tekst lages på serveren, så klienten formaterer ingen datoer selv.
 
-const RAD = 'grid grid-cols-[4.5rem_minmax(0,1fr)_6rem_1.25rem] items-center gap-x-sm sm:grid-cols-[6rem_minmax(0,1fr)_9rem_1.25rem]'
+// På mobil står navn, summer og pil på én linje og stripen i full bredde under; fra sm: fire kolonner
+const RAD = 'grid grid-cols-[auto_minmax(0,1fr)_1.25rem] items-center gap-x-sm gap-y-[4px] sm:grid-cols-[6rem_minmax(0,1fr)_9rem_1.25rem]'
+const STRIPE = 'max-sm:col-span-full max-sm:row-start-2' // stripen: egen rad på mobil
+const MERKER = [6, 12, 18] // klokkeslett over stripene
 const MANGLER = 'mangler' // «dagen før»-visning: timen finnes, men varselet ble ikke lagret
 type Verdi = Status | typeof MANGLER
 const BAND_TOPP = 5 // sol 3 px + 2 px luft
@@ -36,18 +39,18 @@ export default function Ukerutenett({ rader, bryter = false, treff }: {
       {treff && <p className="text-sm">{visFor ? treff.for : treff.etter}</p>}
 
       <div className={`${RAD} mt-sm px-xs text-xs text-text-subtle`} aria-hidden>
-        <span />
-        <span className="relative h-[16px] self-end">
-          {[0, 6, 12, 18].map((h) => (
-            <span key={h} className="absolute top-0 text-text-tinted" style={{ left: pst(h) }}>kl {pad(h)}</span>
+        <span className="max-sm:hidden" />
+        <span className="relative h-[16px] self-end max-sm:col-span-full">
+          {MERKER.map((h) => (
+            <span key={h} className="absolute top-0 -translate-x-1/2 text-text-tinted" style={{ left: pst(h) }}>{pad(h)}</span>
           ))}
         </span>
-        <span className="grid grid-cols-3 text-right leading-tight">
+        <span className="grid grid-cols-3 text-right leading-tight max-sm:hidden">
           <span><span className="block font-medium text-text-default">Regn</span>mm</span>
           <span><span className="block font-medium text-text-default">Sol</span>timer</span>
           <span><span className="block font-medium text-text-default">Vind</span>m/s</span>
         </span>
-        <span />
+        <span className="max-sm:hidden" />
       </div>
       <ul>
         {rader.map((r) => (
@@ -59,7 +62,8 @@ export default function Ukerutenett({ rader, bryter = false, treff }: {
                   {r.merknad && <span className="block text-xs text-text-subtle">{r.merknad}</span>}
                 </span>
                 <Band rad={r} visFor={visFor} />
-                <span aria-hidden className="grid grid-cols-3 text-right text-sm tabular-nums">
+                <span aria-hidden className="text-right text-sm tabular-nums text-text-tinted sm:hidden">{r.sum.linje}</span>
+                <span aria-hidden className="grid grid-cols-3 text-right text-sm tabular-nums max-sm:hidden">
                   <span>{r.sum.regn}</span>
                   <span>{r.sum.sol}</span>
                   <span>{r.sum.vind}</span>
@@ -82,7 +86,7 @@ function Band({ rad, visFor }: { rad: UkeRad; visFor: boolean }) {
   // «nå»-etiketten på den siden av streken der det ikke er timer
   const naHoyre = rad.na !== undefined && rad.celler.slice(Math.ceil(rad.na)).every((c) => !c)
   return (
-    <span aria-hidden className="relative block" style={{ height: BAND_TOPP + BAND_H + 2 + REGN_H }}>
+    <span aria-hidden className={`relative block ${STRIPE}`} style={{ height: BAND_TOPP + BAND_H + 2 + REGN_H }}>
       <span className="absolute inset-x-0 top-0 grid h-[3px] grid-cols-24">
         {rad.celler.map((c, h) => (
           <span key={h} className={c?.sol ? 'bg-[var(--color-accent-red-400)]' : c?.solMulig ? 'bg-[var(--color-accent-red-200)]' : ''} />
@@ -157,6 +161,8 @@ function Band({ rad, visFor }: { rad: UkeRad; visFor: boolean }) {
 }
 
 // Klatretimene vises først; natta kan slås på. Kolonnene har faste bredder, så de står likt fra dag til dag.
+// På mobil er kolonnene smalere, bergtemperaturen står under lufttemperaturen og sola vises bare som strek,
+// så tabellen får plass uten sideveis rulling.
 const KLATRETID = (h: number) => h >= 6 && h < 22
 
 function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
@@ -164,19 +170,19 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
   const dag = rad.tabell.filter((t) => KLATRETID(t.h))
   const skjult = rad.tabell.length - dag.length
   const timer = heleDognet || dag.length === 0 ? rad.tabell : dag
-  const th = 'py-xs font-normal'
+  const th = 'py-xs align-bottom font-normal leading-tight'
   return (
     <div className="mb-sm overflow-x-auto px-xs">
-      <table className="w-full min-w-[30rem] table-fixed text-left text-sm tabular-nums">
+      <table className="w-full table-fixed text-left text-sm tabular-nums sm:min-w-[30rem]">
         <caption className="sr-only">Time for time</caption>
         <colgroup>
-          <col className="w-[3.5rem]" />
-          <col className="w-[5.5rem]" />
-          {visVarslet && <col className="w-[5.5rem]" />}
-          <col className="w-[6.5rem]" />
-          <col className="w-[4rem]" />
-          <col className="w-[6.5rem]" />
-          <col className="w-[5rem]" />
+          <col className="w-[1.5rem] sm:w-[3.5rem]" />
+          <col className="w-[3.25rem] sm:w-[5.5rem]" />
+          {visVarslet && <col className="w-[3.25rem] sm:w-[5.5rem]" />}
+          <col className="w-[3rem] sm:w-[6.5rem]" />
+          <col className="w-[2.5rem] sm:w-[4rem]" />
+          <col className="w-[1.75rem] sm:w-[6.5rem]" />
+          <col className="w-[2.5rem] sm:w-[5rem]" />
           <col className="w-[4.5rem] max-sm:hidden" />
         </colgroup>
         <thead className="text-xs text-text-subtle">
@@ -185,8 +191,8 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
             <th scope="col" className={th}>Berget</th>
             {visVarslet && <th scope="col" className={th}>Dagen før</th>}
             <th scope="col" className={th} title="Lufttemperatur, og bergtemperaturen modellen regner ut">Temp °C</th>
-            <th scope="col" className={`${th} pr-md text-right`}>Regn mm</th>
-            <th scope="col" className={th}>Sol</th>
+            <th scope="col" className={`${th} pr-xs text-right sm:pr-md`}>Regn mm</th>
+            <th scope="col" className={`${th} pl-xs sm:pl-0`}>Sol</th>
             <th scope="col" className={th}>Vind m/s</th>
             <th scope="col" className={`${th} text-right max-sm:hidden`} title="Luftfuktighet">Luftfukt.</th>
           </tr>
@@ -196,15 +202,20 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
             <tr key={t.kl} className={`border-b border-border-subtle last:border-0 ${t.na ? 'bg-surface-tinted font-medium' : ''}`}>
               <td className="py-[5px]">
                 {t.kl}
-                {t.na && <span className="ml-[4px] rounded-sm bg-accent-surface-default px-[4px] text-[10px] font-semibold text-accent-text-default">nå</span>}
+                {t.na && <span className="ml-[4px] rounded-sm max-sm:sr-only bg-accent-surface-default px-[4px] text-[10px] font-semibold text-accent-text-default">nå</span>}
               </td>
               <td><StatusMerke s={t.s} /></td>
-              {visVarslet && <td>{t.v ? <StatusMerke s={t.v} /> : <span className="text-xs text-text-subtle">ikke lagret</span>}</td>}
+              {visVarslet && <td>{t.v ? <StatusMerke s={t.v} /> : (
+                <span className="text-xs text-text-subtle">
+                  <span aria-hidden className="sm:hidden">–</span>
+                  <span className="max-sm:sr-only">ikke lagret</span>
+                </span>
+              )}</td>}
               <td title={`Luft ${t.temp}, berget ${t.berg}`}>
                 {t.temp}
-                <span className="ml-[6px] text-xs font-normal text-text-subtle">berg {t.berg}</span>
+                <span className="block whitespace-nowrap text-xs font-normal text-text-subtle sm:ml-[6px] sm:inline">berg {t.berg}</span>
               </td>
-              <td className="pr-md text-right">
+              <td className="pr-xs text-right sm:pr-md">
                 {t.regn && (
                   <span className="inline-flex items-center gap-[4px]" title={t.regnVegg ? 'Regnet treffer veggen' : 'Regnet treffer ikke veggen'}>
                     {t.regnVegg && <span aria-hidden className="inline-block h-[8px] w-[8px] rounded-full bg-[var(--color-accent-blue-400)]" />}
@@ -212,9 +223,9 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
                   </span>
                 )}
               </td>
-              <td><Sol sol={t.sol} mulig={t.solMulig} /></td>
+              <td className="pl-xs sm:pl-0"><Sol sol={t.sol} mulig={t.solMulig} /></td>
               <td title={t.vindTekst}>
-                <span className="inline-flex items-center gap-[6px]">
+                <span className="inline-flex items-center gap-[4px] sm:gap-[6px]">
                   <VindPil fra={t.vindFra} />
                   {t.vind}
                   <span className="sr-only">{t.vindTekst}</span>
@@ -250,7 +261,7 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
 // Status som farget merke, i samme farger som stripene i rutenettet; ordet står i merket
 function StatusMerke({ s }: { s: Status }) {
   return (
-    <span className={`inline-block w-[4.5rem] rounded-[3px] py-[1px] text-center text-xs font-medium ${MORK} ${statusFarge[s]}`}>
+    <span className={`inline-block w-[3rem] rounded-[3px] py-[1px] text-center text-[11px] font-medium sm:w-[4.5rem] sm:text-xs ${MORK} ${statusFarge[s]}`}>
       {STATUS_TEKST[s]}
     </span>
   )
@@ -334,7 +345,7 @@ function Sol({ sol, mulig }: { sol: boolean; mulig: boolean }) {
   return (
     <span className="inline-flex items-center gap-[6px]" title={sol ? 'Direkte sol på veggen' : 'Sola står foran veggen, men det er skyet'}>
       <span aria-hidden className={`inline-block h-[3px] w-[14px] ${sol ? 'bg-[var(--color-accent-red-400)]' : 'bg-[var(--color-accent-red-200)]'}`} />
-      {sol ? 'Direkte sol' : 'Skyet'}
+      <span className="max-sm:sr-only">{sol ? 'Direkte sol' : 'Skyet'}</span>
     </span>
   )
 }

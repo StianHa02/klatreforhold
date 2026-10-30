@@ -10,7 +10,7 @@ export default function StatusHero({ varsel, bokser }: { varsel: Varsel; bokser:
   const s = varsel.sammendrag
   const na = bokser[0]
   return (
-    <section aria-label="Status nå" className={`relative border border-border-subtle p-md pl-[calc(1rem+6px)] ${statusTint[s.status_na]}`}>
+    <section aria-label="Status nå" className={`relative border border-border-subtle p-sm pl-[calc(0.5rem+6px)] sm:p-md sm:pl-[calc(1rem+6px)] ${statusTint[s.status_na]}`}>
       <span aria-hidden className={`absolute inset-y-0 left-0 w-[6px] ${statusFarge[s.status_na]}`} />
       <p className="font-mabry text-[40px] leading-none">{STATUS_TEKST[s.status_na]}</p>
       {na?.tekst && <p className="mt-xs text-lg first-letter:uppercase">{na.tekst}</p>}
@@ -22,7 +22,7 @@ export default function StatusHero({ varsel, bokser }: { varsel: Varsel; bokser:
         </ul>
       )}
       <div className="mt-md">
-        <DagBokser bokser={bokser} paFarge />
+        <DagBokser bokser={bokser} paFarge skjulNaMobil />
       </div>
     </section>
   )

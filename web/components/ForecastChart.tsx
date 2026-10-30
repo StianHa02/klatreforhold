@@ -133,7 +133,7 @@ function Responsiv({ timer, Graf, na }: { timer: Time[]; Graf: typeof VannGraf; 
 
 export default function ForecastChart({ timer, naIndeks = 0 }: { timer: Time[]; naIndeks?: number }) {
   return (
-    <section className="kort p-md">
+    <section className="kort p-sm sm:p-md">
       <h2 className="seksjon mb-sm">Vann på veggen</h2>
       <Responsiv timer={timer} Graf={VannGraf} na={naIndeks} />
       <p className="mt-xs text-xs text-text-subtle">

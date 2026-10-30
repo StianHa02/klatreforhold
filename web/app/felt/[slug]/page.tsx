@@ -62,7 +62,7 @@ export default async function FeltSide({
         tidligere={tidligere}
         obs={(obsUke?.observasjoner ?? []).filter((o) => Date.parse(o.time) <= naTid.getTime())}
       />
-      <section className="kort p-md text-sm">
+      <section className="kort p-sm text-sm sm:p-md">
         <h2 className="seksjon">Tilbakemeldinger</h2>
         {obs && obs.antall > 0 ? (
           <>

@@ -12,7 +12,7 @@ export default function NesteDogn({ timer, naMs }: { timer: Time[]; naMs: number
   const summer = dager.map((d) => oppsummerDag(d, naMs))
   const rader = dager.map((d, i) => lagUkeRad(d, { iDag, naMs, merknad: summer[i].usikker ? 'usikkert' : undefined }))
   return (
-    <section className="kort p-md">
+    <section className="kort p-sm sm:p-md">
       <div className="flex items-center gap-xs">
         <h2 className="seksjon">Neste 4 døgn</h2>
         <Info>Lenger enn 2–3 døgn fram er varselet mer usikkert.</Info>
