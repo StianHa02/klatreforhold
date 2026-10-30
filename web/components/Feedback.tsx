@@ -32,12 +32,6 @@ function datoMinusDager(iso: string, dager: number) {
 
 const pad = (h: number) => String(h).padStart(2, '0')
 
-function beskrivDag(iso: string, iDag: string, iGar: string) {
-  if (iso === iDag) return 'i dag'
-  if (iso === iGar) return 'i går'
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
-}
-
 // Brukeren forteller hvordan det faktisk var, for nå eller et tidspunkt de siste dagene.
 // Timeknappene har en strek i fargen modellen mener timen hadde (eierens valg fra 2026-10-29; før det
 // var varselet skjult for ikke å påvirke svaret, se OVERLEVERING §8). Serveren slår opp varselet
@@ -104,11 +98,6 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
   return (
     <section className="kort p-md">
       <h2 className="seksjon">Har du vært der?</h2>
-      <p className="mt-xs text-sm text-text-subtle">
-        Hvordan var hovedveggen{' '}
-        {iDag && time === 'na' ? 'akkurat nå' : `${beskrivDag(dag, iDagIso, iGarIso)} kl ${pad(time === 'na' ? 12 : time)}–${pad((time === 'na' ? 12 : time) + 1)}`}?
-        Si fra også når det stemte.
-      </p>
       <fieldset className="mt-sm">
         <legend className="sr-only">Dag</legend>
         <div className="flex flex-wrap border-b-2 border-border-subtle">
@@ -161,9 +150,6 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
             )
           })}
         </div>
-        {TIMER.some((h) => statusPerTime[`${dag}T${pad(h)}`]) && (
-          <p className="mt-xs text-xs text-text-subtle">Streken under timen er det varselet sa.</p>
-        )}
       </fieldset>
       <label className="mt-sm flex flex-col gap-xs text-sm">
         Kommentar (valgfritt)

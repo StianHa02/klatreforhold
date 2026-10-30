@@ -260,11 +260,12 @@ export default async function OmModellen() {
       <Seksjon id="forbehold" tittel="Forbehold">
         <ul className="flex max-w-[65ch] list-disc flex-col gap-xs pl-lg text-sm leading-relaxed text-text-tinted">
           <li>Varselet er et anslag. Sjekk alltid fjellet selv før du klatrer, særlig etter mye regn og om vinteren.</li>
-          <li>Modellen ser ikke enkeltruter, trær rett foran veggen, sigestriper eller lav. Noen ruter tørker raskere enn resten av veggen, andre saktere.</li>
+          <li>Tørt, fuktig og vått gjelder hovedveggen på hvert felt. Modellen ser ikke enkeltruter, trær rett foran veggen, sigestriper eller lav. Noen ruter tørker raskere enn resten av veggen, andre saktere.</li>
+          <li>Parametrene for hvert felt, som hvor fort veggen tørker, er foreløpige og ikke kalibrert mot tilbakemeldinger ennå.</li>
           <li>Koordinatene for feltene er kartpunkter, ikke nøyaktig foten av veggen. Det kan forskyve når sola beregnes å treffe.</li>
         </ul>
         <p className="byline">
-          Værdata: MET Norway direkte og via Open-Meteo (CC BY 4.0). Historikkgrafene bruker arkiverte modellvarsler,
+          Værdata: MET Nordic direkte fra MET Norway, med Open-Meteo som reserve og for historikk (CC BY 4.0). Historikkgrafene bruker arkiverte modellvarsler,
           ikke målt bergfuktighet. Terreng: Kartverket DOM/DTM (CC BY 4.0).
           Modell {statistikk.modellversjon}, beregnet {statistikk.generert}; de første {statistikk.oppvarming_dogn} døgnene er utelatt som oppvarming.
         </p>

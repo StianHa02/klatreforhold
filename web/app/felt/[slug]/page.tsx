@@ -85,9 +85,6 @@ export default async function FeltSide({
           <p className="mt-xs text-text-subtle">Ingen tilbakemeldinger ennå. Har du vært der, si fra over.</p>
         )}
       </section>
-      <p className="text-xs text-text-subtle">
-        {varsel.ml_modell ? 'Fysisk modell med maskinlæring' : 'Fysisk modell'}, værdata fra {varsel.kilde}. {varsel.forbehold}
-      </p>
     </div>
   )
 }

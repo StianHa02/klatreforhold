@@ -57,11 +57,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <footer className="bg-accent-surface-default text-accent-text-default">
-          <div className="mx-auto flex max-w-container flex-col gap-xs px-md py-lg text-sm lg:px-lg">
-            <span className="font-mabry">Klatreforhold fra Bergen Klatreklubb (prototype)</span>
-            <span className="opacity-80">
-              Værdata fra MET Norway (CC BY 4.0) via Open-Meteo. Høydedata © Kartverket.
-            </span>
+          <div className="mx-auto flex max-w-container flex-col gap-md px-md py-lg text-sm sm:flex-row sm:items-end sm:justify-between lg:px-lg">
+            <div className="flex flex-col gap-[2px]">
+              <span className="flex items-center gap-sm font-mabry text-md">
+                Klatreforhold
+                <span className="rounded-sm border border-current px-[6px] font-sans text-xs opacity-80">prototype</span>
+              </span>
+              <span className="opacity-80">Et prosjekt fra Bergen Klatreklubb</span>
+            </div>
+            <p className="flex flex-col gap-[2px] opacity-80 sm:text-right">
+              <span>Værdata: MET Norway, direkte og via Open-Meteo (CC BY 4.0)</span>
+              <span>Høydedata: © Kartverket</span>
+            </p>
           </div>
         </footer>
       </body>
