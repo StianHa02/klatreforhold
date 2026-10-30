@@ -13,6 +13,8 @@ kommandoforslag og utestående oppgaver er historikk, ikke dagens arbeidsliste.
   Direkte MET Nordic foretrekkes over Open-Meteo, med fersk Nowcast-nedbør. Open-Meteo gir også innkjøring.
 - Databaseskjemaet har fem migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
   Tidligere notater rapporterer v2-migrasjonen kjørt 30. oktober; dette er ikke en ny kontroll av produksjon.
+  En sjette, `vaer_og_rydding`, er prøvd mot lokal Supabase, men ikke kjørt i produksjon per 30. oktober:
+  værinput til trening (`vaer`) og ukentlig arkivrydding. Se [deployguiden](DEPLOY.md).
 - MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. Verdien arkiveres ikke
   i `varsel` og vises ikke som prosent på nettsiden. En importfeil i MEPS-modulen er rettet i oppryddingen.
 - Nettsiden viser tørt/fuktig/vått og omgjør modellens is/snø til vått. Skjemaet har tre valg.
@@ -49,7 +51,8 @@ av interaksjoner. Ingen produksjonstjenester ble brukt. React og modellkoden er 
 2. Samle faktiske observasjoner fra uavhengige regnepisoder og valider tørketid, geometri og vinterfysikk.
 3. Kalibrer ved tilstrekkelig grunnlag; hold dev/test-data og syntetiske etiketter utenfor aktivering.
 4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
-5. Mål arkivvekst og velg lagringstid før kvoten nås. Ingen automatisk arkivrydding er innført her.
+5. Kjør `vaer_og_rydding`-migrasjonen i produksjon og følg med på databasestørrelsen.
+   Lagringstiden (120 dager, ledetid 0/3/6/12/24/48) står i [deployguiden](DEPLOY.md).
 6. Vurder resterende forskningsforslag fra RESEARCH_2: delvis pooling, ordinal modell,
    pålitelighetsdiagrammer og faste feltobservasjoner. Énparameterkalibrering og hendelsesdeling er innført.
 

@@ -78,6 +78,23 @@ Nettsiden velger Supabase når begge nøklene er satt. Sett `KLATREFORHOLD_DATAK
 `web/.env.local` for å bruke lokal modellkode også med nøkler; arkiv/statistikk leses fortsatt fra
 Supabase. Docker bruker `api` som standard; sett variabelen i rotens `.env` for å overstyre det.
 
+### Lokal Supabase (for migrasjoner)
+
+Nye migrasjoner prøves mot en lokal database før de kjøres i produksjon. Krever Docker og Supabase CLI.
+Portene er 55321-55329, så stacken ikke kolliderer med andre lokale Supabase-prosjekter. Fra repo-roten:
+
+```sh
+supabase start                      # kjører alle migrasjoner på en tom database
+supabase migration up --local       # ny migrasjon på den lokale databasen
+supabase db reset --local           # alt på nytt fra null (+ supabase/seed.sql hvis den finnes)
+supabase status -o env              # API_URL og SERVICE_ROLE_KEY for SUPABASE_URL / -KEY
+```
+
+Pek `SUPABASE_URL` og `SUPABASE_SERVICE_ROLE_KEY` mot den lokale stacken for å kjøre timesjobben uten å
+røre produksjon. Kopi av produksjonsdata (valgfritt, krever `supabase login` og `supabase link`):
+`supabase db dump --linked --data-only -f supabase/seed.sql`. Filen har brukernes kommentarer og er i `.gitignore`.
+Trening bruker fortsatt produksjonsdatabasen; den lokale er tom uten seed.
+
 ## Kontroller
 
 Med aktivert Python-miljø, fra repo-roten:
@@ -121,10 +138,13 @@ Se [modellguiden](docs/MODELL_V2.md) for valideringskrav. `train.py --save` lagr
 Eksempler fra `modeling/` (erstatt `data/raw/<vaer>.csv` med feltets historikk):
 
 ```sh
-python scripts/evaluate.py --config config/ekstraveggen.yaml --weather 'data/raw/<vaer>.csv' --labels supabase
-python scripts/calibrate.py --config config/ekstraveggen.yaml --weather 'data/raw/<vaer>.csv' --labels supabase --write
-python scripts/train.py --config config/ekstraveggen.yaml --weather 'data/raw/<vaer>.csv' --labels supabase --save
+python scripts/evaluate.py --config config/ekstraveggen.yaml --weather supabase 'data/raw/<vaer>.csv' --labels supabase
+python scripts/calibrate.py --config config/ekstraveggen.yaml --weather supabase 'data/raw/<vaer>.csv' --labels supabase --write
+python scripts/train.py --config config/ekstraveggen.yaml --weather supabase 'data/raw/<vaer>.csv' --labels supabase --save
 ```
+
+`--weather supabase` henter været timesjobben faktisk brukte (`vaer`, fylles fra migrasjonen er kjørt). Første kilde
+vinner per time, så CSV-en fyller bare tiden før `vaer` startet og hull der timesjobben sto stille over 72 t.
 
 PyTorch er valgfritt og installeres separat for lokal trening (`--torch`); timesjobben bruker sklearn.
 
