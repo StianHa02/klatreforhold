@@ -11,7 +11,7 @@ function Merke({ x, y, n }: { x: number; y: number; n: number }) {
   return (
     <g>
       <circle cx={x} cy={y} r={16} fill="var(--color-surface-default)" stroke={BLEKK} strokeWidth={2} />
-      <text x={x} y={y + 6.5} textAnchor="middle" fontSize={19} fontWeight={600} fill={BLEKK}>{n}</text>
+      <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={19} fontWeight={600} fill={BLEKK}>{n}</text>
     </g>
   )
 }
@@ -38,47 +38,54 @@ export default function VeggSnitt() {
 
         {/* bakke og jord/vegetasjon over veggen */}
         <path d="M0,372 L720,372 L720,400 L0,400 Z" fill="var(--color-light-700)" />
-        <path d="M470,40 C520,22 600,30 720,18 L720,64 L488,64 Z" fill="var(--color-accent-green-50)" stroke="var(--color-accent-green-400)" strokeOpacity={0.5} />
+        <path d="M482,44 C530,24 610,32 720,20 L720,64 L500,64 Z" fill="var(--color-accent-green-50)" stroke="var(--color-accent-green-400)" strokeOpacity={0.5} />
 
-        {/* veggen: ujevn front med tak og en sprekk */}
-        <path d="M720,64 L488,64 L478,120 L494,124 L470,190 L488,196 L466,262 L482,268 L462,372 L720,372 Z" fill="url(#berg)" stroke={BLEKK} strokeWidth={1.5} />
+        {/* veggen: hylle øverst, tak midt på, svakt overhengende nederst */}
+        <path d="M720,64 L500,64 L494,146 L452,132 L450,150 L446,230 L506,238 L488,300 L470,372 L720,372 Z" fill="url(#berg)" stroke={BLEKK} strokeWidth={1.5} strokeLinejoin="round" />
         {/* vannfilm langs fronten */}
-        <path d="M484,66 L474,120 L490,124 L466,190 L484,196 L462,262 L478,268 L458,370" fill="none" stroke={BLÅ} strokeWidth={3} strokeOpacity={0.55} />
-        {/* tak/hylle med vann */}
-        <path d="M470,190 L488,196 L520,196 L520,186 Z" fill={BLÅ_LYS} />
-        <path d="M494,124 L478,120 L478,124 Z" fill={BLÅ_LYS} />
-        {/* sprekk med siging */}
-        <path d="M560,64 C552,110 560,150 548,200 C540,232 548,250 540,262" fill="none" stroke={BLEKK} strokeWidth={1.2} />
-        <path d="M556,70 C548,116 556,152 544,202 C536,234 544,250 536,262" fill="none" stroke={BLÅ} strokeWidth={2} strokeDasharray="2 5" />
+        <path d="M497,66 L491,142 M449,135 L447,150 L443,228 M502,241 L485,300 L467,370" fill="none" stroke={BLÅ} strokeWidth={3} strokeOpacity={0.55} strokeLinecap="round" />
+        {/* vann som blir liggende på hylla */}
+        <path d="M467,137 L494,137 L494,146 Z" fill={BLÅ} fillOpacity={0.8} />
+        {/* vått under taket, med dråper */}
+        <path d="M449,232.5 L504,240" stroke={BLÅ} strokeWidth={3} strokeOpacity={0.55} strokeLinecap="round" />
+        {[462, 478, 494].map((x, i) => (
+          <path key={x} d={`M${x},${235 + i * 2.2} q-4.5,8 0,11 q4.5,-3 0,-11 Z`} fill={BLÅ} />
+        ))}
+        {/* sprekk fra jorda ned til hylla, med siging */}
+        <path d="M562,64 L556,84 L560,96 L540,112 L532,128 L514,134 L494,146" fill="none" stroke={BLEKK} strokeWidth={1.5} strokeLinejoin="round" />
+        <path d="M567,68 L561,86 L565,99 L545,115 L537,131 L519,138 L500,148" fill="none" stroke={BLÅ} strokeWidth={2} strokeDasharray="2 5" strokeLinejoin="round" />
 
         {/* sol */}
         <circle cx={70} cy={40} r={20} fill={GUL} />
-        {[0, 1, 2].map((i) => (
-          <line key={i} x1={96 + i * 10} y1={52 + i * 10} x2={440 - i * 30} y2={196 + i * 50} stroke={GUL} strokeWidth={2} strokeDasharray="6 6" />
+        {[[488, 90], [486, 114], [466, 132]].map(([x2, y2], i) => (
+          <line key={i} x1={96 + i * 10} y1={52 + i * 10} x2={x2} y2={y2} stroke={GUL} strokeWidth={2} strokeDasharray="6 6" />
         ))}
 
         {/* vind og slagregn fra vest */}
         {drops.map((d, i) => (
           <line key={i} x1={d.x} y1={d.y} x2={d.x + 16} y2={d.y + 12} stroke={BLÅ} strokeWidth={2} strokeLinecap="round" />
         ))}
-        <path d="M30,250 C130,236 250,252 430,238" fill="none" stroke={DEMPET} strokeWidth={1.5} markerEnd="url(#pil)" />
-        <path d="M30,282 C150,270 260,290 420,276" fill="none" stroke={DEMPET} strokeWidth={1.5} markerEnd="url(#pil)" />
+        <path d="M30,272 C140,258 260,280 468,266" fill="none" stroke={DEMPET} strokeWidth={1.5} markerEnd="url(#pil)" />
+        <path d="M30,304 C150,292 280,312 462,300" fill="none" stroke={DEMPET} strokeWidth={1.5} markerEnd="url(#pil)" />
 
         {/* fordampning og kondens ved veggen */}
-        <path d="M452,330 C432,320 440,306 420,298" fill="none" stroke={BLÅ} strokeWidth={1.5} strokeDasharray="3 3" markerEnd="url(#pilblå)" />
-        <path d="M420,348 C436,350 440,358 452,356" fill="none" stroke={BLÅ} strokeWidth={1.5} markerEnd="url(#pilblå)" />
+        <path d="M476,336 C458,330 460,318 444,318" fill="none" stroke={BLÅ} strokeWidth={1.5} strokeDasharray="3 3" markerEnd="url(#pilblå)" />
+        <path d="M438,356 C452,358 458,363 468,362" fill="none" stroke={BLÅ} strokeWidth={1.5} markerEnd="url(#pilblå)" />
 
         {/* temperatur i berget */}
         <path d="M600,300 L600,250" stroke={RØD} strokeWidth={4} strokeLinecap="round" />
         <circle cx={600} cy={308} r={8} fill={RØD} />
 
+        {/* 3 peker på både hylla og taket */}
+        <path d="M423,176 L466,141 M424,197 L462,236" stroke={DEMPET} strokeWidth={1} strokeDasharray="2 3" />
+
         <Merke x={170} y={110} n={1} />
-        <Merke x={500} y={92} n={2} />
-        <Merke x={538} y={180} n={3} />
-        <Merke x={590} y={50} n={4} />
-        <Merke x={250} y={170} n={5} />
-        <Merke x={300} y={262} n={6} />
-        <Merke x={402} y={322} n={7} />
+        <Merke x={440} y={60} n={2} />
+        <Merke x={410} y={186} n={3} />
+        <Merke x={604} y={104} n={4} />
+        <Merke x={300} y={44} n={5} />
+        <Merke x={300} y={250} n={6} />
+        <Merke x={414} y={338} n={7} />
         <Merke x={628} y={276} n={8} />
       </svg>
       <figcaption className="sr-only">Tverrsnitt av veggen. Forklaring i lista under.</figcaption>
@@ -87,12 +94,12 @@ export default function VeggSnitt() {
 }
 
 export const FORKLARING: { n: number; tittel: string; tekst: string }[] = [
-  { n: 1, tittel: 'Slagregn', tekst: 'Regn faller ikke rett ned på en loddrett vegg. Det er vinden som driver det inn, så det som teller er hvor hardt det blåser rett mot veggen.' },
-  { n: 2, tittel: 'Vannfilm', tekst: 'En tynn film på overflaten, rundt en tiendedels millimeter. Det er den du kjenner på fingrene. Den tørker fort når forholdene er gode.' },
-  { n: 3, tittel: 'Tak og hyller', tekst: 'Vann blir liggende i tak, hyller og sprekker. Det tørker saktere enn filmen, og er grunnen til at det kan være vått i tak selv om veggen ser tørr ut.' },
-  { n: 4, tittel: 'Siging', tekst: 'Etter mye regn over flere dager renner det vann ut fra jord og sprekker over veggen. Det kan holde på i dager etter at det har sluttet å regne.' },
-  { n: 5, tittel: 'Sol på veggen', tekst: 'Sola varmer berget, og varmt berg tørker raskere. Vi regner ut når sola faktisk treffer hver vegg ut fra retningen og terrenget rundt.' },
-  { n: 6, tittel: 'Vind og tørr luft', tekst: 'Vind og lav luftfuktighet tar med seg fuktigheten fra overflaten. I fuktig Bergensluft kan det samme vannet bruke et døgn på å forsvinne.' },
-  { n: 7, tittel: 'Fordampning og kondens', tekst: 'Er berget kaldere enn duggpunktet, kondenserer det vann på det: fjellet «svetter». Ellers fordamper vannet.' },
-  { n: 8, tittel: 'Bergtemperatur', tekst: 'Berget henger etter lufta. Kommer det varm, fuktig luft etter en kald periode, er fjellet fortsatt kaldt, og det blir vått uten at det regner.' },
+  { n: 1, tittel: 'Slagregn', tekst: 'Regn som faller rett ned, treffer knapt en loddrett vegg. Det er vinden som driver det inn, så det som teller er hvor hardt det blåser mot veggen.' },
+  { n: 2, tittel: 'Vannfilm', tekst: 'En tynn film på overflaten, rundt en tiendedels millimeter. Det er den du kjenner på fingrene, og den tørker fort når forholdene er gode.' },
+  { n: 3, tittel: 'Tak og hyller', tekst: 'Vann blir liggende på hyller og i sprekker, og henger igjen under tak. Det tørker saktere enn filmen, og er grunnen til at det kan være vått i taket selv om resten av veggen er tørr.' },
+  { n: 4, tittel: 'Siging', tekst: 'Etter flere dager med regn renner det vann ut av jorda og sprekkene over veggen. Det kan holde på i dagevis etter at det har sluttet å regne.' },
+  { n: 5, tittel: 'Sol på veggen', tekst: 'Sola varmer berget, og varmt berg tørker raskere. Ut fra retningen og terrenget rundt regner vi ut når sola faktisk treffer hver vegg.' },
+  { n: 6, tittel: 'Vind og tørr luft', tekst: 'Vind og tørr luft tar med seg fuktigheten fra overflaten. I rå Bergensluft kan det samme vannet bruke et døgn på å forsvinne.' },
+  { n: 7, tittel: 'Fordampning og kondens', tekst: 'Er berget kaldere enn duggpunktet, kondenserer det vann på overflaten, og fjellet «svetter». Er det varmere, fordamper vannet.' },
+  { n: 8, tittel: 'Bergtemperatur', tekst: 'Berget henger etter lufta. Kommer det varm, fuktig luft etter en kald periode, er fjellet fortsatt kaldt, og veggen blir våt uten at det regner.' },
 ]
