@@ -25,3 +25,4 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 supabase/.temp/
+TODO.md
