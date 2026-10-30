@@ -21,20 +21,9 @@ export default function VisningsBryter({ start, varsel, liste }: { start: Visnin
 
   return (
     <div className="flex flex-col gap-sm">
-      {/* Samme knappestil som Knapp i Ukerutenett og Chip i tilbakemeldingsskjemaet */}
-      <div role="group" aria-label="Visning" className="flex gap-xs">
+      <div role="group" aria-label="Visning" className="flex border-b-2 border-border-subtle">
         {VALG.map((o) => (
-          <button
-            key={o.verdi}
-            type="button"
-            aria-pressed={visning === o.verdi}
-            onClick={() => velg(o.verdi)}
-            className={`focus cursor-pointer rounded-lg border-2 px-sm py-xs text-sm transition ${
-              visning === o.verdi
-                ? 'border-accent-border-default bg-accent-surface-default text-accent-text-default'
-                : 'border-border-default bg-surface-default hover:bg-surface-tinted'
-            }`}
-          >
+          <button key={o.verdi} type="button" aria-pressed={visning === o.verdi} onClick={() => velg(o.verdi)} className="fane">
             {o.tekst}
           </button>
         ))}

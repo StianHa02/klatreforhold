@@ -1,10 +1,13 @@
 // Typer og henting fra klatreforhold-API-et (Python, FastAPI).
-export type Status = 'tort' | 'fuktig' | 'vatt' | 'is'
+// Nettsiden viser tre tilstander. Modellen regner også ut «is» (is/snø på veggen), men det er like lite
+// klatrbart som vått, så kilde.ts gjør det om til «vatt» før det når komponentene.
+export type Status = 'tort' | 'fuktig' | 'vatt'
 
 export type Time = {
   tid: string
   status: Status
   status_tekst: string
+  is_sno?: boolean // modellen sa «is» (is/snø på veggen); vises som vått
   tort: boolean
   p_vatt: number | null
   vann_mm: number
@@ -78,11 +81,9 @@ export const statusFarge: Record<Status, string> = {
   tort: 'bg-forhold-tort',
   fuktig: 'bg-forhold-fuktig',
   vatt: 'bg-forhold-vatt',
-  is: 'bg-forhold-is',
 }
 export const statusTint: Record<Status, string> = {
   tort: 'bg-forhold-tort-tinted',
   fuktig: 'bg-forhold-fuktig-tinted',
   vatt: 'bg-forhold-vatt-tinted',
-  is: 'bg-forhold-is-tinted',
 }

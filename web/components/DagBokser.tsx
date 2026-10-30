@@ -10,7 +10,7 @@ export default function DagBokser({ bokser, paFarge = false }: { bokser: DagBoks
       {bokser.map((b) => (
         <li
           key={b.nokkel}
-          className={`flex min-w-0 flex-col overflow-hidden rounded-lg text-center ${paFarge ? 'border-2 border-white shadow-sm' : 'border border-border-subtle'} ${b.status ? statusTint[b.status] : 'bg-surface-default'}`}
+          className={`flex min-w-0 flex-col overflow-hidden text-center ${paFarge ? 'border-2 border-white shadow-sm' : 'border border-border-subtle'} ${b.status ? statusTint[b.status] : 'bg-surface-default'}`}
         >
           <span aria-hidden className={`h-[4px] shrink-0 ${b.status ? statusFarge[b.status] : 'bg-surface-tinted'}`} />
           <span className="truncate px-[2px] pt-[4px] text-[11px] leading-tight text-text-subtle">{b.navn}</span>

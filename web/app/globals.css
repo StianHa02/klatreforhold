@@ -29,11 +29,9 @@
   --color-accent-yellow-200: hsl(48, 100%, 78%);
   --color-accent-yellow-50: hsl(48, 100%, 98%);
 
-  /* Nye for tørt/is (finnes ikke i nettføreren), stemt mot BKK-aksentene */
+  /* Ny for tørt (finnes ikke i nettføreren), stemt mot BKK-aksentene */
   --color-accent-green-400: hsl(150, 70%, 40%);
   --color-accent-green-50: hsl(150, 70%, 93%);
-  --color-accent-violet-400: hsl(265, 85%, 66%);
-  --color-accent-violet-50: hsl(265, 85%, 95%);
 }
 
 @theme {
@@ -84,8 +82,6 @@
   --color-forhold-fuktig-tinted: var(--color-accent-yellow-50);
   --color-forhold-vatt: var(--color-accent-blue-400);
   --color-forhold-vatt-tinted: var(--color-accent-blue-50);
-  --color-forhold-is: var(--color-accent-violet-400);
-  --color-forhold-is-tinted: var(--color-accent-violet-50);
 
   --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
 
@@ -97,7 +93,8 @@
   --spacing-md: 1rem;
   --spacing-lg: 2rem;
   --spacing-xl: 4rem;
-  --spacing-container: 900px;
+  --spacing-container: 1400px; /* topp og bunn, som i nettføreren */
+  --spacing-innhold: 900px; /* innholdet: varselet leses best smalt */
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -146,11 +143,40 @@
   font-weight: 500;
 }
 
+.seksjon {
+  font-family: var(--font-mabry);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .byline {
   font-size: var(--text-sm);
   line-height: 1.4;
   font-weight: 400;
   color: var(--color-text-subtle);
+}
+
+/* Komponentstil fra nettføreren: flate kort uten runde hjørner (Card.tsx), knapper som StyledButton.tsx */
+@utility kort {
+  @apply border border-border-subtle bg-surface-default;
+}
+
+@utility knapp {
+  @apply focus inline-flex cursor-pointer items-center justify-center gap-sm rounded-lg border-2 border-accent-border-default px-md py-xs transition hover:bg-background-tinted disabled:cursor-default disabled:opacity-50;
+}
+
+@utility knapp-primar {
+  @apply focus inline-flex cursor-pointer items-center justify-center gap-sm rounded-lg border-2 border-accent-border-default bg-accent-surface-default px-md py-xs text-accent-text-default transition hover:bg-accent-surface-tinted disabled:cursor-default disabled:opacity-50;
+}
+
+/* Fane i nettførerens StyledTabs: valgt fane får blå strek under */
+@utility fane {
+  @apply focus -mb-[2px] cursor-pointer border-b-2 border-transparent px-sm py-xs text-sm text-text-subtle transition hover:text-text-default aria-pressed:border-b-state-info aria-pressed:text-text-default;
+}
+
+@utility lenke {
+  @apply focus rounded-sm underline decoration-border-strong decoration-2 underline-offset-4 hover:decoration-text-default;
 }
 
 @utility focus {

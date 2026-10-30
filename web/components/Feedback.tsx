@@ -5,12 +5,12 @@ import { type ButtonHTMLAttributes, useMemo, useState } from 'react'
 import { type Status, type Time, statusFarge } from '@/lib/api'
 import { STATUS_TEKST } from '@/lib/dager'
 
+// Tre valg: is og snø regnes som vått (ingen drar for å klatre på is uansett)
 type Valg = Status
 const VALG: { verdi: Valg; tekst: string; farge: string }[] = [
   { verdi: 'tort', tekst: 'Tørt', farge: 'bg-forhold-tort' },
   { verdi: 'fuktig', tekst: 'Fuktig', farge: 'bg-forhold-fuktig' },
   { verdi: 'vatt', tekst: 'Vått', farge: 'bg-forhold-vatt' },
-  { verdi: 'is', tekst: 'Is/snø', farge: 'bg-forhold-is' },
 ]
 const TIMER = Array.from({ length: 18 }, (_, i) => i + 6) // kl 06–23
 
@@ -89,39 +89,41 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
       const riktig = data.lagret.riktig
       setSvar({
         ok: true,
-        tekst: riktig === 1 ? 'Takk! Varselet stemte.' : riktig === 0 ? 'Takk! Varselet bommet, det hjelper oss å forbedre det.' : 'Takk!',
+        tekst: riktig === 1 ? 'Takk! Varselet stemte.' : riktig === 0 ? 'Takk! Varselet bommet, så dette hjelper oss å forbedre det.' : 'Takk!',
       })
       setKommentar('')
       router.refresh()
     } catch (error) {
       console.log(error)
-      setSvar({ ok: false, tekst: 'Noe gikk galt. Prøv igjen.' })
+      setSvar({ ok: false, tekst: 'Tilbakemeldingen ble ikke lagret. Prøv igjen.' })
     } finally {
       setSender(false)
     }
   }
 
   return (
-    <section className="rounded-xl border border-border-subtle bg-surface-default p-md">
-      <h2 className="h3">Har du vært på feltet?</h2>
+    <section className="kort p-md">
+      <h2 className="seksjon">Har du vært der?</h2>
       <p className="mt-xs text-sm text-text-subtle">
-        Si hvordan hovedveggen faktisk var, også om det var tørt. Enkeltruter kan avvike.
+        Hvordan var hovedveggen{' '}
+        {iDag && time === 'na' ? 'akkurat nå' : `${beskrivDag(dag, iDagIso, iGarIso)} kl ${pad(time === 'na' ? 12 : time)}–${pad((time === 'na' ? 12 : time) + 1)}`}?
+        Si fra også når det stemte.
       </p>
-      <fieldset className="mt-md">
-        <legend className="mb-xs text-sm">Dag</legend>
-        <div className="flex flex-wrap gap-xs">
-          <Chip valgt={iDag && !annenDag} onClick={() => velgDag(iDagIso)}>I dag</Chip>
-          <Chip valgt={dag === iGarIso && !annenDag} onClick={() => velgDag(iGarIso)}>I går</Chip>
-          <Chip valgt={annenDag} onClick={() => { setAnnenDag(true); if (iDag || dag === iGarIso) velgDag(datoMinusDager(iDagIso, 2)) }}>
+      <fieldset className="mt-sm">
+        <legend className="sr-only">Dag</legend>
+        <div className="flex flex-wrap border-b-2 border-border-subtle">
+          <Fane valgt={iDag && !annenDag} onClick={() => velgDag(iDagIso)}>I dag</Fane>
+          <Fane valgt={dag === iGarIso && !annenDag} onClick={() => velgDag(iGarIso)}>I går</Fane>
+          <Fane valgt={annenDag} onClick={() => { setAnnenDag(true); if (iDag || dag === iGarIso) velgDag(datoMinusDager(iDagIso, 2)) }}>
             Tidligere
-          </Chip>
+          </Fane>
         </div>
         {annenDag && (
           <label className="mt-sm flex flex-col gap-xs text-sm">
-            <span className="text-text-subtle">Velg dato (inntil {MAKS_DAGER_BAKOVER} dager tilbake)</span>
+            <span className="text-text-subtle">Dato (inntil {MAKS_DAGER_BAKOVER} dager tilbake)</span>
             <input
               type="date"
-              className="focus-box rounded-md border border-border-default bg-surface-default p-sm sm:max-w-[16rem]"
+              className="focus-box border-2 border-border-default bg-surface-default px-sm py-xs sm:max-w-[16rem]"
               value={dag}
               min={tidligst}
               max={iDagIso}
@@ -135,7 +137,7 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
           </label>
         )}
       </fieldset>
-      <fieldset className="mt-md">
+      <fieldset className="mt-sm">
         <legend className="mb-xs text-sm">Når på dagen</legend>
         {iDag && (
           <Chip valgt={time === 'na'} onClick={() => setTime('na')} className="mb-xs w-full sm:w-auto">
@@ -152,53 +154,45 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
                 disabled={iDag && h > naTime}
                 onClick={() => setTime(h)}
                 farge={modell}
-                aria-label={`kl ${pad(h)}–${pad(h + 1)}${modell ? `, modellen: ${STATUS_TEKST[modell].toLowerCase()}` : ''}`}
+                aria-label={`kl ${pad(h)}–${pad(h + 1)}${modell ? `, varselet: ${STATUS_TEKST[modell].toLowerCase()}` : ''}`}
               >
                 {pad(h)}
               </Chip>
             )
           })}
         </div>
-        <p className="mt-xs text-xs text-text-subtle">
-          Valgt: {beskrivDag(dag, iDagIso, iGarIso)}, {time === 'na' ? 'akkurat nå' : `kl ${pad(time)}–${pad(time + 1)}`}
-        </p>
         {TIMER.some((h) => statusPerTime[`${dag}T${pad(h)}`]) && (
-          <p className="mt-xs text-xs text-text-subtle">
-            Streken under timen viser hva modellen mener (grønn tørt, gul fuktig, blå vått). Si fra uansett om det stemte eller ikke.
-          </p>
+          <p className="mt-xs text-xs text-text-subtle">Streken under timen er det varselet sa.</p>
         )}
       </fieldset>
       <label className="mt-sm flex flex-col gap-xs text-sm">
         Kommentar (valgfritt)
         <input
-          className="focus-box rounded-md border border-border-default bg-surface-default p-sm"
+          className="focus-box border-2 border-border-default bg-surface-default px-sm py-xs"
           value={kommentar}
           maxLength={500}
           placeholder="F.eks. tørt nederst, fuktig i toppen"
           onChange={(e) => setKommentar(e.target.value)}
         />
       </label>
-      <p className="mt-md text-sm">Hvordan var fjellet?</p>
-      <div className="mt-xs grid grid-cols-2 gap-sm sm:grid-cols-4">
+      <div className="mt-md grid grid-cols-3 gap-sm">
         {VALG.map((v) => (
-          <button
-            key={v.verdi}
-            type="button"
-            disabled={sender}
-            onClick={() => send(v.verdi)}
-            className="flex items-center justify-center gap-sm focus cursor-pointer rounded-lg border-2 border-accent-border-default p-sm font-medium transition hover:bg-background-tinted disabled:cursor-default disabled:opacity-50"
-          >
+          <button key={v.verdi} type="button" disabled={sender} onClick={() => send(v.verdi)} className="knapp font-medium">
             <span className={`inline-block h-md w-md rounded-full ${v.farge}`} aria-hidden />
             {v.tekst}
           </button>
         ))}
       </div>
-      {svar && <p className={`mt-sm text-sm ${svar.ok ? 'text-text-tinted' : 'text-state-error'}`}>{svar.tekst}</p>}
+      {svar && <p role="status" className={`mt-sm text-sm ${svar.ok ? 'text-text-tinted' : 'text-state-error'}`}>{svar.tekst}</p>}
     </section>
   )
 }
 
-// Valgknapp i BKK-stil: mørk når valgt, ellers lys med kant. `farge`: strek i modellens status for timen.
+function Fane({ valgt, ...rest }: { valgt: boolean } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="button" aria-pressed={valgt} className="fane" {...rest} />
+}
+
+// Timeknapp i BKK-stil: mørk når valgt, ellers lys med kant. `farge`: strek i modellens status for timen.
 function Chip({ valgt, farge, className = '', children, ...rest }: { valgt: boolean; farge?: Status } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button

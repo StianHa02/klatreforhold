@@ -19,6 +19,7 @@ export default function Historikk({ timer, naMs, tidligere, obs }: {
   const rader = delIDager(fortid)
     .filter((d) => d.dato >= plussDager(iDag, -6))
     .map((d) => lagUkeRad(d, { iDag, naMs, varslet, meldinger: obs }))
+    .reverse() // i dag øverst, så går det bakover
 
   const meldinger = rader.flatMap((r) => r.meldinger)
   const telle = (felt: 'etter' | 'for') => {
@@ -29,24 +30,25 @@ export default function Historikk({ timer, naMs, tidligere, obs }: {
   const f = telle('for')
   const treff = meldinger.length
     ? {
-        etter: `I etterkant stemte modellen med ${e.ok} av ${e.n} tilbakemeldinger (tørt mot ikke tørt).`,
+        etter: `Stemte med ${e.ok} av ${e.n} tilbakemeldinger.`,
         for: f.n
-          ? `Dagen før stemte varselet med ${f.ok} av ${f.n} tilbakemeldinger${meldinger.length > f.n ? ` (${meldinger.length - f.n} uten lagret varsel)` : ''}.`
-          : 'Varselet dagen før var ikke lagret for noen av tilbakemeldingene.',
+          ? `Stemte med ${f.ok} av ${f.n} tilbakemeldinger${meldinger.length > f.n ? ` (${meldinger.length - f.n} uten lagret varsel)` : ''}.`
+          : 'Ingen lagrede varsler for disse tilbakemeldingene.',
       }
     : undefined
 
   return (
-    <section className="rounded-xl border border-border-subtle bg-surface-default p-md">
-      <h2 className="h3">Siste 7 døgn</h2>
-      <p className="mt-xs text-sm">{regnTekst(sisteRegn(fortid, naMs), iDag)}</p>
+    <section className="kort p-md">
+      <h2 className="seksjon">Siste 7 døgn</h2>
+      <p className="byline">Hvordan veggen har vært, med klatrernes meldinger</p>
+      <p className="mt-sm">{regnTekst(sisteRegn(fortid, naMs), iDag)}</p>
       <div className="mt-sm">
         <Ukerutenett
           rader={rader}
           bryter={tidligere.length > 0}
           tekster={{
-            etter: 'Fargene viser modellen kjørt i etterkant på været slik det ble.',
-            for: 'Fargene viser varselet slik det så ut ca. 24 timer før. Grått: ikke lagret (arkivet startet 27. oktober 2026).',
+            etter: 'Modellen kjørt på været slik det faktisk ble.',
+            for: 'Varselet slik det så ut ca. 24 timer før. Grått: ikke lagret.',
           }}
           treff={treff}
         />

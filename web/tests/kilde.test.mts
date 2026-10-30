@@ -26,6 +26,12 @@ assert(v!.sammendrag.status_na === v!.timer[0].status, 'sammendrag følger førs
 assert(v!.utdatert === false, 'ikke utdatert 2 t etter generering')
 const gammel = await k.hentVarsel('ekstraveggen', '2026-10-26T20:00:00+01:00')
 assert(gammel!.utdatert === true, 'utdatert etter 3+ timer')
+// Modellens «is» vises som vått, og timen merkes så dagboksen kan si «is/snø»
+assert(k.tilVisning('is') === 'vatt' && k.tilVisning('tort') === 'tort' && k.tilVisning('fuktig') === 'fuktig', 'is blir vått')
+const isTime = { ...lagret.timer[0], status: 'is', status_tekst: 'Is/snø' }
+const iset = k.vinduFraNa({ ...lagret, timer: [isTime, ...lagret.timer.slice(1)] }, new Date(Date.parse(isTime.tid) - 1800e3))
+assert(iset.timer[0].status === 'vatt' && iset.timer[0].status_tekst === 'Vått' && iset.timer[0].is_sno === true, 'istime vises som vått')
+assert(iset.sammendrag.status_na === 'vatt', 'sammendraget sier vått når modellen sier is')
 const felt = await k.hentFelt()
 assert(felt?.[0].slug === 'ekstraveggen', 'felt fra varsel_siste')
 const obs = await k.hentObservasjoner('ekstraveggen')

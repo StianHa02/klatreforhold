@@ -13,17 +13,18 @@ export default function NesteDogn({ timer, naMs }: { timer: Time[]; naMs: number
   const forsteTorre = dager.findIndex((_, i) => summer[i].status === 'tort')
   const navn = forsteTorre >= 0 ? dagNavn(dager[forsteTorre].dato, iDag) : ''
   return (
-    <section className="rounded-xl border border-border-subtle bg-surface-default p-md">
-      <h2 className="h3">Neste 4 døgn</h2>
-      <p className="mt-xs text-sm">
+    <section className="kort p-md">
+      <h2 className="seksjon">Neste 4 døgn</h2>
+      <p className="byline">Varselet framover, time for time</p>
+      <p className="mt-sm">
         {forsteTorre >= 0
           ? `Neste tørre vindu: ${navn.startsWith('I ') ? navn.toLowerCase() : navn} ${summer[forsteTorre].tekst}${summer[forsteTorre].usikker ? ' (usikkert)' : ''}.`
-          : 'Ikke noe tørt vindu på minst tre timer i klatretiden (kl 08–21) de neste fire dagene.'}
+          : 'Ingen tørre vinduer på minst tre timer (kl 08–21) de neste fire dagene.'}
       </p>
       <div className="mt-sm">
         <Ukerutenett
           rader={rader}
-          tekster={{ etter: 'Fargene viser varselet time for time. Etter ca. 2.5 døgn bygger det på ECMWF (9 km) og er mer usikkert.' }}
+          tekster={{ etter: 'Lenger enn 2–3 døgn fram er varselet mer usikkert.' }}
         />
       </div>
     </section>
