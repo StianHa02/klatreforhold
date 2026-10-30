@@ -9,7 +9,7 @@ import { BOKSTAV, SKALA_MM, STATUS_TEKST, type UkeRad, biter, pad } from '@/lib/
 // Trykk på en dag for time for time (tabellen er også den tilgjengelige versjonen av rutenettet).
 // All tekst lages på serveren, så klienten formaterer ingen datoer selv.
 
-const RAD = 'grid grid-cols-[4.5rem_minmax(0,1fr)_6rem] items-center gap-x-sm sm:grid-cols-[6rem_minmax(0,1fr)_9rem]'
+const RAD = 'grid grid-cols-[4.5rem_minmax(0,1fr)_6rem_1.25rem] items-center gap-x-sm sm:grid-cols-[6rem_minmax(0,1fr)_9rem_1.25rem]'
 const MANGLER = 'mangler' // «dagen før»-visning: timen finnes, men varselet ble ikke lagret
 type Verdi = Status | typeof MANGLER
 const BAND_TOPP = 5 // sol 3 px + 2 px luft
@@ -37,7 +37,7 @@ export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
       <p className="text-sm text-text-subtle">{visFor ? tekster.for : tekster.etter}</p>
       {treff && <p className="mt-xs text-sm">{visFor ? treff.for : treff.etter}</p>}
 
-      <div className={`${RAD} mt-sm text-xs text-text-subtle`} aria-hidden>
+      <div className={`${RAD} mt-sm px-xs text-xs text-text-subtle`} aria-hidden>
         <span />
         <span className="relative h-[16px] self-end">
           {[0, 6, 12, 18].map((h) => (
@@ -49,16 +49,16 @@ export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
           <span><span className="block font-medium text-text-default">Sol</span>timer</span>
           <span><span className="block font-medium text-text-default">Vind</span>m/s</span>
         </span>
+        <span />
       </div>
       <ul>
         {rader.map((r) => (
           <li key={r.id} className="border-t border-border-subtle first:border-t-0">
             <details className="group">
-              <summary className={`${RAD} focus cursor-pointer list-none rounded-md py-[6px] hover:bg-background-tinted [&::-webkit-details-marker]:hidden`}>
+              <summary className={`${RAD} group/rad focus cursor-pointer list-none rounded-md px-xs py-[6px] hover:bg-background-tinted group-open:bg-surface-tinted [&::-webkit-details-marker]:hidden`}>
                 <span className="whitespace-nowrap text-sm leading-tight">
-                  <span aria-hidden className="mr-[2px] inline-block text-text-subtle transition group-open:rotate-90">›</span>
                   {r.navn}
-                  {r.merknad && <span className="block pl-[10px] text-xs text-text-subtle">{r.merknad}</span>}
+                  {r.merknad && <span className="block text-xs text-text-subtle">{r.merknad}</span>}
                 </span>
                 <Band rad={r} visFor={visFor} />
                 <span aria-hidden className="grid grid-cols-3 text-right text-sm tabular-nums">
@@ -66,6 +66,7 @@ export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
                   <span>{r.sum.sol}</span>
                   <span>{r.sum.vind}</span>
                 </span>
+                <Pil />
                 <span className="sr-only">{r.lang}</span>
               </summary>
               <Tabell rad={r} visVarslet={bryter} />
@@ -157,36 +158,88 @@ function Band({ rad, visFor }: { rad: UkeRad; visFor: boolean }) {
   )
 }
 
+// Klatretimene vises først; natta kan slås på. Kolonnene har faste bredder, så de står likt fra dag til dag.
+const KLATRETID = (h: number) => h >= 6 && h < 22
+
 function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
+  const [heleDognet, setHeleDognet] = useState(false)
+  const dag = rad.tabell.filter((t) => KLATRETID(t.h))
+  const skjult = rad.tabell.length - dag.length
+  const timer = heleDognet || dag.length === 0 ? rad.tabell : dag
+  const th = 'py-xs font-normal'
   return (
-    <div className="mb-sm overflow-x-auto">
-      <table className="w-full text-left text-sm tabular-nums">
+    <div className="mb-sm overflow-x-auto px-xs">
+      <table className="w-full min-w-[30rem] table-fixed text-left text-sm tabular-nums">
         <caption className="sr-only">Time for time</caption>
-        <thead className="text-text-subtle">
-          <tr>
-            <th scope="col" className="py-[2px] pr-sm font-normal">Kl</th>
-            <th scope="col" className="pr-sm font-normal">Berget</th>
-            {visVarslet && <th scope="col" className="pr-sm font-normal">Dagen før</th>}
-            <th scope="col" className="pr-sm text-right font-normal">Regn mm</th>
-            <th scope="col" className="pr-sm font-normal">Sol</th>
-            <th scope="col" className="pr-sm text-right font-normal">Vind m/s</th>
-            <th scope="col" className="text-right font-normal" title="Luftfuktighet">Luftfukt.</th>
+        <colgroup>
+          <col className="w-[3.5rem]" />
+          <col className="w-[5.5rem]" />
+          {visVarslet && <col className="w-[5.5rem]" />}
+          <col className="w-[6.5rem]" />
+          <col className="w-[4rem]" />
+          <col className="w-[6.5rem]" />
+          <col className="w-[5rem]" />
+          <col className="w-[4.5rem] max-sm:hidden" />
+        </colgroup>
+        <thead className="text-xs text-text-subtle">
+          <tr className="border-b border-border-default">
+            <th scope="col" className={th}>Kl</th>
+            <th scope="col" className={th}>Berget</th>
+            {visVarslet && <th scope="col" className={th}>Dagen før</th>}
+            <th scope="col" className={th} title="Lufttemperatur, og bergtemperaturen modellen regner ut">Temp °C</th>
+            <th scope="col" className={`${th} pr-md text-right`}>Regn mm</th>
+            <th scope="col" className={th}>Sol</th>
+            <th scope="col" className={th}>Vind m/s</th>
+            <th scope="col" className={`${th} text-right max-sm:hidden`} title="Luftfuktighet">Luftfukt.</th>
           </tr>
         </thead>
         <tbody>
-          {rad.tabell.map((t) => (
-            <tr key={t.kl} className="border-t border-border-subtle">
-              <td className="py-[2px] pr-sm">{t.kl}</td>
-              <td className="pr-sm"><Status s={t.s} /></td>
-              {visVarslet && <td className="pr-sm">{t.v ? <Status s={t.v} /> : <span className="text-text-subtle">ikke lagret</span>}</td>}
-              <td className="pr-sm text-right">{t.regn}</td>
-              <td className="pr-sm">{t.sol ? 'ja' : t.solMulig ? 'mulig' : '–'}</td>
-              <td className="pr-sm text-right">{t.vind}</td>
-              <td className="text-right">{t.fukt}</td>
+          {timer.map((t) => (
+            <tr key={t.kl} className={`border-b border-border-subtle last:border-0 ${t.na ? 'bg-surface-tinted font-medium' : ''}`}>
+              <td className="py-[5px]">
+                {t.kl}
+                {t.na && <span className="ml-[4px] rounded-sm bg-accent-surface-default px-[4px] text-[10px] font-semibold text-accent-text-default">nå</span>}
+              </td>
+              <td><StatusMerke s={t.s} /></td>
+              {visVarslet && <td>{t.v ? <StatusMerke s={t.v} /> : <span className="text-xs text-text-subtle">ikke lagret</span>}</td>}
+              <td title={`Luft ${t.temp}, berget ${t.berg}`}>
+                {t.temp}
+                <span className="ml-[6px] text-xs font-normal text-text-subtle">berg {t.berg}</span>
+              </td>
+              <td className="pr-md text-right">
+                {t.regn && (
+                  <span className="inline-flex items-center gap-[4px]" title={t.regnVegg ? 'Regnet treffer veggen' : 'Regnet treffer ikke veggen'}>
+                    {t.regnVegg && <span aria-hidden className="inline-block h-[8px] w-[8px] rounded-full bg-[var(--color-accent-blue-400)]" />}
+                    {t.regn}
+                  </span>
+                )}
+              </td>
+              <td><Sol sol={t.sol} mulig={t.solMulig} /></td>
+              <td title={t.vindTekst}>
+                <span className="inline-flex items-center gap-[6px]">
+                  <VindPil fra={t.vindFra} />
+                  {t.vind}
+                  <span className="sr-only">{t.vindTekst}</span>
+                </span>
+              </td>
+              <td className="text-right text-text-subtle max-sm:hidden">{t.fukt}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div className="mt-xs flex flex-wrap items-center justify-between gap-sm text-xs text-text-subtle">
+        {timer.some((t) => t.regnVegg) ? (
+          <span className="flex items-center gap-[4px]">
+            <span aria-hidden className="inline-block h-[8px] w-[8px] rounded-full bg-[var(--color-accent-blue-400)]" />
+            regnet treffer veggen
+          </span>
+        ) : <span />}
+        {skjult > 0 && dag.length > 0 && (
+          <button type="button" className="lenke text-sm text-text-default" onClick={() => setHeleDognet((v) => !v)}>
+            {heleDognet ? 'Vis bare kl 06–22' : 'Vis hele døgnet'}
+          </button>
+        )}
+      </div>
       {rad.meldinger.length > 0 && (
         <ul className="mt-xs flex flex-col gap-[2px] text-sm">
           {rad.meldinger.map((m, i) => <li key={i}>{m.tekst}</li>)}
@@ -196,12 +249,21 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
   )
 }
 
-function Status({ s }: { s: Status }) {
+// Status som farget merke, i samme farger som stripene i rutenettet; ordet står i merket
+function StatusMerke({ s }: { s: Status }) {
   return (
-    <span className="inline-flex items-center gap-[4px]">
-      <span aria-hidden className={`inline-block h-[10px] w-[10px] rounded-full ${statusFarge[s]}`} />
+    <span className={`inline-block w-[4.5rem] rounded-[3px] py-[1px] text-center text-xs font-medium ${MORK} ${statusFarge[s]}`}>
       {STATUS_TEKST[s]}
     </span>
+  )
+}
+
+// Pil som viser hvor vinden blåser (som på værkart): vind fra sør gir pil mot nord
+function VindPil({ fra }: { fra: number }) {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" width={14} height={14} className="shrink-0 text-text-tinted" style={{ transform: `rotate(${fra + 180}deg)` }}>
+      <path d="M12 3 L18 15 L12 12 L6 15 Z" fill="currentColor" />
+    </svg>
   )
 }
 
@@ -221,7 +283,7 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
         {visFor && nokkel(<span aria-hidden className="inline-block h-[12px] w-[14px] rounded-[2px] bg-surface-tinted" />, 'ikke lagret')}
         {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-400)]" />, 'direkte sol på veggen')}
         {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-200)]" />, 'sol mulig ved klar himmel')}
-        {nokkel(<span aria-hidden className="inline-block h-[9px] w-[5px] rounded-b-[2px] bg-[var(--color-accent-blue-400)]" />, `regn (full søyle ${SKALA_MM} mm/t)`)}
+        {nokkel(<span aria-hidden className="inline-block h-[9px] w-[5px] rounded-b-[2px] bg-[var(--color-accent-blue-400)]" />, 'regn')}
       </div>
       {harMeldinger && (
         <p className="flex items-center gap-sm">
@@ -235,8 +297,37 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
           </span>
         </p>
       )}
-      <p>Trykk på en dag for time for time.</p>
     </div>
+  )
+}
+
+// Pil ned til høyre i raden, som i nettførerens Accordion (ChevronDownIcon i components/Icons.tsx).
+// Snur når dagen er åpen, og blir mørkere når musa er over raden.
+function Pil() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      width={20}
+      height={20}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      className="justify-self-end text-text-subtle transition group-open:rotate-180 group-hover/rad:text-text-default motion-reduce:transition-none"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+  )
+}
+
+// Sol i timetabellen med samme merker som solstreken i rutenettet
+function Sol({ sol, mulig }: { sol: boolean; mulig: boolean }) {
+  if (!sol && !mulig) return null
+  return (
+    <span className="inline-flex items-center gap-[6px]" title={sol ? 'Direkte sol på veggen' : 'Sola står foran veggen, men det er skyet'}>
+      <span aria-hidden className={`inline-block h-[3px] w-[14px] ${sol ? 'bg-[var(--color-accent-red-400)]' : 'bg-[var(--color-accent-red-200)]'}`} />
+      {sol ? 'Direkte sol' : 'Skyet'}
+    </span>
   )
 }
 

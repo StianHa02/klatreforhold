@@ -42,6 +42,10 @@ export function dagNavn(dato: string, iDag: string): string {
 export const dagLang = (dato: string) =>
   new Date(`${dato}T12:00:00Z`).toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
 
+const VINDNAVN: Record<string, string> = {
+  N: 'nord', NØ: 'nordøst', Ø: 'øst', SØ: 'sørøst', S: 'sør', SV: 'sørvest', V: 'vest', NV: 'nordvest',
+}
+
 const K16 = ['N', 'NNØ', 'NØ', 'ØNØ', 'Ø', 'ØSØ', 'SØ', 'SSØ', 'S', 'SSV', 'SV', 'VSV', 'V', 'VNV', 'NV', 'NNV']
 /** Kompassretning for grader (0 = nord), med 16 eller 8 streker. */
 export function kompass(grader: number, streker: 8 | 16 = 16): string {
@@ -213,7 +217,24 @@ export function statusPerTime(timer: Time[]): Record<string, Status> {
 // sol: direkte sol på veggen i varselet. solMulig: sola står foran veggen og over horisonten (ville truffet ved klar himmel)
 export type UkeCelle = { s: Status | null; v: Status | null; regn: number; sol: boolean; solMulig: boolean; tittel: string }
 export type UkeMelding = { pos: number; status: Status; etter: boolean | null; for: boolean | null; tekst: string }
-export type UkeTabellRad = { kl: string; s: Status; v: Status | null; regn: string; sol: boolean; solMulig: boolean; vind: string; fukt: string }
+// Én time i tabellen under en dag. Tekstene lages her, så klientkomponenten ikke formaterer selv.
+export type UkeTabellRad = {
+  h: number // klokketime (starttid, norsk tid)
+  kl: string
+  s: Status
+  v: Status | null
+  temp: string // lufttemperatur
+  berg: string // bergtemperatur (modell)
+  regn: string // '' uten regn
+  regnVegg: boolean // regnet treffer veggen
+  sol: boolean
+  solMulig: boolean
+  vind: string // m/s
+  vindFra: number // grader, meteorologisk (hvor vinden kommer fra)
+  vindTekst: string // «5 m/s fra sør»
+  fukt: string
+  na: boolean // timen vi er i nå
+}
 export type UkeRad = {
   id: string
   navn: string
@@ -275,14 +296,21 @@ export function lagUkeRad(dag: Dag, o: { iDag: string; naMs: number; varslet?: M
     na: n.dato === dag.dato ? n.time + n.minutt / 60 : undefined,
     meldinger,
     tabell: dag.timer.flatMap((t, h): UkeTabellRad[] => (t ? [{
+      h,
       kl: pad(h),
       s: t.status,
       v: varslet(t),
-      regn: t.nedbor_mm >= 0.05 ? t.nedbor_mm.toFixed(1) : '–',
+      temp: `${Math.round(t.lufttemp)}°`,
+      berg: `${Math.round(t.bergtemp)}°`,
+      regn: t.nedbor_mm >= 0.05 ? t.nedbor_mm.toFixed(1) : '',
+      regnVegg: t.regn_mot_veggen_mm >= 0.05,
       sol: t.sol_pa_veggen,
       solMulig: t.sol_mulig ?? false,
-      vind: `${Math.round(t.vind_ms)} ${kompass(t.vindretning, 8)}`,
+      vind: String(Math.round(t.vind_ms)),
+      vindFra: t.vindretning,
+      vindTekst: `${Math.round(t.vind_ms)} m/s fra ${VINDNAVN[kompass(t.vindretning, 8)]}`,
       fukt: `${Math.round(t.luftfuktighet)} %`,
+      na: n.dato === dag.dato && n.time === h,
     }] : [])),
   }
 }

@@ -90,5 +90,6 @@ assert(rad.meldinger[0].etter === true && rad.meldinger[0].for === false, 'rikti
 assert(rad.sum.regn === '1.2' && rad.sum.sol === '2 t' && rad.sum.vind === '3' && rad.tabell.length === 24, 'summer og tabell')
 assert(rad.celler[13]!.solMulig && !rad.celler[13]!.sol && rad.celler[15]!.sol && !rad.celler[12]!.solMulig && rad.tabell[13].solMulig, 'sol mulig mot direkte sol')
 assert(rad.celler[14]!.v === 'vatt' && rad.celler[13]!.v === null && rad.tabell[4].regn === '1.2', 'varslet dagen før per time')
+assert(rad.tabell[5].regn === '' && rad.tabell[13].h === 13 && rad.tabell[13].temp === '9°' && rad.tabell[13].berg === '8°' && rad.tabell[13].vindTekst === '3 m/s fra sørvest' && !rad.tabell.some((t) => t.na), 'timetabell: temperatur, vind og ingen «nå» i går')
 const iDagRad = d.lagUkeRad(d.delIDager(dognVinter('2026-10-29', () => 'tort'))[0], { iDag: '2026-10-29', naMs })
 assert(iDagRad.navn === 'I dag' && Math.abs(iDagRad.na! - 21.5) < 1e-9, '«nå» kl 21:30')
