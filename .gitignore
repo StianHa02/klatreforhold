@@ -26,3 +26,5 @@ test-results/
 *.tsbuildinfo
 supabase/.temp/
 TODO.md
+# Lokal Supabase: seed.sql er en kopi av produksjonsdata (brukernes kommentarer), skal aldri i git
+supabase/seed.sql

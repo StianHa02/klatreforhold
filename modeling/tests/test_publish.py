@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from klatreforhold.publish import ARKIV_MAKS_LEDETID, FRAM_TIMER, archive_rows  # noqa: E402
+from klatreforhold.publish import ARKIV_MAKS_LEDETID, FRAM_TIMER, VAER_TIMER, archive_rows, weather_rows  # noqa: E402
 
 
 def _varsel(timer: int) -> dict:
@@ -29,7 +29,19 @@ def test_fram_rekker_ut_dag_4():
     assert FRAM_TIMER >= 5 * 24 - 1
 
 
+def test_vaer_bare_passerte_timer_og_null_for_tomt():
+    idx = pd.date_range("2026-10-26T00:00Z", "2026-10-30T12:00Z", freq="h")
+    w = pd.DataFrame({"air_temperature": 10.0, "dni": float("nan"), "weather_kind": "analysis",
+                      "weather_issued": ""}, index=idx)
+    rows = weather_rows("ekstraveggen", w, "2026-10-30T10:07:00+01:00")  # 09:07 UTC
+    assert len(rows) == VAER_TIMER
+    assert rows[-1]["tid"] == "2026-10-30T09:00:00+00:00" and rows[-1]["generert"] == "2026-10-30T09:07:00+00:00"
+    assert rows[0]["air_temperature"] == 10.0 and rows[0]["dni"] is None and rows[0]["weather_issued"] is None
+    assert rows[0]["snow_water_mm"] is None  # kolonne som mangler i været blir null, ikke feil
+
+
 if __name__ == "__main__":
     test_arkiv_kutter_lange_ledetider()
     test_fram_rekker_ut_dag_4()
+    test_vaer_bare_passerte_timer_og_null_for_tomt()
     print("ok")

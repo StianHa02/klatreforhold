@@ -25,8 +25,11 @@ Latest payloads contain 120 hours ahead plus now and 168 hours behind; archive l
 - `supabase/valgfritt/`: optional Actions trigger SQL, not automatically applied.
 
 Supabase project: `nmiydpcmfxkhtztzgzfx`. Tables: `varsel_siste`, `varsel`, `observasjoner`,
-`stasjon_varsel`, `stasjon_maling`, `modelltilstand`. RPCs: `treffsikkerhet(text)`, `statistikk()`.
-All access is server-side with service role; no public RLS policies.
+`stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer` (model weather input per crag and past hour).
+RPCs: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)`, `rydd_arkiv(integer)` (weekly pg_cron).
+All access is server-side with service role; no public RLS policies. Grant `service_role` explicitly on new
+tables: newer Supabase (including the local CLI) no longer grants it by default.
+Test migrations on the local stack first (`supabase start` from repo root, ports 553xx; see README).
 
 ## Commands
 
@@ -67,6 +70,7 @@ From repo root: `docker compose up --build`. Build needs network for Google font
 - Model/calibration activation requires matching version, config hash and validation metadata.
 - Forecasts must tolerate missing Frost, ensemble, calibration and ML. Default `frost_bruk: kontroll`;
   station replacement is only appropriate within 1–2 km. Do not hide missing rain by filling with zero.
+- `rydd_arkiv()` must keep lead times 0/3/6/12/24/48 and every row near a real observation; those are training data.
 - Fit humidity correction on all hours, never on a subset selected by predicted humidity.
   The current fitted correction applies to Open-Meteo, not automatically to direct MET.
 - `.env` loader reads modeling then root and preserves existing environment. Put comments on separate lines.

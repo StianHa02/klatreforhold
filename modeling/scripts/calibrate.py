@@ -31,14 +31,14 @@ MIN_OBS = 50
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
-    ap.add_argument("--weather", required=True)
+    ap.add_argument("--weather", required=True, nargs="+", help="vær-CSV(er) og/eller 'supabase'")
     ap.add_argument("--labels", nargs="+", required=True, help="etikettfil(er) eller 'supabase'")
     ap.add_argument("--med-dev", action="store_true")
     ap.add_argument("--vekter", action="store_true", help="vekt etter hvor sannsynlig det er å bli observert")
     ap.add_argument("--write", action="store_true", help="lagre i config/kalibrert/ hvis det ble bedre")
     a = ap.parse_args()
     crag, params = load_config(a.config, apply_calibration=False)
-    w = load_weather(a.weather)
+    w = load_weather(a.weather, Path(a.config).stem)
     y = get_labels(a.labels, a.config, crag.timezone, a.med_dev)
     y = y[y.index.isin(w.index)].sort_index()
     if len(y) < MIN_OBS:

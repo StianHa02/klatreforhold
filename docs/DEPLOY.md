@@ -7,12 +7,16 @@ Denne guiden bekrefter ikke siste produksjonskjøring eller kontoenes aktuelle f
 ## Database og timesjobb
 
 Prosjektets Supabase-URL er `https://nmiydpcmfxkhtztzgzfx.supabase.co`.
-Kontroller anvendte migrasjoner mot de fem filene i `supabase/migrations/` før en ny installasjon.
+Kontroller anvendte migrasjoner mot de seks filene i `supabase/migrations/` før en ny installasjon.
 V2 krever `20261030090000_modell_v2.sql`, som legger til `modelltilstand` og arkivmetadata.
 Tidligere overlevering rapporterer den kjørt 30. oktober 2026. Ikke kjør gamle migrasjoner blindt på nytt.
+`20261030180000_vaer_og_rydding.sql` legger til `vaer`, `lagre_vaer()`, `rydd_arkiv()` og cron-jobben
+`rydd-arkiv`. Kjør den før koden som skriver `vaer` deployes; uten den får timesjobben `vaer_feil` per felt,
+men varselet publiseres likevel. Prøv nye migrasjoner lokalt først (README, «Lokal Supabase»).
 
-Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_maling`, `modelltilstand`.
-RPC-er: `treffsikkerhet(text)` og `statistikk()`. RLS begrenser tilgangen til service role.
+Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer`.
+RPC-er: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)` og `rydd_arkiv(integer)`.
+RLS begrenser tilgangen til service role.
 
 Sett GitHub Actions-secrets:
 
@@ -67,4 +71,9 @@ Gratisnivå er ikke en garanti for kapasitet. Se gjeldende [Vercel-grenser](http
 [Supabase-priser](https://supabase.com/pricing) og [GitHub Actions-fakturering](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 Kallmengde og kjøretid avhenger av reservekilder, innkjøring, ensemble og cache.
 Med ni felt og opptil 49 arkivrader per time per felt blir det opptil 10 584 rader/døgn, i tillegg til
-modelltilstander og stasjonsdata. Mål faktisk størrelse og velg retensjon separat; denne oppryddingen sletter ingen data.
+modelltilstander og stasjonsdata (målt ca. 2.2 MB/døgn, ca. 810 MB/år uten rydding, mot 500 MB gratis).
+`rydd_arkiv()` kjører søndager 04:00 UTC: etter 120 dager beholdes ledetid 0, 3, 6, 12, 24 og 48 i `varsel`
+og `stasjon_varsel`, pluss alle ledetider ±3 t rundt ekte observasjoner. `modelltilstand` beholder
+midnattstilstander i 30 dager. Anslått vekst etterpå er ca. 135 MB/år, så gratisnivået holder i 3-4 år.
+Postgres gir ikke plassen tilbake til disken av seg selv, men gjenbruker den, så databasen slutter å vokse.
+Se hva som ville blitt slettet uten å slette: `begin; select public.rydd_arkiv(); rollback;`.
