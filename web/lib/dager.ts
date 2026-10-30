@@ -65,6 +65,7 @@ export function delIDager(timer: Time[]): Dag[] {
           nedbor_mm: har.nedbor_mm + t.nedbor_mm,
           regn_mot_veggen_mm: har.regn_mot_veggen_mm + t.regn_mot_veggen_mm,
           sol_pa_veggen: har.sol_pa_veggen || t.sol_pa_veggen,
+          sol_mulig: har.sol_mulig || t.sol_mulig,
         }
       : t
     dager.set(dato, rad)
@@ -209,9 +210,10 @@ export function statusPerTime(timer: Time[]): Record<string, Status> {
 
 // ---- ukerutenettet (serialiserbart, så klientkomponenten ikke formaterer datoer selv) ----
 
-export type UkeCelle = { s: Status | null; v: Status | null; regn: number; sol: boolean; tittel: string }
+// sol: direkte sol på veggen i varselet. solMulig: sola står foran veggen og over horisonten (ville truffet ved klar himmel)
+export type UkeCelle = { s: Status | null; v: Status | null; regn: number; sol: boolean; solMulig: boolean; tittel: string }
 export type UkeMelding = { pos: number; status: Status; etter: boolean | null; for: boolean | null; tekst: string }
-export type UkeTabellRad = { kl: string; s: Status; v: Status | null; regn: string; sol: boolean; vind: string; fukt: string }
+export type UkeTabellRad = { kl: string; s: Status; v: Status | null; regn: string; sol: boolean; solMulig: boolean; vind: string; fukt: string }
 export type UkeRad = {
   id: string
   navn: string
@@ -239,9 +241,10 @@ export function lagUkeRad(dag: Dag, o: { iDag: string; naMs: number; varslet?: M
       v,
       regn: t.nedbor_mm,
       sol: t.sol_pa_veggen,
+      solMulig: t.sol_mulig ?? false,
       tittel: `${lang} kl ${pad(h)}–${pad((h + 1) % 24)}: ${STATUS_TEKST[t.status]}`
         + (o.varslet ? ` (varslet dagen før: ${v ? STATUS_TEKST[v].toLowerCase() : 'ikke lagret'})` : '')
-        + ` · regn ${t.nedbor_mm.toFixed(1)} mm · ${t.sol_pa_veggen ? 'sol på veggen' : 'ikke sol på veggen'}`
+        + ` · regn ${t.nedbor_mm.toFixed(1)} mm · ${t.sol_pa_veggen ? 'direkte sol på veggen' : t.sol_mulig ? 'sol mulig, men skyet' : 'ikke sol på veggen'}`
         + ` · vind ${t.vind_ms.toFixed(1)} m/s fra ${kompass(t.vindretning, 8)} · luftfuktighet ${Math.round(t.luftfuktighet)} %`,
     }
   })
@@ -277,6 +280,7 @@ export function lagUkeRad(dag: Dag, o: { iDag: string; naMs: number; varslet?: M
       v: varslet(t),
       regn: t.nedbor_mm >= 0.05 ? t.nedbor_mm.toFixed(1) : '–',
       sol: t.sol_pa_veggen,
+      solMulig: t.sol_mulig ?? false,
       vind: `${Math.round(t.vind_ms)} ${kompass(t.vindretning, 8)}`,
       fukt: `${Math.round(t.luftfuktighet)} %`,
     }] : [])),

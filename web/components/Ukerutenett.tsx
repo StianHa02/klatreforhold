@@ -85,7 +85,9 @@ function Band({ rad, visFor }: { rad: UkeRad; visFor: boolean }) {
   return (
     <span aria-hidden className="relative block" style={{ height: BAND_TOPP + BAND_H + 2 + REGN_H }}>
       <span className="absolute inset-x-0 top-0 grid h-[3px] grid-cols-24">
-        {rad.celler.map((c, h) => <span key={h} className={c?.sol ? 'bg-[var(--color-accent-red-400)]' : ''} />)}
+        {rad.celler.map((c, h) => (
+          <span key={h} className={c?.sol ? 'bg-[var(--color-accent-red-400)]' : c?.solMulig ? 'bg-[var(--color-accent-red-200)]' : ''} />
+        ))}
       </span>
       {biter(verdier).map((b) => {
         if (b.v === null) return null
@@ -178,7 +180,7 @@ function Tabell({ rad, visVarslet }: { rad: UkeRad; visVarslet: boolean }) {
               <td className="pr-sm"><Status s={t.s} /></td>
               {visVarslet && <td className="pr-sm">{t.v ? <Status s={t.v} /> : <span className="text-text-subtle">ikke lagret</span>}</td>}
               <td className="pr-sm text-right">{t.regn}</td>
-              <td className="pr-sm">{t.sol ? 'ja' : '–'}</td>
+              <td className="pr-sm">{t.sol ? 'ja' : t.solMulig ? 'mulig' : '–'}</td>
               <td className="pr-sm text-right">{t.vind}</td>
               <td className="text-right">{t.fukt}</td>
             </tr>
@@ -217,7 +219,8 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
           </span>
         ))}
         {visFor && nokkel(<span aria-hidden className="inline-block h-[12px] w-[14px] rounded-[2px] bg-surface-tinted" />, 'ikke lagret')}
-        {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-400)]" />, 'sol på veggen')}
+        {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-400)]" />, 'direkte sol på veggen')}
+        {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-200)]" />, 'sol mulig ved klar himmel')}
         {nokkel(<span aria-hidden className="inline-block h-[9px] w-[5px] rounded-b-[2px] bg-[var(--color-accent-blue-400)]" />, `regn (full søyle ${SKALA_MM} mm/t)`)}
       </div>
       {harMeldinger && (

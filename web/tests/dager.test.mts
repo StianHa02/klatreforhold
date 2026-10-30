@@ -78,7 +78,7 @@ const spt = d.statusPerTime(dognVinter('2026-10-28', (h) => (h === 14 ? 'vatt' :
 assert(spt['2026-10-28T14'] === 'vatt' && spt['2026-10-28T00'] === 'tort' && Object.keys(spt).length === 24, 'status per time til skjemaet')
 
 // en rad i ukerutenettet: meldinger, «nå», summer og tabell
-const iGar = d.delIDager(dognVinter('2026-10-28', (h) => (h < 12 ? 'vatt' : 'tort'), (h) => ({ nedbor_mm: h === 4 ? 1.2 : 0, sol_pa_veggen: h === 15 || h === 16 })))[0]
+const iGar = d.delIDager(dognVinter('2026-10-28', (h) => (h < 12 ? 'vatt' : 'tort'), (h) => ({ nedbor_mm: h === 4 ? 1.2 : 0, sol_pa_veggen: h === 15 || h === 16, sol_mulig: h >= 13 && h <= 16 })))[0]
 const varslet = new Map<number, Status>([[Date.parse(iGar.timer[14]!.tid), 'vatt']])
 const rad = d.lagUkeRad(iGar, {
   iDag: '2026-10-29', naMs, varslet,
@@ -88,6 +88,7 @@ assert(rad.navn === 'I går' && rad.celler.length === 24 && rad.na === undefined
 assert(rad.meldinger.length === 1 && Math.abs(rad.meldinger[0].pos - (14 + 20 / 60)) < 1e-9, 'melding plassert kl 14:20 norsk tid')
 assert(rad.meldinger[0].etter === true && rad.meldinger[0].for === false, 'riktig i etterkant, feil dagen før')
 assert(rad.sum.regn === '1.2' && rad.sum.sol === '2 t' && rad.sum.vind === '3' && rad.tabell.length === 24, 'summer og tabell')
+assert(rad.celler[13]!.solMulig && !rad.celler[13]!.sol && rad.celler[15]!.sol && !rad.celler[12]!.solMulig && rad.tabell[13].solMulig, 'sol mulig mot direkte sol')
 assert(rad.celler[14]!.v === 'vatt' && rad.celler[13]!.v === null && rad.tabell[4].regn === '1.2', 'varslet dagen før per time')
 const iDagRad = d.lagUkeRad(d.delIDager(dognVinter('2026-10-29', () => 'tort'))[0], { iDag: '2026-10-29', naMs })
 assert(iDagRad.navn === 'I dag' && Math.abs(iDagRad.na! - 21.5) < 1e-9, '«nå» kl 21:30')
