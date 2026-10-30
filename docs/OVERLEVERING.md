@@ -30,6 +30,18 @@ Frontendtester, TypeScript og produksjonsbygg passerte med Node 24. CI bruker fo
 Alle 62 Python-filer ble syntakssjekket; lokale lenker i alle 12 Markdown-filer ble kontrollert.
 Ingen produksjonsdata ble lest eller skrevet, og historiske resultater ble ikke regenerert.
 
+## Sikkerhetsoppdatering av web – 30. oktober 2026
+
+Next.js er oppgradert fra 16.3.4 til 16.4.3, med oppdatert låsefil og tilhørende Next-pakker.
+Oppgraderingen følger opp npm-advarslene fra oppryddingen, blant annet
+[Image Optimization](https://github.com/advisories/GHSA-2464-fhr4-w9xw) og
+[Cache Components](https://github.com/advisories/GHSA-673q-mjm6-r5xr).
+`npm audit` rapporterte null sårbarheter etter oppgraderingen; dette er et datert auditresultat.
+Frontendtester, TypeScript og produksjonsbygg passerte. En HTTP-kontroll av produksjonsbygget med
+lokal mock-API bekreftet forside, listevalg via cookie, feltside, om-side, statiske filer og
+GET/POST for observasjoner, inkludert avvisning av ugyldig JSON. Dette var ikke en nettlesertest
+av interaksjoner. Ingen produksjonstjenester ble brukt. React og modellkoden er uendret.
+
 ## Gjenstående arbeid
 
 1. Kontroller siste ordinære timesjobb, datakilder og Frost-innsamling i produksjon. Gamle tall for
@@ -38,10 +50,7 @@ Ingen produksjonsdata ble lest eller skrevet, og historiske resultater ble ikke 
 3. Kalibrer ved tilstrekkelig grunnlag; hold dev/test-data og syntetiske etiketter utenfor aktivering.
 4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
 5. Mål arkivvekst og velg lagringstid før kvoten nås. Ingen automatisk arkivrydding er innført her.
-6. Oppgrader Next.js i en egen, testet endring: `npm audit` ved oppryddingen rapporterte
-   kritiske advisories for låst versjon 16.3.4 og foreslo 16.4.3. Avhengighetene er ikke oppgradert her;
-   audit-funnet alene fastslår ikke hvilke angrep denne appen er utsatt for.
-7. Vurder resterende forskningsforslag fra RESEARCH_2: delvis pooling, ordinal modell,
+6. Vurder resterende forskningsforslag fra RESEARCH_2: delvis pooling, ordinal modell,
    pålitelighetsdiagrammer og faste feltobservasjoner. Énparameterkalibrering og hendelsesdeling er innført.
 
 Integrasjon med nettføreren er fortsatt separat, fremtidig arbeid. Ikke endre dens database eller repo.
