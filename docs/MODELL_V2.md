@@ -122,6 +122,9 @@ avbryter det aktuelle feltet slik at siste publiserte prognose beholdes.
 Produksjonskontrollen viste små negative differanser i akkumulert solstråling ved skumring
 (Bymuren: −0,14 W/m²). Inntil 1 W/m² negativ differanse settes til null; større negative sprang
 avvises fortsatt som mulig nullstilling. Reserveloggen oppgir felt og konkret feilmelding.
+THREDDS brukte mer enn 20 sekunder på et samlet prognoseuttrekk med ni variabler.
+Prognosen hentes derfor i tre mindre uttrekk fra samme låste modellkjøring; livekontrollen brukte
+8–10 sekunder per uttrekk. Tidsaksene må stemme før delene settes sammen. Tidsavbrudd gir fortsatt reserve.
 
 Fuktighetskorreksjonen som ble tilpasset Open-Meteo mot Frost brukes bare på den kilden.
 Den overføres ikke ukritisk til direkte MET. Hver time har vær- og nedbørskilde, og prognose,

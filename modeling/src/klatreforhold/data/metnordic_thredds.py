@@ -77,8 +77,18 @@ def _point(url, lat, lon, kind):
     if ix < 0 or iy < 0:
         raise ValueError("Punktet er utenfor MET Nordic")
     n = len(meta["time"])
-    query = "time," + ",".join(f"{v}[0:1:{n-1}][{iy}:1:{iy}][{ix}:1:{ix}]" for v in variables)
-    data = _read(url, query)
+    # Et samlet uttrekk av ni variabler over ~60 timer bruker over 20 sekunder
+    # hos THREDDS. Tre variabler per kall tok 8–10 s i livekontrollen. Analysefilen
+    # inneholder bare én time og kan fortsatt leses samlet.
+    batch_size = 3 if kind == "forecast" else max(1, len(variables))
+    data = {}
+    for offset in range(0, len(variables), batch_size):
+        batch = variables[offset:offset + batch_size]
+        query = "time," + ",".join(f"{v}[0:1:{n-1}][{iy}:1:{iy}][{ix}:1:{ix}]" for v in batch)
+        part = _read(url, query)
+        if data and not np.array_equal(data["time"], part["time"]):
+            raise ValueError("MET-uttrekkene har forskjellige tidsakser")
+        data.update(part)
     index = pd.to_datetime(data["time"], unit="s", utc=True)
     df = pd.DataFrame({VARS[v]: data[f"{v}.{v}"] for v in variables}, index=index)
     df["air_temperature"] -= 273.15

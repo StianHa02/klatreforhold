@@ -21,12 +21,17 @@ def test_native_forecast_accumulated_radiation_and_first_rain(monkeypatch):
     data['integral_of_surface_downwelling_longwave_flux_in_air_wrt_time.integral_of_surface_downwelling_longwave_flux_in_air_wrt_time'] = np.array([0., 300., 610.])*3600
     data['integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time.integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time'] = np.array([0., 100., 300.])*3600
     monkeypatch.setattr(met, '_metadata', lambda *args: (meta, variables))
-    monkeypatch.setattr(met, '_read', lambda *args: data)
+    queries = []
+    def read(url, query):
+        queries.append(query)
+        return {'time': data['time'], **{v+'.'+v: data[v+'.'+v] for v in variables if v+'[' in query}}
+    monkeypatch.setattr(met, '_read', read)
     frame = met._point('test', 60.33, 5.31, 'forecast')
     np.testing.assert_allclose(frame.longwave_down.iloc[1:], [300., 310.])
     np.testing.assert_allclose(frame.ghi.iloc[1:], [100., 200.])
     assert np.isnan(frame.precipitation.iloc[0])
     assert frame.relative_humidity.iloc[0] == 80.
+    assert all(sum(v+'[' in q for v in variables) <= 3 for q in queries)
     solar_key = ('integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time.'
                  'integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time')
     # Live Bymuren: et lite negativt solbidrag ved skumring skal ikke avvise hele MET-varselet.
