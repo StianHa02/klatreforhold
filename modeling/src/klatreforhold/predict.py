@@ -152,7 +152,49 @@ def _ml_probability(slug: str, crag: Crag, weather: pd.DataFrame, physics: pd.Da
     return None
 
 
-def _format_hours(frame: pd.DataFrame, res: pd.DataFrame, w: pd.DataFrame, p_ml, crag: Crag) -> list[dict]:
+def fetch_ensemble(crag: Crag, now: pd.Timestamp) -> pd.DataFrame | None:
+    """MEPS-nedbør per medlem, eller None. Ensemblet er valgfritt og skal aldri stoppe varselet."""
+    try:
+        from .data.meps_ensemble import fetch_precip_ensemble
+        return fetch_precip_ensemble(crag.lat, crag.lon, now)
+    except Exception as err:
+        print(f"MEPS-ensemble utilgjengelig for {crag.name}: {type(err).__name__}: {err}")
+        return None
+
+
+def ensemble_p_tort(raw: pd.DataFrame, res: pd.DataFrame, crag: Crag, params: dict, now: pd.Timestamp,
+                    ensemble: pd.DataFrame, min_members: int = 10) -> pd.Series | None:
+    """Andel ensemblemedlemmer som gir tørt berg, per time fra nå.
+
+    Hvert medlem bytter bare nedbøren i varseltimene og kjøres fra modelltilstanden timen før nå.
+    Radartimer (nowcast) og timer der medlemmet mangler verdi beholder hovedvarselets nedbør.
+    Timer etter ensemblets slutt får ingen sannsynlighet.
+    """
+    end = min(ensemble.index[-1], raw.index[-1])
+    start = now
+    if end <= start or start - pd.Timedelta(hours=1) not in res.index:
+        return None
+    base = raw.loc[start:end].copy()
+    members = ensemble.reindex(base.index)
+    members = members.loc[:, members.notna().any()]
+    if members.shape[1] < min_members:
+        return None
+    source = base.get("precipitation_source", pd.Series("", index=base.index)).astype(str)
+    keep = source.str.startswith("nowcast").to_numpy()
+    init = state_at(res, start - pd.Timedelta(hours=1))
+    dry = []
+    for m in members:
+        w = base.copy()
+        replace = members[m].notna().to_numpy() & ~keep
+        w.loc[replace, "precipitation"] = members.loc[replace, m]
+        if "snow_water_mm" in w:  # levert snømengde hører til hovedvarselets nedbør
+            w.loc[replace, "snow_water_mm"] = np.nan
+        dry.append((run_model(prepare_weather(w), crag, params, init_state=init)["status"] == "tort").to_numpy())
+    return pd.Series(np.mean(dry, axis=0), index=base.index)
+
+
+def _format_hours(frame: pd.DataFrame, res: pd.DataFrame, w: pd.DataFrame, p_ml, crag: Crag,
+                  p_tort: pd.Series | None = None) -> list[dict]:
     timer = []
     for t, row in frame.iterrows():
         timer.append({
@@ -161,6 +203,7 @@ def _format_hours(frame: pd.DataFrame, res: pd.DataFrame, w: pd.DataFrame, p_ml,
             "status_tekst": STATUS_TEKST[row["status"]],
             "tort": bool(row["status"] == "tort"),
             "p_vatt": None if p_ml is None or pd.isna(p_ml.get(t, np.nan)) else round(float(p_ml[t]), 3),
+            "p_tort": None if p_tort is None or pd.isna(p_tort.get(t, np.nan)) else round(float(p_tort[t]), 2),
             "vann_mm": round(float(row["water_mm"]), 3),
             "is_mm": round(float(row["ice_mm"]), 3),
             "sno_mm": round(float(row["snow_mm"]), 3),
@@ -199,7 +242,8 @@ def _kilde(source: str, w: pd.DataFrame) -> str:
 
 def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source: str = "auto",
             weather: pd.DataFrame | None = None, history_hours: int = 12,
-            checkpoint: dict | None = None, include_checkpoints: bool = False) -> dict:
+            checkpoint: dict | None = None, include_checkpoints: bool = False,
+            ensemble: pd.DataFrame | None = None) -> dict:
     crag, params = load_crag(slug)
     issued = pd.Timestamp.now(tz="UTC")
     weather_now = now or issued
@@ -211,20 +255,30 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
     start = pd.Timestamp(checkpoint["tid"]) + pd.Timedelta(hours=1) if checkpoint else None
     w = weather if weather is not None else get_weather(crag, source, start, weather_now, history_hours)
     w = w.loc[:now + pd.Timedelta(hours=hours)]
+    # Ensemblet hentes bare for direkte MET-vær; gitt vær (tester, offline) bruker det som sendes inn.
+    if ensemble is None and weather is None and source in ("auto", "metnordic")             and not os.environ.get("KLATREFORHOLD_OFFLINE_WEATHER"):
+        ensemble = fetch_ensemble(crag, weather_now)
     if checkpoint:
         w = w.loc[start:]
         if w.empty or w.index[0] != start:
             raise ValueError("Været fortsetter ikke rett etter lagret modelltilstand")
+    raw = w
     w = prepare_weather(w)
     res = run_model(w, crag, params, init_state=checkpoint["state"] if checkpoint else None)
     res["hours_until_dry"] = hours_until_dry(res)
     p_ml = _ml_probability(slug, crag, w, res)
+    p_tort = None
+    if ensemble is not None and not ensemble.empty:
+        try:
+            p_tort = ensemble_p_tort(raw, res, crag, params, now, ensemble)
+        except Exception as err:  # usikkerheten er et tillegg; hovedvarselet skal publiseres uansett
+            print(f"Ensemblekjøring feilet for {crag.name}: {type(err).__name__}: {err}")
 
     if now < res.index[0] or now + pd.Timedelta(hours=hours) > res.index[-1]:
         raise ValueError("Været dekker ikke hele det forespurte varselet")
     window = res.loc[now: now + pd.Timedelta(hours=hours)]
 
-    timer = _format_hours(window, res, w, p_ml, crag)
+    timer = _format_hours(window, res, w, p_ml, crag, p_tort)
     siste = _format_hours(res.loc[now - pd.Timedelta(hours=history_hours): now - pd.Timedelta(hours=1)], res, w, p_ml, crag)
 
     first = timer[0] if timer else None
@@ -252,6 +306,11 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
         "na": now.tz_convert(crag.timezone).isoformat(),
         "kilde": _kilde(source, w),
         "ml_modell": p_ml is not None,
+        "ensemble": None if p_tort is None else {
+            "medlemmer": int(ensemble.reindex(p_tort.index).notna().any().sum()),
+            "utstedt": ensemble.attrs["issued"].tz_convert(crag.timezone).isoformat()
+            if "issued" in ensemble.attrs else None,
+            "til": p_tort.index[-1].tz_convert(crag.timezone).isoformat()},
         "sammendrag": sammendrag,
         "timer": timer,
         "siste_timer": siste,

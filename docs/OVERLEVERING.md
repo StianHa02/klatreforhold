@@ -396,7 +396,11 @@ select count(*) from public.stasjon_maling;
 4. **Få inn tilbakemeldinger.** Spre siden i klubben. Mål: 150-400 per felt, også etter regn og i dårlig vær.
 5. **Kalibrer per felt** (3 parametre) når det er nok, og vurder å kalibrere `rh_korreksjon_styrke`.
 6. **Vis usikkerheten** i nettsiden: «Tørt fra ca. kl 14 (± 2 t)» eller myke overganger i timestripa. Sommervarsler
-   er mer usikre enn vintervarsler.
+   er mer usikre enn vintervarsler. **Dataene finnes nå** (2026-10-30): hver time i `varsel_siste` har `p_tort`, andelen
+   av MEPS-ensemblets medlemmer (THREDDS, `data/meps_ensemble.py`) som gir tørt berg når bare nedbøren byttes.
+   Radartimene beholdes, og timer etter ensemblets slutt (~2.5 døgn) har `null`. Toppnivå `ensemble` sier
+   antall medlemmer og kjøring. Ukalibrert: arkiver `p_tort` i `varsel` (krever ny kolonne) og sjekk mot
+   tilbakemeldingene før tallet vises som prosent.
 7. **Følg med på 2026-fuktigheten** (7.6). Kjør `--historikk --skriv-rh` på nytt om et halvt år.
 8. **Sjekk geometrien:** helningen på Helleneset (70° er anslått), om Ekstraveggen bør deles i bratt del og sva
    (høyre side er delvis sva), og bergarten via NGUs berggrunnskart. **Retningene i nettføreren er oppdatert**
