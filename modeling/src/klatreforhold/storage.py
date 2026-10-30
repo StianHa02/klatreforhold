@@ -74,6 +74,9 @@ class CsvStorage:
     def save_station_obs(self, rows: list[dict]) -> int:
         return 0
 
+    def save_weather(self, rows: list[dict]) -> int:
+        return 0  # værinput lagres bare i Supabase
+
 
 class SupabaseStorage:
     navn = "supabase"
@@ -174,6 +177,25 @@ class SupabaseStorage:
 
     def station_observations(self, station: str) -> pd.DataFrame:
         return _paged(self, "stasjon_maling", {"stasjon": f"eq.{station}", "select": "*", "order": "tid.asc"})
+
+    def save_weather(self, rows: list[dict]) -> int:
+        """Via lagre_vaer(): en MET Nordic-analyse overskrives aldri av reservevær fra en senere kjøring."""
+        if not rows:
+            return 0
+        r = self.s.post(f"{self.base}/rpc/lagre_vaer", json={"rader": rows}, timeout=60)
+        r.raise_for_status()
+        return int(r.json())
+
+    def weather(self, felt: str) -> pd.DataFrame:
+        """Værinputen timesjobben har lagret for feltet, som værtabell (UTC-indeks, samme kolonner som get_weather)."""
+        df = _paged(self, "vaer", {"felt": f"eq.{felt}", "select": "*", "order": "tid.asc"})
+        if df.empty:
+            return df
+        df.index = pd.to_datetime(df.pop("tid"), utc=True).rename("time")
+        text = ["weather_source", "weather_kind", "weather_issued", "precipitation_source"]
+        num = [c for c in df.columns if c not in text + ["felt", "generert"]]
+        df[num] = df[num].astype(float)
+        return df.drop(columns=["felt", "generert"])
 
     def save_forecast(self, felt: str, rows: list[dict]) -> int:
         if not rows:

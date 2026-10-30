@@ -82,6 +82,24 @@ def test_labels_from_supabase_rows():
     assert labels_from_frame(pd.DataFrame()).empty
 
 
+def test_weather_via_rpc_and_back():
+    st = SupabaseStorage("https://abc.supabase.co", "key")
+    st.s = FakeSession()
+    st.s.post = lambda url, **kw: st.s.calls.append(("POST", url, kw)) or FakeResp(2)
+    assert st.save_weather([]) == 0 and not st.s.calls
+    rows = [{"felt": "ekstraveggen", "tid": "2026-10-30T09:00:00+00:00", "air_temperature": 10.0}]
+    assert st.save_weather(rows) == 2
+    _, url, kw = st.s.calls[-1]
+    assert url.endswith("/rest/v1/rpc/lagre_vaer") and kw["json"] == {"rader": rows}
+    st.s.get = lambda url, **kw: FakeResp([
+        {"felt": "ekstraveggen", "tid": "2026-10-30T09:00:00+00:00", "generert": "x", "air_temperature": 10,
+         "dni": None, "weather_kind": "analysis", "weather_source": "metnordic", "weather_issued": None,
+         "precipitation_source": "metnordic"}])
+    w = st.weather("ekstraveggen")
+    assert str(w.index[0]) == "2026-10-30 09:00:00+00:00" and "felt" not in w and "generert" not in w
+    assert w["air_temperature"].dtype == float and w["weather_kind"].iloc[0] == "analysis"
+
+
 def test_dotenv_does_not_override():
     import os
     from klatreforhold.config import _load_dotenv

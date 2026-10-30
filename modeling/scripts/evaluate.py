@@ -5,6 +5,7 @@ Viser også treff per ledetid fra varselarkivet hvis observasjonene kommer fra S
 """
 import argparse
 import json
+from pathlib import Path
 
 from _common import DEFAULT_CONFIG, ROOT
 from _labels import get_labels
@@ -18,12 +19,12 @@ from klatreforhold.physics.wetness import run_model
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
-    ap.add_argument("--weather", required=True)
+    ap.add_argument("--weather", required=True, nargs="+", help="vær-CSV(er) og/eller 'supabase'")
     ap.add_argument("--labels", nargs="+", required=True, help="etikettfil(er) eller 'supabase'")
     ap.add_argument("--med-dev", action="store_true")
     a = ap.parse_args()
     crag, params = load_config(a.config)
-    w = load_weather(a.weather).interpolate(limit=3)
+    w = load_weather(a.weather, Path(a.config).stem).interpolate(limit=3)
     y = get_labels(a.labels, a.config, crag.timezone, a.med_dev)
     y = y[y.index.isin(w.index)]
     if y.empty:
@@ -34,8 +35,6 @@ def main():
     print(format_table(res))
     out = {"situasjoner": res}
     if "supabase" in a.labels:
-        from pathlib import Path
-
         from klatreforhold.storage import get_storage
         lead = forecast_skill_by_lead(get_storage().forecast_archive(Path(a.config).stem), y)
         if not lead.empty:

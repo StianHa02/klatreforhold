@@ -243,7 +243,7 @@ def _kilde(source: str, w: pd.DataFrame) -> str:
 def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source: str = "auto",
             weather: pd.DataFrame | None = None, history_hours: int = 12,
             checkpoint: dict | None = None, include_checkpoints: bool = False,
-            ensemble: pd.DataFrame | None = None) -> dict:
+            ensemble: pd.DataFrame | None = None, include_weather: bool = False) -> dict:
     crag, params = load_crag(slug)
     issued = pd.Timestamp.now(tz="UTC")
     weather_now = now or issued
@@ -322,4 +322,6 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
         result["_checkpoints"] = [{"felt": slug, "tid": t.isoformat(), "model_version": MODEL_VERSION,
                                     "config_hash": signature, "state": state_at(res, t)}
                                    for t in candidates.index if t.hour == 0 or t == cutoff]
+    if include_weather:  # været slik modellen fikk det, for timer som er passert (lagres i vaer)
+        result["_vaer"] = raw.loc[:issued.floor("h")]
     return result

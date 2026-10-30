@@ -1,8 +1,10 @@
 """Trener og sammenligner fysikk alene, scikit-learn og PyTorch mot etiketter.
 
   python scripts/train.py --weather data/raw/<vær>.csv --labels data/labels/<etiketter>.csv [--torch]
+  python scripts/train.py --weather supabase data/raw/<vær>.csv --labels supabase
 
 Vær-CSV: fra fetch_history.py (Open-Meteo/Frost) eller stasjons-CSV med 'referenceTime'.
+'supabase': været timesjobben brukte (vaer-tabellen), foretrukket der det finnes.
 """
 import argparse
 import json
@@ -20,7 +22,28 @@ from klatreforhold.version import MODEL_VERSION, config_hash
 from klatreforhold.ml.evaluate import event_split
 
 
-def load_weather(path):
+def load_weather(path, felt=None):
+    """Vær-CSV, 'supabase' (vaer-tabellen for felt) eller en liste av dem i prioritert rekkefølge.
+
+    Med flere kilder tas hele timer fra den første som har timen, så én time aldri blander kilder.
+    Typisk: ['supabase', 'data/raw/<vær>.csv'], der CSV-en fyller tiden før vaer startet og hull i timesjobben.
+    """
+    if not isinstance(path, (str, Path)):
+        parts = [p for p in (load_weather(p, felt) for p in path) if not p.empty]
+        if not parts:
+            raise SystemExit("Ingen vær i kildene")
+        w = parts[0]
+        for extra in parts[1:]:
+            w = pd.concat([w, extra.loc[~extra.index.isin(w.index)]])
+        return w.sort_index().asfreq("1h")
+    if str(path) == "supabase":
+        from klatreforhold.storage import SupabaseStorage, get_storage
+        st = get_storage()
+        if not isinstance(st, SupabaseStorage):
+            raise SystemExit("--weather supabase krever SUPABASE_URL og SUPABASE_SERVICE_ROLE_KEY (f.eks. i .env)")
+        df = st.weather(felt)
+        print(f"Hentet {len(df)} timer vær fra Supabase")
+        return df.asfreq("1h") if not df.empty else df
     head = pd.read_csv(path, nrows=1)
     if "referenceTime" in head:
         from klatreforhold.data.station_csv import load_station_csv
@@ -33,7 +56,8 @@ def load_weather(path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
-    ap.add_argument("--weather", required=True)
+    ap.add_argument("--weather", required=True, nargs="+",
+                    help="vær-CSV(er) og/eller 'supabase' (vaer-tabellen); første kilde vinner der de overlapper")
     ap.add_argument("--labels", required=True, nargs="+",
                     help="én eller flere etikettfiler, eller 'supabase' for å hente observasjonene direkte")
     ap.add_argument("--med-dev", action="store_true", help="ta med observasjoner registrert fra utvikling (kilde=dev)")
@@ -41,7 +65,7 @@ def main():
     ap.add_argument("--torch", action="store_true", help="tren også GRU-modell (PyTorch, CUDA hvis mulig)")
     a = ap.parse_args()
     crag, params = load_config(a.config)
-    w = prepare_weather(load_weather(a.weather))
+    w = prepare_weather(load_weather(a.weather, Path(a.config).stem))
     phys = run_model(w, crag, params)
     X = build_features(w, phys, crag.timezone)
     X = X[w["air_temperature"].notna()]  # ikke tren på utfylte hull
