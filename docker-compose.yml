@@ -11,6 +11,7 @@ services:
       SUPABASE_URL: ${SUPABASE_URL:-}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       KLATREFORHOLD_KILDE: ${KLATREFORHOLD_KILDE:-dev}
+      FROST_CLIENT_ID: ${FROST_CLIENT_ID:-}   # valgfri: bare felt med frost_bruk: erstatt bruker Frost i API-et
     volumes:
       - ./modeling/data/labels:/app/data/labels   # tilbakemeldinger lagres på din maskin
       - ./modeling/models:/app/models             # modeller trent lokalt (GPU) brukes av API-et
