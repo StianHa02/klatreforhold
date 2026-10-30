@@ -26,7 +26,7 @@ function Seksjon({ id, tittel, children }: { id: string; tittel: string; childre
 
 function Kort({ tittel, tekst, children }: { tittel: string; tekst?: string; children: React.ReactNode }) {
   return (
-    <figure className="flex flex-col gap-sm rounded-xl border border-border-subtle bg-surface-default p-md">
+    <figure className="flex flex-col gap-sm kort p-md">
       <figcaption className="flex flex-col gap-xs">
         <span className="h3">{tittel}</span>
         {tekst && <span className="byline max-w-[65ch]">{tekst}</span>}
@@ -41,7 +41,7 @@ const STEG = [
   { tittel: 'Regn som treffer veggen', tekst: 'Ut fra vindretning, vindstyrke og hvilken vei veggen vender, regner vi ut hvor mye av regnet som faktisk treffer fjellet. På sva treffer mer av det vanlige regnet direkte.' },
   { tittel: 'Temperaturen i berget', tekst: 'Et energiregnskap for overflaten: sol på veggen (med terrenget rundt fra Kartverket), varmestråling, vind og varme fra berget innenfor. Det gir bergtemperaturen time for time.' },
   { tittel: 'Vannet på veggen', tekst: 'Vi holder regnskap med vannfilmen, vannet i tak og sprekker og et sakte sigereservoar. Kondens legger til vann, fordampning tar det bort.' },
-  { tittel: 'Tørt, fuktig, vått eller is/snø', tekst: 'Tørt gjelder den representative hovedveggen; enkeltruter kan avvike. Vi følger vann, is og snø hver for seg. Frysing frigir varme, og smelting bruker varme før smeltevannet kan tørke.' },
+  { tittel: 'Tørt, fuktig eller vått', tekst: 'Tørt gjelder den representative hovedveggen; enkeltruter kan avvike. Vi følger vann, is og snø hver for seg. Frysing frigir varme, og smelting bruker varme før smeltevannet kan tørke. Is og snø på veggen vises som vått.' },
 ]
 
 const VIDERE = [
@@ -79,7 +79,7 @@ export default async function OmModellen() {
       </header>
 
       <Seksjon id="vann" tittel="Hva som gjør fjellet vått, og hva som tørker det">
-        <div className="rounded-xl border border-border-subtle bg-surface-default p-md">
+        <div className="kort p-md">
           <VeggSnitt />
         </div>
         <ol className="grid gap-md sm:grid-cols-2">
@@ -183,13 +183,13 @@ export default async function OmModellen() {
                 ? 'Ingen tilbakemeldinger ennå. Den første kommer fra deg.'
                 : `${totalt} ${totalt === 1 ? 'tilbakemelding' : 'tilbakemeldinger'} så langt. Vi trenger noen hundre per felt før vi kan kalibrere.`}
             </p>
-            <div className="overflow-x-auto rounded-xl border border-border-subtle bg-surface-default">
+            <div className="overflow-x-auto kort">
               <table className="w-full text-left text-sm tabular-nums">
                 <thead className="text-text-subtle">
                   <tr className="border-b border-border-subtle">
                     <th scope="col" className="p-sm font-normal">Felt</th>
                     <th scope="col" className="p-sm font-normal">Tilbakemeldinger</th>
-                    <th scope="col" className="p-sm font-normal">Tørt / fuktig / vått / is/snø</th>
+                    <th scope="col" className="p-sm font-normal">Tørt / fuktig / vått</th>
                     <th scope="col" className="p-sm font-normal">Varselet stemte</th>
                     <th scope="col" className="p-sm font-normal">Varsler i arkivet</th>
                   </tr>
@@ -198,10 +198,10 @@ export default async function OmModellen() {
                   {live.map((f) => (
                     <tr key={f.felt} className="border-b border-border-subtle last:border-0">
                       <th scope="row" className="p-sm font-medium">
-                        <a className="focus rounded-sm underline-offset-2 hover:underline" href={`/felt/${f.felt}`}>{navn[f.felt] ?? f.felt}</a>
+                        <a className="lenke" href={`/felt/${f.felt}`}>{navn[f.felt] ?? f.felt}</a>
                       </th>
                       <td className="p-sm">{f.observasjoner}</td>
-                      <td className="p-sm">{f.tort} / {f.fuktig} / {f.vatt} / {f.is ?? 0}</td>
+                      <td className="p-sm">{f.tort} / {f.fuktig} / {f.vatt + (f.is ?? 0)}</td>
                       <td className="p-sm">{f.andel_riktig === null ? '–' : `${Math.round(f.andel_riktig * 100)} % av ${f.vurdert}`}</td>
                       <td className="p-sm">{f.kjoringer} siden {dag(f.forste_varsel)} kl {klokke(f.forste_varsel)}</td>
                     </tr>
@@ -244,7 +244,7 @@ export default async function OmModellen() {
       <Seksjon id="videre" tittel="Veien videre">
         <ol className="flex flex-col gap-sm">
           {VIDERE.map((v) => (
-            <li key={v.tittel} className="flex flex-col gap-xs rounded-xl border border-border-subtle bg-surface-default p-md sm:flex-row sm:gap-md">
+            <li key={v.tittel} className="flex flex-col gap-xs kort p-md sm:flex-row sm:gap-md">
               <span className={`h-fit w-fit shrink-0 rounded-full px-sm py-[2px] text-xs font-medium ${STATUSFARGE[v.status]} sm:w-[5.5rem] sm:text-center`}>
                 {v.status === 'pågår' ? 'Pågår' : v.status[0].toUpperCase() + v.status.slice(1)}
               </span>

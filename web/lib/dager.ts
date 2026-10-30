@@ -10,8 +10,8 @@ export const KLATRE_TIL = 21
 const MIN_VINDU_T = 3 // så mange timer på rad må det være tørt for at dagen regnes som klatrbar
 const SIKKER_T = 60 // MET Nordic rekker ca. 2.5 døgn fram; lenger fram er det ECMWF og mer usikkert
 
-export const STATUS_TEKST: Record<Status, string> = { tort: 'Tørt', fuktig: 'Fuktig', vatt: 'Vått', is: 'Is' }
-export const BOKSTAV: Record<Status, string> = { tort: 'T', fuktig: 'F', vatt: 'V', is: 'I' }
+export const STATUS_TEKST: Record<Status, string> = { tort: 'Tørt', fuktig: 'Fuktig', vatt: 'Vått' }
+export const BOKSTAV: Record<Status, string> = { tort: 'T', fuktig: 'F', vatt: 'V' }
 
 const deler = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Oslo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
@@ -118,8 +118,8 @@ export function oppsummerDag(dag: Dag, naMs: number): DagSum {
   if (nesten && nesten.til - nesten.fra >= Math.min(MIN_VINDU_T, klatre.length)) {
     return { ...felles, status: 'fuktig', tekst: `beste kl ${pad(nesten.fra)}–${pad(nesten.til)}` }
   }
-  if (klatre.some((t) => t.status === 'is')) return { ...felles, status: 'is', tekst: 'is på berget' }
-  return { ...felles, status: 'vatt', tekst: regn_mm >= 0.1 ? `${regn_mm.toFixed(1)} mm regn` : 'ingen tørre timer' }
+  // is/snø vises som vått, men dagteksten sier hvorfor
+  return { ...felles, status: 'vatt', tekst: klatre.some((t) => t.is_sno) ? 'is/snø' : regn_mm >= 0.1 ? `${regn_mm.toFixed(1)} mm regn` : 'ingen tørre timer' }
 }
 
 export type DagBoks = { nokkel: string; navn: string; status: Status | null; tekst: string; usikker: boolean }
@@ -242,7 +242,7 @@ export function lagUkeRad(dag: Dag, o: { iDag: string; naMs: number; varslet?: M
       tittel: `${lang} kl ${pad(h)}–${pad((h + 1) % 24)}: ${STATUS_TEKST[t.status]}`
         + (o.varslet ? ` (varslet dagen før: ${v ? STATUS_TEKST[v].toLowerCase() : 'ikke lagret'})` : '')
         + ` · regn ${t.nedbor_mm.toFixed(1)} mm · ${t.sol_pa_veggen ? 'sol på veggen' : 'ikke sol på veggen'}`
-        + ` · vind ${t.vind_ms.toFixed(1)} m/s fra ${kompass(t.vindretning, 8)} · fukt ${Math.round(t.luftfuktighet)} %`,
+        + ` · vind ${t.vind_ms.toFixed(1)} m/s fra ${kompass(t.vindretning, 8)} · luftfuktighet ${Math.round(t.luftfuktighet)} %`,
     }
   })
   const meldinger = (o.meldinger ?? []).flatMap((m): UkeMelding[] => {

@@ -6,7 +6,7 @@ import HourStrip from '@/components/HourStrip'
 import NesteDogn from '@/components/NesteDogn'
 import StatusHero from '@/components/StatusHero'
 import { dag, klokke } from '@/lib/api'
-import { dagBokser, statusPerTime } from '@/lib/dager'
+import { STATUS_TEKST, dagBokser, statusPerTime } from '@/lib/dager'
 import { hentObservasjoner, hentTidligereVarsel, hentVarsel, tolkTid } from '@/lib/kilde'
 
 export const dynamic = 'force-dynamic'
@@ -38,18 +38,17 @@ export default async function FeltSide({
   const historikk = varsel.historikk ?? varsel.siste_timer
   const framover = varsel.framover ?? varsel.timer
 
+  // Øverst status nå og skjemaet for å si hvordan det var, så time for time, grafene og dagene framover.
+  // Siste 7 døgn og listen over tilbakemeldinger står nederst.
   return (
     <div className="flex flex-col gap-md">
       <div>
         <h1 className="font-mabry text-[32px] leading-tight">{varsel.felt.navn}</h1>
-        <p className="text-sm text-text-subtle">
-          Varsel for {dag(varsel.na)} kl {klokke(varsel.na)} · {varsel.kilde}
-          {varsel.ml_modell ? ' · med ML-modell' : ' · fysisk modell'}
-        </p>
+        <p className="byline">Oppdatert {dag(varsel.generert)} kl {klokke(varsel.generert)}</p>
       </div>
       {varsel.utdatert && (
-        <p className="rounded-lg border border-state-warning bg-state-warning-tinted p-sm text-sm">
-          Varselet ble sist oppdatert {dag(varsel.generert)} kl {klokke(varsel.generert)}. Timesjobben har kanskje stoppet.
+        <p className="border border-state-warning bg-state-warning-tinted p-sm text-sm">
+          Varselet er ikke oppdatert siden {dag(varsel.generert)} kl {klokke(varsel.generert)}.
         </p>
       )}
       <StatusHero varsel={varsel} bokser={dagBokser(varsel, naTid.getTime())} />
@@ -63,19 +62,19 @@ export default async function FeltSide({
         tidligere={tidligere}
         obs={(obsUke?.observasjoner ?? []).filter((o) => Date.parse(o.time) <= naTid.getTime())}
       />
-      <section className="rounded-xl border border-border-subtle bg-surface-default p-md text-sm">
-        <h2 className="h3">Tilbakemeldinger</h2>
+      <section className="kort p-md text-sm">
+        <h2 className="seksjon">Tilbakemeldinger</h2>
         {obs && obs.antall > 0 ? (
           <>
             <p className="mt-xs text-text-subtle">
-              {obs.antall} observasjoner
-              {obs.andel_riktig !== null && `, varselet stemte ${Math.round(obs.andel_riktig * 100)} % av gangene (tørt mot ikke tørt)`}.
+              {obs.antall} tilbakemeldinger
+              {obs.andel_riktig !== null && `, varselet stemte ${Math.round(obs.andel_riktig * 100)} % av gangene`}.
             </p>
             <ul className="mt-sm flex flex-col gap-xs">
               {obs.observasjoner.map((o) => (
-                <li key={`${o.time}-${o.status}-${o.kommentar}`} className="flex gap-sm">
+                <li key={`${o.time}-${o.status}-${o.kommentar}`} className="flex flex-wrap gap-x-sm">
                   <span className="text-text-subtle">{dag(o.time)} {klokke(o.time)}</span>
-                  <span>{o.status === 'tort' ? 'Tørt' : o.status === 'fuktig' ? 'Fuktig' : 'Vått'}</span>
+                  <span>{STATUS_TEKST[o.status]}</span>
                   {o.riktig !== '' && <span>{Number(o.riktig) === 1 ? '✓' : '✗'}</span>}
                   {o.kommentar && <span className="text-text-subtle">«{o.kommentar}»</span>}
                 </li>
@@ -83,10 +82,12 @@ export default async function FeltSide({
             </ul>
           </>
         ) : (
-          <p className="mt-xs text-text-subtle">Ingen tilbakemeldinger ennå. Bli den første!</p>
+          <p className="mt-xs text-text-subtle">Ingen tilbakemeldinger ennå. Har du vært der, si fra over.</p>
         )}
       </section>
-      <p className="text-xs text-text-subtle">{varsel.forbehold}</p>
+      <p className="text-xs text-text-subtle">
+        {varsel.ml_modell ? 'Fysisk modell med maskinlæring' : 'Fysisk modell'}, værdata fra {varsel.kilde}. {varsel.forbehold}
+      </p>
     </div>
   )
 }

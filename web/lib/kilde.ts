@@ -36,18 +36,35 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 // ---- varsel ----
 
+/** Modellens status slik nettsiden viser den: is/snø blir vått. */
+export const tilVisning = (s: string): Status => (s === 'tort' || s === 'fuktig' ? s : 'vatt')
+
+/** Timen slik nettsiden viser den: modellens «is» blir «vatt» (grunnen «Is eller snø …» står igjen). */
+function visTime(t: Time): Time {
+  const status = tilVisning(t.status)
+  return status === t.status ? t : { ...t, status, status_tekst: 'Vått', is_sno: true }
+}
+
 /** Klipper det lagrede varselet (laget for opptil en time siden) til "nå + 24 t" og 12 t bakover.
  *  `framover` og `historikk` får alle timene fra og før nå (dagboksene og ukerutenettene). */
 export function vinduFraNa(v: Varsel, na: Date = new Date(), timer = 24): Varsel {
   const naTime = new Date(na)
   naTime.setUTCMinutes(0, 0, 0)
   if (naTime.getTime() < na.getTime()) naTime.setUTCHours(naTime.getUTCHours() + 1) // tidsstempel = slutten av timen
-  const alle = [...v.siste_timer, ...v.timer].sort((a, b) => Date.parse(a.tid) - Date.parse(b.tid))
+  const alle = [...v.siste_timer, ...v.timer].map(visTime).sort((a, b) => Date.parse(a.tid) - Date.parse(b.tid))
   const framover = alle.filter((t) => Date.parse(t.tid) >= naTime.getTime())
   const fram = framover.slice(0, timer + 1)
   const tidligere = alle.filter((t) => Date.parse(t.tid) < naTime.getTime())
   const bak = tidligere.slice(-12)
-  if (fram.length === 0) return { ...v, utdatert: true }
+  if (fram.length === 0) {
+    return {
+      ...v,
+      utdatert: true,
+      timer: v.timer.map(visTime),
+      siste_timer: v.siste_timer.map(visTime),
+      sammendrag: { ...v.sammendrag, status_na: tilVisning(v.sammendrag.status_na) },
+    }
+  }
   const torre = fram.filter((t) => t.tort)
   const vate = fram.filter((t) => !t.tort)
   const forste = fram[0]
@@ -146,7 +163,7 @@ export async function hentTidligereVarsel(slug: string, fra: Date): Promise<Tidl
       `varsel?felt=eq.${encodeURIComponent(slug)}&tid=gte.${encodeURIComponent(fra.toISOString())}` +
         `&ledetid_timer=in.(${ledetider})&select=tid,status,ledetid_timer&order=tid.asc&limit=1000`,
     )
-    return velgTidligereVarsel(rader)
+    return velgTidligereVarsel(rader).map((r) => ({ ...r, status: tilVisning(r.status) }))
   } catch (e) {
     console.log(e)
     return []
@@ -173,7 +190,7 @@ export async function hentObservasjoner(slug: string, fra?: Date): Promise<Obser
         ...stats,
         observasjoner: rows.map((r) => ({
           time: r.tid,
-          status: r.status,
+          status: tilVisning(r.status),
           predikert_status: r.predikert_status ?? '',
           riktig: r.riktig === null ? '' : r.riktig ? 1 : 0,
           kommentar: r.kommentar ?? '',
@@ -182,6 +199,7 @@ export async function hentObservasjoner(slug: string, fra?: Date): Promise<Obser
     }
     const res = await api<Observasjoner>(`/api/felt/${slug}/observasjoner?siste=${fra ? 500 : 10}`)
     if (fra) res.observasjoner = res.observasjoner.filter((o) => Date.parse(o.time) >= fra.getTime())
+    res.observasjoner = res.observasjoner.map((o) => ({ ...o, status: tilVisning(o.status) }))
     return res
   } catch (e) {
     console.log(e)
@@ -189,6 +207,7 @@ export async function hentObservasjoner(slug: string, fra?: Date): Promise<Obser
   }
 }
 
+// «is» tas fortsatt imot (eldre klienter); nettsiden viser og sender bare de tre andre
 const STATUSER = ['tort', 'fuktig', 'vatt', 'is'] as const
 const PREDIKERT = ['tort', 'fuktig', 'vatt', 'is'] as const
 

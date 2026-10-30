@@ -41,24 +41,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             Hopp til innhold
           </a>
-          <div className="mx-auto flex max-w-container items-center justify-between gap-md px-md py-[12px]">
+          <div className="mx-auto flex max-w-container items-center justify-between gap-md px-md py-[12px] lg:px-lg">
             <a href="/" className="focus flex items-center gap-sm rounded-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/mark.svg" alt="" width={18} height={24} className="h-lg w-auto" />
               <span className="font-mabry text-xl leading-none">Klatreforhold</span>
             </a>
             <nav aria-label="Hovedmeny" className="flex items-center gap-md text-sm">
-              <a href="/om" className="focus rounded-sm underline-offset-4 hover:underline">Om modellen</a>
-              <span className="byline max-sm:hidden">BKK · prototype</span>
+              <a href="/" className="focus rounded-sm decoration-2 underline-offset-4 hover:underline">Felt</a>
+              <a href="/om" className="focus rounded-sm decoration-2 underline-offset-4 hover:underline">Om varselet</a>
             </nav>
           </div>
         </header>
-        <main id="main" className="mx-auto w-full max-w-container grow px-md py-lg">
+        <main id="main" className="mx-auto w-full max-w-innhold grow px-md py-lg">
           {children}
         </main>
         <footer className="bg-accent-surface-default text-accent-text-default">
-          <div className="mx-auto flex max-w-container flex-col gap-xs px-md py-lg text-sm">
-            <span className="font-mabry">Klatreforhold · Bergen Klatreklubb</span>
+          <div className="mx-auto flex max-w-container flex-col gap-xs px-md py-lg text-sm lg:px-lg">
+            <span className="font-mabry">Klatreforhold fra Bergen Klatreklubb (prototype)</span>
             <span className="opacity-80">
               Værdata fra MET Norway (CC BY 4.0) via Open-Meteo. Høydedata © Kartverket.
             </span>

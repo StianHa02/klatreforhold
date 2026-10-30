@@ -1,12 +1,13 @@
 import { type Time, klokke } from '@/lib/api'
-import { SKALA_MM } from '@/lib/dager'
 
 // Enkel SVG-graf uten avhengigheter: vann på veggen (felt), regn mot veggen (søyler),
 // og bergtemperatur mot duggpunkt (linjer). Hver graf tegnes i to formater, ett smalt for
 // mobil og ett bredt for større skjermer, så teksten holder lesbar størrelse uten scrolling.
-// Vann og regn deler én fast skala (0–2 mm), så grafen kan sammenlignes fra dag til dag og mellom felt.
+// Vann og regn deler én fast skala (0–1 mm), så grafen kan sammenlignes fra dag til dag og mellom felt.
+// Veggen holder maks ca. 0.7 mm (film + tak/sprekker), så 1 mm er nok; kraftigere regn kappes og får tallet over.
 // Mellom berg og duggpunkt: grønt når berget er varmere (ingen kondens), blått når det er kaldere;
 // sterkere farge jo større avstand (full ved 4 °C: under ca. 2 °C er det fare for kondens).
+const SKALA_MM = 1
 const MARGIN_FULL_C = 4
 const MAKS_OPASITET = 0.45
 type Format = { W: number; H: number; font: number; hvert: number; pad: { l: number; r: number; t: number; b: number } }
@@ -52,8 +53,8 @@ function VannGraf({ timer, f, na }: { timer: Time[]; f: Format; na: number }) {
   const area = `${line((t) => klipp(t.vann_mm), y)} L${x(n - 1)},${bunn} L${x(0)},${bunn} Z`
   const bw = Math.max(2, (f.W - f.pad.l - f.pad.r) / n - 2)
   return (
-    <svg viewBox={`0 0 ${f.W} ${f.H}`} className="w-full" role="img" aria-label="Vann på veggen og regn mot veggen, fast skala 0 til 2 mm">
-      {[1, 2].map((mm) => (
+    <svg viewBox={`0 0 ${f.W} ${f.H}`} className="w-full" role="img" aria-label="Vann på veggen og regn mot veggen, fast skala 0 til 1 mm">
+      {[0.5, 1].map((mm) => (
         <g key={mm}>
           <line x1={f.pad.l} x2={f.W - f.pad.r} y1={y(mm)} y2={y(mm)} stroke="var(--color-light-600)" />
           <text x={2} y={y(mm) + f.font * 0.35} fontSize={f.font} fill="var(--color-dark-200)">{mm === SKALA_MM ? `${mm} mm` : mm}</text>
@@ -66,6 +67,11 @@ function VannGraf({ timer, f, na }: { timer: Time[]; f: Format; na: number }) {
           <title>{`kl ${klokke(t.tid)}: ${t.regn_mot_veggen_mm.toFixed(1)} mm regn mot veggen, ${t.vann_mm.toFixed(2)} mm vann på veggen`}</title>
         </rect>
       ))}
+      {timer.map((t, i) => (t.regn_mot_veggen_mm > SKALA_MM ? (
+        <text key={`k${t.tid}`} x={x(i)} y={y(SKALA_MM) - 2} fontSize={f.font * 0.85} textAnchor="middle" fill="var(--color-dark-200)">
+          {t.regn_mot_veggen_mm.toFixed(1)}
+        </text>
+      ) : null))}
       <path d={area} fill="var(--color-accent-blue-400)" fillOpacity={0.35} stroke="var(--color-accent-blue-400)" />
       <Akse timer={timer} f={f} na={na} />
     </svg>
@@ -127,19 +133,19 @@ function Responsiv({ timer, Graf, na }: { timer: Time[]; Graf: typeof VannGraf; 
 
 export default function ForecastChart({ timer, naIndeks = 0 }: { timer: Time[]; naIndeks?: number }) {
   return (
-    <section className="rounded-xl border border-border-subtle bg-surface-default p-md">
-      <h2 className="h3 mb-sm">Vann på veggen</h2>
+    <section className="kort p-md">
+      <h2 className="seksjon mb-sm">Vann på veggen</h2>
       <Responsiv timer={timer} Graf={VannGraf} na={naIndeks} />
       <p className="mt-xs text-xs text-text-subtle">
-        Felt: modellert vann på flaten og i tak/sprekker (mm). Søyler: regn som treffer veggen (mm per time). Fast skala 0–2 mm.
+        Feltet er vannet modellen mener ligger på veggen (mm), søylene er regn som treffer veggen (mm per time). Søyler over 1 mm er kappet, med tallet over.
       </p>
 
-      <h2 className="h3 mb-sm mt-md">Bergtemperatur og duggpunkt</h2>
+      <h2 className="seksjon mb-sm mt-lg">Bergtemperatur og duggpunkt</h2>
       <Responsiv timer={timer} Graf={TempGraf} na={naIndeks} />
       <p className="mt-xs text-xs text-text-subtle">
-        <span className="text-[color:var(--color-accent-red-400)]">━</span> berget (modell){' '}
-        <span className="text-[color:var(--color-accent-blue-400)]">┅</span> duggpunkt. Grønt mellom linjene: berget er varmere enn
-        duggpunktet, sterkere jo større avstand. Blått: berget er kaldere enn duggpunktet, og det kondenserer vann på det.
+        <span className="text-[color:var(--color-accent-red-400)]">━</span> bergtemperatur (modell){' '}
+        <span className="text-[color:var(--color-accent-blue-400)]">┅</span> duggpunkt. Grønt: berget er varmere enn duggpunktet og kan
+        tørke. Blått: berget er kaldere, og det kondenserer vann på det selv uten regn.
       </p>
     </section>
   )
