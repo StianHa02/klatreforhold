@@ -20,7 +20,7 @@ const MORK = 'text-[color:var(--color-dark-900)]' // mørk tekst har nok kontras
 
 export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
   rader: UkeRad[]
-  bryter?: boolean // vis «I etterkant | Varslet dagen før»
+  bryter?: boolean // vis «Slik det ble | Slik det ble varslet»
   tekster: { etter: string; for?: string }
   treff?: { etter: string; for: string }
 }) {
@@ -30,8 +30,8 @@ export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
     <div>
       {bryter && (
         <div className="mb-xs flex flex-wrap border-b-2 border-border-subtle" role="group" aria-label="Hva fargene viser">
-          <Fane valgt={!visFor} onClick={() => setVis('etter')}>I etterkant</Fane>
-          <Fane valgt={visFor} onClick={() => setVis('for')}>Varslet dagen før</Fane>
+          <Fane valgt={!visFor} onClick={() => setVis('etter')}>Slik det ble</Fane>
+          <Fane valgt={visFor} onClick={() => setVis('for')}>Slik det ble varslet</Fane>
         </div>
       )}
       <p className="text-sm text-text-subtle">{visFor ? tekster.for : tekster.etter}</p>

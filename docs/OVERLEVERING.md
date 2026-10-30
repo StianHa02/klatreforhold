@@ -199,8 +199,8 @@ vanlig regn, ikke bare slagregn.
   `Ukerutenett.tsx`): én rad per døgn med 24 timer, uten sideveis rulling. Sol på veggen som strek øverst,
   status per time (bokstav i tillegg til farge), regn som søyler under (full søyle 2 mm/t), sum til høyre
   (regn, soltimer, snittvind). Trykk på en dag for tabell time for time (status, varslet dagen før, regn,
-  sol, vind med retning, fukt). «Siste 7 døgn» har oppsummering («Sist regn … tørt igjen etter 9 t») og en
-  bryter **I etterkant** (modellen kjørt på været slik det ble) / **Varslet dagen før** (arkivet, ledetid
+  sol, vind med retning, luftfuktighet). «Siste 7 døgn» har oppsummering («Sist regn … tørt igjen etter 9 t») og en
+  bryter **Slik det ble** (modellen kjørt på været slik det ble) / **Slik det ble varslet** (arkivet, ledetid
   nærmest 24 t). Tilbakemeldingene vises som prikker med ✓/✗ mot det som vises, og treffet telles per visning.
 - Kildene: `varsel_siste` har 7 døgn bakover og ut dag +4 fram (timesjobben henter 14 døgn bakover, så
   vannlagrene er varmet opp, og 6 døgn fram). `vinduFraNa` gir `timer` (neste døgn), `framover` og `historikk`.
