@@ -18,10 +18,9 @@ const REGN_H = 12
 const pst = (h: number) => `${(h / 24) * 100}%`
 const MORK = 'text-[color:var(--color-dark-900)]' // mørk tekst har nok kontrast på alle statusfargene
 
-export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
+export default function Ukerutenett({ rader, bryter = false, treff }: {
   rader: UkeRad[]
   bryter?: boolean // vis «Slik det ble | Slik det ble varslet»
-  tekster: { etter: string; for?: string }
   treff?: { etter: string; for: string }
 }) {
   const [vis, setVis] = useState<'etter' | 'for'>('etter')
@@ -34,8 +33,7 @@ export default function Ukerutenett({ rader, bryter = false, tekster, treff }: {
           <Fane valgt={visFor} onClick={() => setVis('for')}>Slik det ble varslet</Fane>
         </div>
       )}
-      <p className="text-sm text-text-subtle">{visFor ? tekster.for : tekster.etter}</p>
-      {treff && <p className="mt-xs text-sm">{visFor ? treff.for : treff.etter}</p>}
+      {treff && <p className="text-sm">{visFor ? treff.for : treff.etter}</p>}
 
       <div className={`${RAD} mt-sm px-xs text-xs text-text-subtle`} aria-hidden>
         <span />
@@ -261,8 +259,18 @@ function StatusMerke({ s }: { s: Status }) {
 // Pil som viser hvor vinden blåser (som på værkart): vind fra sør gir pil mot nord
 function VindPil({ fra }: { fra: number }) {
   return (
-    <svg aria-hidden viewBox="0 0 24 24" width={14} height={14} className="shrink-0 text-text-tinted" style={{ transform: `rotate(${fra + 180}deg)` }}>
-      <path d="M12 3 L18 15 L12 12 L6 15 Z" fill="currentColor" />
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      width={14}
+      height={14}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      className="shrink-0 text-text-tinted"
+      style={{ transform: `rotate(${fra + 180}deg)` }}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 20V4M5 11l7-7 7 7" />
     </svg>
   )
 }
