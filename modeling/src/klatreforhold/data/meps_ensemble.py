@@ -1,4 +1,4 @@
- """MEPS-ensemblet (30 medlemmer, 2.5 km) fra THREDDS: bare nedbør, for usikkerheten i varselet.
+"""MEPS-ensemblet (30 medlemmer, 2.5 km) fra THREDDS: bare nedbør, for usikkerheten i varselet.
 
 Filen er «lagged»: medlemmene kommer fra de siste kjøringene, og noen mangler de første
 timene. Nedbør er akkumulert per medlem; vi gjør den om til mm for timen før tidsstempelet.

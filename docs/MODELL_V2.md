@@ -1,8 +1,8 @@
 # Modell v2: undersøkelse, endringer og feltkontroll
 
-Status 30. oktober 2026. Implementert på `feat/bergen-conditions-v2`, basert på `main` ved `9db616c`.
-Alle ni felt fra main er med. Dette dokumentet beskriver den nye modellen; eldre resultater i
-`MODEL.md` og `OVERLEVERING.md` gjelder v1. Migrasjonen ble kjørt i Supabase 30. oktober 2026.
+Kodegrunnlag kontrollert 30. oktober 2026: modell 2.0.0 er på `main`, med alle ni felt.
+Dette er gjeldende modellguide. `MODEL.md` og arkivdelen av `OVERLEVERING.md` bevarer eldre resultater.
+Tidligere overlevering rapporterer migrasjonen kjørt 30. oktober; produksjon er ikke kontrollert på nytt her.
 
 ## Sammenligningen med 8a.nu / Vertical-Life
 
@@ -155,7 +155,8 @@ Besøk omtrent annenhver dag er nyttige, særlig når besøkene også omfatter v
 `Tørt` betyr at den representative hovedveggen er tørr; en enkelt tørr eller våt rute avgjør ikke status.
 
 1. Velg en fast del av hovedveggen som kan sees ved hvert besøk. Noter ruter/sektor første gang.
-2. Registrer faktisk lokal dato og klokkeslett og `tort`, `fuktig`, `vatt` eller `is` i nettsidens skjema.
+2. Registrer faktisk lokal dato og klokkeslett og tørt, fuktig eller vått i nettsidens skjema.
+   Is/snø vises og rapporteres som vått der; noter is/snø i kommentaren. Python-API og database støtter også `is`.
    Se helst på veggen før du leser prognosen. Ikke gjett på timer du ikke har observert.
 3. Ta samme oversiktsbilde og noter ved behov vannfilm, våte tak, aktive sigestriper og forskjeller
    mellom hovedveggen og svaet til høyre. En vurdering fra bilen må merkes som usikker i egne notater.
@@ -173,7 +174,8 @@ ikke automatisk i v2. Ingen modell er trent på managerens generelle inntrykk el
 
 ## Kontroll og utrulling
 
-Gjennomført: 45 backendtester, frontendtester og TypeScript-kontroll. Testene dekker blant annet
+Ved den opprinnelige v2-kontrollen: 45 backendtester, frontendtester og TypeScript-kontroll.
+Dette avsnittet beskriver den daterte kontrollen, ikke et løpende testantall. Testene dekker blant annet
 masse-/overflateenergibalanse, frysing/tining, tidssteg, lagret tilstand, overheng, DST, manglende regn,
 værreserver, radarintegrasjon og tørkeepisoder. Live kontroll har gitt 121 prognosetimer og 168
 historikktimer, med direkte MET og reservekilde. Grafer er regenerert for alle ni felt.
@@ -181,7 +183,8 @@ En full test av timesjobben under MET-tidsavbrudd ga komplette prognoser for åt
 Bolstadøyri avdekket den kortere innkjøringshistorikken; etter rettelsen ga en ny livekjøring også der
 121 prognosetimer og 168 historikktimer. Ingen av disse kontrollene skrev til databasen.
 
-Kommandoer fra `modeling/`:
+Kommandoer fra `modeling/`. Sammenligning og statistikkeksport krever lokale historikk-CSV-er
+og skriver dokumentasjon/resultater; de er ikke nødvendige for en vanlig testsjekk:
 
 ```powershell
 python -m pytest tests -q --disable-warnings
@@ -190,12 +193,22 @@ python scripts/compare_model_v2.py --baseline 9db616c
 python scripts/export_site_stats.py
 ```
 
-Fra `web/`: `npm test` og `npx tsc --noEmit`.
+Fra `web/`: `npm test`, `npm run typecheck` og `npm run build`.
 
 [`20261030090000_modell_v2.sql`](../supabase/migrations/20261030090000_modell_v2.sql) ble kjørt i
 prosjektets Supabase 30. oktober 2026 før publisering av v2-koden. Den tillater isobservasjoner og legger til arkivmetadata og tabellen `modelltilstand`,
-med tilgang bare for service role. Deretter kan grenen gjennomgås/merges, og én ordinær timesjobb
+med tilgang bare for service role. V2 er nå på main. Ved ny publisering skal én ordinær timesjobb
 kontrolleres for ni felt, riktige kilder og modellversjon 2.0.0. Historiske arkivrader beholdes.
 Databasemigrasjonen og en vellykket timesjobb må bekreftes ved utrulling; lokale tester alene
 bekrefter ikke produksjonsstatus. Lokale Playwright-rapporter, agentinnstillinger, værdata og
 byggecache holdes utenfor Git.
+
+## MEPS-usikkerhet
+
+`data/meps_ensemble.py` henter nedbør fra MEPS. Hvert medlem kjøres gjennom fysikken med samme
+starttilstand; bare prognosens nedbør byttes, og Nowcast-timer beholdes. Minst ti brukbare medlemmer
+kreves. Timesfeltet `p_tort` er andelen som gir tørt berg, ikke en kalibrert sannsynlighet og ikke
+komplementet til ML-feltet `p_vatt`. Toppnivå `ensemble` har `medlemmer`, `utstedt` og `til`.
+Uten ensemble eller etter dekningsslutt er `p_tort` null; hovedvarselet fortsetter ved kildefeil.
+Dataene lagres i `varsel_siste`, men ikke som egne kolonner i `varsel`. Nettsiden viser ennå ikke
+prosentene. Importfeilen i den første MEPS-versjonen er rettet i repository-oppryddingen.

@@ -1,11 +1,11 @@
-"""HTTP-API for klatreforhold (FastAPI). Kjører lokalt, i Docker og på Vercel.
+"""HTTP-API for klatreforhold (FastAPI). Kjører lokalt og i Docker; produksjon bruker Actions og Supabase.
 
   GET  /api/health
   GET  /api/felt                              felt med konfig
-  GET  /api/felt/{slug}/varsel                status nå + hver time neste 24 t (+ 12 t bakover)
-  POST /api/felt/{slug}/observasjoner         bruker sier tørt/fuktig/vått (blir treningsdata)
+  GET  /api/felt/{slug}/varsel                status nå + 1–120 t fram (standard 24), 7 døgn bakover
+  POST /api/felt/{slug}/observasjoner         bruker sier tørt/fuktig/vått/is (blir treningsdata)
   GET  /api/felt/{slug}/observasjoner         siste observasjoner + hvor ofte varselet stemte
-  POST /api/cron/lagre-varsel                 kalles hver time av Supabase Cron (krever CRON_SECRET)
+  POST /api/cron/lagre-varsel                 valgfritt HTTP-utløst publisering (krever CRON_SECRET)
 
 Lagring: Supabase hvis SUPABASE_URL og SUPABASE_SERVICE_ROLE_KEY er satt, ellers CSV i data/labels/.
 """
@@ -126,7 +126,7 @@ def observasjoner(slug: str, siste: int = Query(50, ge=1, le=1000)):
 
 @app.post("/api/cron/lagre-varsel")
 def cron_lagre_varsel(authorization: str | None = Header(None)):
-    """Lagrer varselet for alle felt i varselarkivet. Kalles av Supabase Cron hver time."""
+    """Lagrer varselet for alle felt i varselarkivet. Valgfritt alternativ til Actions-jobben."""
     secret = os.environ.get("CRON_SECRET")
     if not secret or not authorization or not hmac.compare_digest(authorization, f"Bearer {secret}"):
         raise HTTPException(401, "Ugyldig nøkkel")

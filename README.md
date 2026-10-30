@@ -1,165 +1,139 @@
 # klatreforhold
 
-Predikerer om fjellet på et klatrefelt er **vått eller tørt**, time for time, bare fra offentlige
-værdata. Felt: **Ekstraveggen** (Bønes), **Sandviken** og **Helleneset** (Bergen). Ett felt = én fil i `modeling/config/`;
-timesjobben og nettsiden plukker opp nye filer automatisk.
+Timevarsel for tørt, fuktig, vått eller is/snø på klatrefelt rundt Bergen, beregnet fra offentlige
+værdata. Nettsiden viser tre tilstander; modellert is/snø vises som vått.
 
-- Hvordan modellen fungerer: [`docs/MODEL.md`](docs/MODEL.md)
-- Research bak valgene (fysikk, analoge modeller, datakilder): [`docs/RESEARCH.md`](docs/RESEARCH.md)
-- Deploy (Vercel + Supabase + GitHub Actions, uten eget API): [`docs/DEPLOY.md`](docs/DEPLOY.md)
-- Overlevering (status, funn, beslutninger, neste steg): [`docs/OVERLEVERING.md`](docs/OVERLEVERING.md)
+## Status og dokumentasjon
 
-## Status (oktober 2026)
+Kodegrunnlaget per 30. oktober 2026 bruker modell **2.0.0** og ni felt: Ekstraveggen, Sandviken,
+Helleneset, Neseveggen, Bolstadøyri, Trollkona, Loddefjord, Bymuren og Fabrikkveggen.
+Én YAML-fil direkte i `modeling/config/` definerer et felt. Nettsiden finner nye felt etter publisering.
 
-Full overlevering med status, funn, beslutninger og gjenstående arbeid: [`docs/OVERLEVERING.md`](docs/OVERLEVERING.md).
+- [Gjeldende modell, datakilder og valideringskrav](docs/MODELL_V2.md)
+- [Overlevering: nåværende kode, gjenstående arbeid og historikk](docs/OVERLEVERING.md)
+- [Deploy og driftskontroll](docs/DEPLOY.md)
+- [Legge til et felt](docs/LEGG_TIL_FELT.md)
+- Historisk grunnlag: [v1-modell og resultater](docs/MODEL.md), [første research](docs/RESEARCH.md),
+  [oppfølgingsresearch](docs/RESEARCH_2.md), [v1/v2-sammenligning](docs/MODELL_V2_RESULTATER.md).
 
-| Del | Status |
-|---|---|
-| Fysisk modell for tre felt, geometri fra Kartverket DOM1 | ✅ i drift |
-| Nettside (Vercel) og Supabase | ✅ i drift |
-| Timesjobb (GitHub Actions) | ⚠️ virker ved manuell start, planlagt kjøring har ikke startet av seg selv |
-| Kontroll mot Frost (Florida), 2023-2026 | ✅ resultater i docs/MODEL.md |
-| Fuktighetskorreksjon (måned + døgn) | ✅ |
-| Tilbakemeldinger fra brukere | ❌ ingen ennå |
-| Kalibrering og ML-trening | ❌ venter på tilbakemeldinger |
+GitHub Actions kjører hver time ved :07 og skriver til Supabase. Next.js på Vercel leser databasen
+på serveren. FastAPI brukes lokalt. Produksjonsstatus må kontrolleres i tjenestene; datoen over
+bekrefter kodegrunnlaget, ikke siste vellykkede timesjobb.
 
-Modellparametrene er startverdier fra litteraturen. Kalibrerte verdier havner i `modeling/config/kalibrert/`.
+Publisering gir 120 timer fremover (121 tidspunkt inkludert nå) og 168 historikktimer. Arkivet beholder
+ledetider til 48 timer. Direkte MET Nordic foretrekkes, Open-Meteo gir historikk og reserve, og fersk
+Nowcast supplerer nedbøren. MEPS kan gi ukalibrert `p_tort`; dette vises ennå ikke som prosent i UI-et.
+Parametrene er foreløpige. Simulerte resultater er ikke målt treffsikkerhet på klatreveggen.
 
-## Repoet
+## Lokal utvikling
 
-```
-modeling/   Python: fysikkmodell, datahenting, kalibrering, trening, timesjobb, lokalt API
-web/        Next.js-nettsiden (Vercel, root directory = web)
-supabase/   database-migrasjoner
-docs/       modell, research, deploy
-.github/    timesjobben (GitHub Actions, kjører i modeling/)
-```
+Bruk Python 3.12 (samme som CI) og Node.js 22 eller nyere. Kommandoene starter i repo-roten.
+Ingen Supabase-nøkkel er nødvendig for lokalt API med CSV-lagring.
 
-**Alle Python-kommandoer under kjøres fra `modeling\`** (`cd modeling`). `.env` ligger i repo-roten.
+macOS/Linux:
 
-## Kom i gang
-
-### Miljøvariabler (gjør dette først)
-
-Utvikling bruker **samme Supabase-database som produksjon**, så du har brukernes tilbakemeldinger
-lokalt og kan trene direkte på dem.
-
-```powershell
-copy .env.example .env               # fyll inn SUPABASE_SERVICE_ROLE_KEY og KLATREFORHOLD_CONTACT
-copy web\.env.example web\.env.local # samme nøkkel
-```
-
-Observasjoner du registrerer lokalt merkes `kilde = dev` og tas ikke med i trening
-(med mindre du ber om det med `--med-dev`). Nøkkelen gir full tilgang til databasen, så den skal aldri
-committes eller brukes i kode som kjører i nettleseren.
-
-Tren rett fra databasen:
-
-```powershell
-python scripts\fetch_history.py --start 2023-01-01 --end 2026-10-26
-python scripts\evaluate.py  --config config\ekstraveggen.yaml --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase
-python scripts\calibrate.py --config config\ekstraveggen.yaml --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase --write
-python scripts\train.py --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv --labels supabase --torch --save
-```
-
-### Alt-i-ett med Docker (anbefalt for utvikling)
-
-```powershell
-cd $HOME\Documents\klatreforhold
-docker compose up --build
-```
-- Web-UI: http://localhost:3000 (gå til Ekstraveggen)
-- API + dokumentasjon: http://localhost:8000/docs
-
-Uten Supabase-variabler lagres tilbakemeldinger i `modeling\data\labels\`, og modeller du trener lokalt i
-`modeling\models\` blir brukt av API-et automatisk.
-
-### Uten Docker
-
-```powershell
+```sh
+cp .env.example .env
+cp web/.env.example web/.env.local
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r modeling/requirements-dev.txt
 cd modeling
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements-dev.txt
-$env:PYTHONPATH = "src"; python scripts\serve.py          # API på :8000
-
-cd web; npm install; npm run dev                            # UI på :3000 (i et nytt vindu)
+python scripts/serve.py
 ```
 
-### Trening med PyTorch på GPU (RTX 5070)
-
-Trening kjøres utenfor Docker, rett på Windows, så GPU-en brukes uten ekstra oppsett:
+Windows/PowerShell:
 
 ```powershell
-pip install torch --index-url https://download.pytorch.org/whl/cu128     # CUDA 12.8, støtter RTX 50-serien
-python -c "import torch; print(torch.cuda.is_available())"             # skal gi True
-
-python scripts\train.py --weather data\raw\ekstraveggen_openmeteo_metno_2023-01-01_2026-10-26.csv `
-  --labels data\labels\ekstraveggen_observasjoner.csv --torch --save
-```
-`--save` legger `models\ekstraveggen_sklearn.joblib` og `models\ekstraveggen_torch.pt` der API-et finner dem.
-Da viser UI-et også sannsynlighet for tørt per time. **Ikke tren med `--save` på syntetiske etiketter**
-(f.eks. laget av en nedbørsregel): da lærer modellen bare regelen tilbake. Vent til det finnes ekte
-tilbakemeldinger (grovt sett et par hundre, spredt over vær og årstider).
-
-### Tester
-
-```powershell
+Copy-Item .env.example .env
+Copy-Item web/.env.example web/.env.local
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r modeling/requirements-dev.txt
 cd modeling
-for %t in (tests\test_*.py) do python %t        # eller én og én: python tests\test_physics.py
+python scripts/serve.py
 ```
 
-## API (for nettføreren senere)
+Start web i en annen terminal, fra repo-roten:
 
-| Metode | Sti | Hva |
-|---|---|---|
-| GET | `/api/felt` | felt med konfig |
-| GET | `/api/felt/{slug}/varsel` | `sammendrag` (tørt nå? tørt om 24 t? neste tørre time) + `timer` (nå + 24 timer) + `siste_timer` (12 t bakover) |
-| POST | `/api/felt/{slug}/observasjoner` | `{"status": "tort"\|"fuktig"\|"vatt", "tid": ISO, "predikert_status": "...", "kommentar": "..."}` |
-| GET | `/api/felt/{slug}/observasjoner` | observasjoner + andel der varselet stemte |
-
-Varselet caches i 20 minutter (MET ber om at man ikke henter oftere enn nødvendig). For testing kan
-du se en gammel dag med `?na=2026-10-03T15:00` (både på API-et og på UI-siden).
-
-Veien inn i nettføreren: API-et kjøres som egen tjeneste (samme Docker-image), observasjonene flyttes til en
-Supabase-tabell, og komponentene i `web/components` kan flyttes rett over (de bruker samme design-tokens
-som nettføreren).
-
-## Mappestruktur
-
-```
-modeling/config/<felt>.yaml             feltets geometri og modellparametre (kalibrert/ overstyrer)
-modeling/src/klatreforhold/physics/     sol på veggen (solar.py) og vannbalanse/energibalanse (wetness.py)
-modeling/src/klatreforhold/data/        henting fra Open-Meteo, api.met.no, Frost, thredds, stasjons-CSV
-modeling/src/klatreforhold/ml/          features, evaluering (evaluate.py), kalibrering (calibrate.py),
-                                        sklearn- og PyTorch-trening (torch_model.py)
-modeling/src/klatreforhold/predict.py   varsel nå + 24 t
-modeling/src/klatreforhold/publish.py   timesjobben (skriver til Supabase)
-modeling/src/klatreforhold/api.py       lokalt HTTP-API
-modeling/scripts/                       kommandolinjeverktøy
-modeling/data/raw, modeling/data/labels data (raw ikke i git)
-modeling/outputs/                       figurer og CSV fra kjøringer (ikke i git)
-web/                                    Next.js-nettsiden
-supabase/migrations/                    databaseskjema
-docs/                                   modellbeskrivelse, research, deploy
-docker-compose.yml                      API (modeling/) + web lokalt
+```sh
+cd web
+npm ci
+npm run dev
 ```
 
-## Første resultater (Open-Meteo 2023-01-01 → 2026-10-26)
+Web: http://localhost:3000. API: http://localhost:8000/docs.
+Alternativ fra repo-roten: `docker compose up --build` starter begge.
 
-- Open-Meteo stemmer godt med målte stasjonsdata nær feltet (jun–okt 2026): temperatur r = 0.98, luftfuktighet r = 0.96, vind r = 0.74. Nedbøren er ca. 20 % lavere enn stasjonen.
-- Andel tørre timer i modellen: ca. 70–75 % i april–juli, 30–45 % i september–mars.
-- Siging står for bare noen få prosentpoeng av de våte timene.
-- Status `is` når det er vann på berg under 0 °C (ca. 3 % av timene).
+### Datakilde og miljø
 
-## Viktige forbehold
+Fyll inn `KLATREFORHOLD_CONTACT` i `.env`. Python leser `modeling/.env` før rotens `.env`;
+eksisterende miljøvariabler vinner. Sett kommentarer på egne linjer.
 
-- **Vi har ingen ekte fasit ennå.** Tallene over viser at modellen oppfører seg fornuftig, ikke hvor
-  treffsikker den er. Det får vi først vite når tilbakemeldingene fra brukerne kommer inn.
-- Neste viktige steg er å samle inn ekte observasjoner: en "tørt / fuktig / vått"-knapp i nettføreren,
-  helst med klokkeslett for når man var på feltet.
+Uten Supabase-nøkkel lagres observasjoner i `modeling/data/labels/`. Med prosjektets Supabase-nøkler
+brukes samme database som produksjon. Behold `KLATREFORHOLD_KILDE=dev` i begge lokale miljøfiler;
+dev/test-data utelates fra trening som standard. Service role-nøkkelen er kun for serveren.
 
-## Kreditering
+Nettsiden velger Supabase når begge nøklene er satt. Sett `KLATREFORHOLD_DATAKILDE=api` i
+`web/.env.local` for å bruke lokal modellkode også med nøkler; arkiv/statistikk leses fortsatt fra
+Supabase. Docker bruker `api` som standard; sett variabelen i rotens `.env` for å overstyre det.
 
-Værdata fra MET Norway (CC BY 4.0 / NLOD), via Open-Meteo (CC BY 4.0) der det er brukt.
-Høydedata © Kartverket (CC BY 4.0).
+## Kontroller
+
+Med aktivert Python-miljø, fra repo-roten:
+
+```sh
+cd modeling
+python -m pytest tests -q
+python scripts/check_model_v2.py
+```
+
+Fra `web/`:
+
+```sh
+npm test
+npm run typecheck
+npm run build
+```
+
+Bygging laster Google-font over nett. Typekontroll kan kjøres uten dette etter at avhengighetene
+er installert. Det er ikke konfigurert en egen linter.
+
+## API og modellarbeid
+
+FastAPI tilbyr `GET /api/health`, `GET /api/felt`, `GET /api/felt/{slug}/varsel` og
+`GET/POST /api/felt/{slug}/observasjoner`. Varselet har `sammendrag`, `timer` og `siste_timer`;
+`timer`-parameteren er 1–120 (standard 24), historikken er sju døgn. Cache er 20 minutter.
+`?na=2026-10-03T15:00` setter beregningstid for testing; tilgang til historisk vær begrenser bruken.
+Nettsidens Supabase-modus kan bare klippe eksisterende lagrede data, ikke beregne et nytt gammelt varsel.
+
+Python-API og databaseskjema tillater `tort`, `fuktig`, `vatt`, `is`; nettsidens skjema tilbyr de tre
+første. Observasjoner kan være opptil 14 dager gamle. Se `/docs` lokalt for alle parametre.
+
+Kjør verktøy fra `modeling/`. `predict_now.py` er en enkel Open-Meteo/Locationforecast-kontroll;
+`check_model_v2.py --live --forecast` kontrollerer produksjonens værkjede uten databaseskriving.
+`publish_forecast.py --dry-run` prøver alle felt uten å publisere (værhenting kan skrive lokal cache).
+
+Kalibrering krever minst 50 observasjoner fra minst ti regnepisoder, begge klasser i trening/kontroll,
+og forbedring på holdte-utenfor episoder. Bare `evaporation_efficiency` tilpasses.
+Se [modellguiden](docs/MODELL_V2.md) for valideringskrav. `train.py --save` lagrer ML-kandidater med
+`validated: false`; de aktiveres ikke automatisk. Ikke tren lagrede modeller på syntetiske etiketter.
+Eksempler fra `modeling/` (erstatt `data/raw/<vaer>.csv` med feltets historikk):
+
+```sh
+python scripts/evaluate.py --config config/ekstraveggen.yaml --weather 'data/raw/<vaer>.csv' --labels supabase
+python scripts/calibrate.py --config config/ekstraveggen.yaml --weather 'data/raw/<vaer>.csv' --labels supabase --write
+python scripts/train.py --config config/ekstraveggen.yaml --weather 'data/raw/<vaer>.csv' --labels supabase --save
+```
+
+PyTorch er valgfritt og installeres separat for lokal trening (`--torch`); timesjobben bruker sklearn.
+
+## Repoet og kreditering
+
+`modeling/`: Python, feltkonfigurasjon og tester. `web/`: Next.js 16, React 19 og Tailwind 4.
+`supabase/migrations/`: databaseskjema. `.github/workflows/varsel.yml`: timesjobben.
+Værhistorikk, modellresultater og cache ligger utenfor Git. Eksisterende statistikk ble generert
+30. oktober 2026 for alle ni felt med modell v2 og 90 døgn oppvarming.
+
+Værdata fra MET Norway (CC BY 4.0 / NLOD) og Open-Meteo (CC BY 4.0). Høydedata © Kartverket (CC BY 4.0).
+Prosjektet er separat fra BKKs nettfører; nettførerens repo og database skal ikke endres herfra.

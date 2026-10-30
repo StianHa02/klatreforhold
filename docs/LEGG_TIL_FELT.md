@@ -2,7 +2,7 @@
 
 Oppskrift for agenter (og folk) som skal legge et nytt felt inn i varselet. Ett felt = én YAML-fil i
 `modeling/config/`. Timesjobben, API-et og nettsiden finner feltet selv; det trengs ingen kodeendring.
-Kortversjonen står i `docs/OVERLEVERING.md` §10 («Legge til et felt»).
+Gjeldende kodeoversikt står i [overleveringen](OVERLEVERING.md); eldre oppskrifter der er historikk.
 
 Alle Python-kommandoer kjøres fra `modeling/`.
 
@@ -89,8 +89,7 @@ python scripts\horizon_from_dem.py --config config\<slug>.yaml --dem data\raw\do
   Ruter som allerede ligger i `data/raw/` brukes på nytt; `--tile` tar en liste med ruter, og `--raw-dir`
   peker på en annen `data/raw` (f.eks. fra en git worktree). Rutene kan slettes etterpå; utsnittet holder.
   Spør eieren før du laster ned mange GB.
-- `--write`, `physics/terrain.py` og 360°-horisonten kommer med fysikkmodell v2 (`feat/bergen-conditions-v2`).
-  På en gren uten v2: kjør `horizon_from_dem.py` fra en sjekk som har v2, med `--config` pekende på din fil.
+- `--write`, `physics/terrain.py` og 360°-horisonten finnes nå på main med fysikkmodell v2.
 - `horizon_from_dem.py --write` skriver `horizon:` (sann nord, alle retninger, DOM med trær) og
   `sky_view_factor` inn i YAML-fila. Den feiler hvis mindre enn 95 % av en stråle ligger i rasteret; da er
   utsnittet for lite eller mangler en rute.
@@ -117,8 +116,9 @@ ikke om vinteren).
 
 - Feltet vises på nettsiden når timesjobben har skrevet raden i `varsel_siste`. Ingen kodeendring.
 - Plass: hvert felt legger ~90 MB/år til arkivtabellen `varsel` (49 ledetimer × 24 kjøringer/døgn × ~210 B
-  per rad med indekser). Gratisnivået i Supabase har 500 MB, så med mange felt må arkivet tynnes eller ryddes.
+  per rad med indekser). Sjekk [gjeldende Supabase-grenser](https://supabase.com/pricing) og faktisk forbruk; modelltilstander
+  og stasjonsdata kommer i tillegg, og retensjon må planlegges separat.
 - Valgfritt: legg til en farge i `FELTFARGE` (`web/components/om/Diagrammer.tsx`); ellers brukes tekstfargen.
 - Valgfritt: `python scripts\export_site_stats.py` (krever historikk-CSV, se gotcha over) for «Om modellen».
-- Oppdater felttabellen i `docs/OVERLEVERING.md`.
+- Oppdater feltoversikten i README og geometritabellen i `docs/MODELL_V2.md`.
 - Eieren committer selv. Gi kommandoene og list filene du har endret.

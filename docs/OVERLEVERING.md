@@ -1,5 +1,60 @@
 # Overlevering: klatreforhold
 
+## Gjeldende kodegrunnlag – 30. oktober 2026
+
+Modell v2 og MEPS-støtte er på `main`. [README](../README.md) er inngangen for oppsett,
+[MODELL_V2](MODELL_V2.md) beskriver modellen og [DEPLOY](DEPLOY.md) beskriver drift.
+Avsnittet «Historisk overlevering» nedenfor bevarer eldre funn og beslutninger. Dets statuslister,
+kommandoforslag og utestående oppgaver er historikk, ikke dagens arbeidsliste.
+
+- Ni felt er definert i `modeling/config/`. V2-geometri og bergart er lagt inn; helninger fra
+  bratthetskategorier er fortsatt anslag. Se felttabellen i modellguiden.
+- Timesjobben lager 120 timer fremover og sju døgn bakover; arkivet beholder ledetider til 48 timer.
+  Direkte MET Nordic foretrekkes over Open-Meteo, med fersk Nowcast-nedbør. Open-Meteo gir også innkjøring.
+- Databaseskjemaet har fem migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
+  Tidligere notater rapporterer v2-migrasjonen kjørt 30. oktober; dette er ikke en ny kontroll av produksjon.
+- MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. Verdien arkiveres ikke
+  i `varsel` og vises ikke som prosent på nettsiden. En importfeil i MEPS-modulen er rettet i oppryddingen.
+- Nettsiden viser tørt/fuktig/vått og omgjør modellens is/snø til vått. Skjemaet har tre valg.
+- Kalibrering tilpasser én fordampningsparameter, med minst 50 observasjoner og ti regnepisoder.
+  ML-kandidater fra `train.py --save` må valideres separat før de kan aktiveres.
+- `web/data/modellstatistikk.json` er allerede regenerert 30. oktober for alle ni felt med v2,
+  fuktighetskorreksjon og 90 døgn oppvarming. Gamle regenereringsoppgaver nedenfor er fullført.
+- FastAPI og Docker støtter lokal utvikling; produksjonen bruker Actions → Supabase → Vercel.
+  `KLATREFORHOLD_DATAKILDE=api` velger lokalt API også når Supabase-nøkler finnes.
+
+## Kontroll ved oppryddingen
+
+48 backendtester passerte lokalt med Python 3.13, og den nettfrie modellkontrollen passerte for ni felt.
+Frontendtester, TypeScript og produksjonsbygg passerte med Node 24. CI bruker fortsatt Python 3.12.
+Alle 62 Python-filer ble syntakssjekket; lokale lenker i alle 12 Markdown-filer ble kontrollert.
+Ingen produksjonsdata ble lest eller skrevet, og historiske resultater ble ikke regenerert.
+
+## Gjenstående arbeid
+
+1. Kontroller siste ordinære timesjobb, datakilder og Frost-innsamling i produksjon. Gamle tall for
+   kjøringer og observasjoner nedenfor beskriver bare tidspunktet de ble notert.
+2. Samle faktiske observasjoner fra uavhengige regnepisoder og valider tørketid, geometri og vinterfysikk.
+3. Kalibrer ved tilstrekkelig grunnlag; hold dev/test-data og syntetiske etiketter utenfor aktivering.
+4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
+5. Mål arkivvekst og velg lagringstid før kvoten nås. Ingen automatisk arkivrydding er innført her.
+6. Oppgrader Next.js i en egen, testet endring: `npm audit` ved oppryddingen rapporterte
+   kritiske advisories for låst versjon 16.3.4 og foreslo 16.4.3. Avhengighetene er ikke oppgradert her;
+   audit-funnet alene fastslår ikke hvilke angrep denne appen er utsatt for.
+7. Vurder resterende forskningsforslag fra RESEARCH_2: delvis pooling, ordinal modell,
+   pålitelighetsdiagrammer og faste feltobservasjoner. Énparameterkalibrering og hendelsesdeling er innført.
+
+Integrasjon med nettføreren er fortsatt separat, fremtidig arbeid. Ikke endre dens database eller repo.
+
+---
+
+## Historisk overlevering (27.–30. oktober 2026)
+
+**Arkiv:** Hele teksten under er bevart som historisk dokumentasjon. Bruk guidene over for dagens
+kommandoer og modell. Eldre «nå», «ikke gjort» og driftsstatus gjelder den opprinnelige notatdatoen.
+
+### Opprinnelig notat
+
 Tillegg 30. oktober 2026: [modell v2](MODELL_V2.md) er implementert på `feat/bergen-conditions-v2`,
 rebasert på main `9db616c`, med alle ni felt. Dokumentet dekker forskningen, managerens tilbakemeldinger,
 feltkontroll og utrulling. [Databasemigrasjonen](../supabase/migrations/20261030090000_modell_v2.sql)
@@ -12,7 +67,7 @@ og oppsettet i [`DEPLOY.md`](DEPLOY.md). For agenter: se også [`../CLAUDE.md`](
 
 ---
 
-## 1. Kort fortalt
+### 1. Kort fortalt
 
 - **Mål:** si om fjellet på et klatrefelt i Bergen er tørt, fuktig, vått eller islagt, nå og time for time
   framover, bare fra offentlige data. Brukerne sier fra om varselet stemte, og det blir treningsdata.
@@ -25,7 +80,7 @@ og oppsettet i [`DEPLOY.md`](DEPLOY.md). For agenter: se også [`../CLAUDE.md`](
 - **Det viktigste som mangler:** tilbakemeldinger fra brukerne. Uten dem vet vi at modellen oppfører seg
   fornuftig, men ikke hvor treffsikker den er.
 
-## 2. Status nå
+### 2. Status nå
 
 | Del | Status |
 |---|---|
@@ -47,7 +102,7 @@ og oppsettet i [`DEPLOY.md`](DEPLOY.md). For agenter: se også [`../CLAUDE.md`](
 `web/data/modellstatistikk.json` (grafene på «Om modellen») er laget **før** fuktighetskorreksjonen. Kjør
 `python scripts/export_site_stats.py` på nytt og commit filen.
 
-## 3. Arkitektur
+### 3. Arkitektur
 
 ```
 GitHub Actions  (cron 7 * * * *, + manuell start)        modeling/scripts/publish_forecast.py
@@ -80,7 +135,7 @@ Python-API-et.
 Utvikling bruker **samme database som produksjon**, så treningsdata ligger ett sted. Observasjoner fra en
 utviklermaskin merkes `kilde = 'dev'` og holdes utenfor trening.
 
-### Kontoer og hemmeligheter (ingen verdier her)
+#### Kontoer og hemmeligheter (ingen verdier her)
 
 | Hvor | Hva |
 |---|---|
@@ -92,7 +147,7 @@ utviklermaskin merkes `kilde = 'dev'` og holdes utenfor trening.
 
 Vercel-kontoen er på gratisnivå med ett ledig prosjekt brukt opp av denne siden.
 
-## 4. Repoet
+### 4. Repoet
 
 ```
 modeling/
@@ -124,7 +179,7 @@ docs/                MODEL, RESEARCH, RESEARCH_2 (tørking, usikkerhet, fasit, h
 docker-compose.yml   api (modeling/) + web
 ```
 
-### Skriptene (kjøres fra `modeling/`)
+#### Skriptene (kjøres fra `modeling/`)
 
 | Skript | Hva |
 |---|---|
@@ -144,7 +199,7 @@ docker-compose.yml   api (modeling/) + web
 | `export_site_stats.py` | statistikk til «Om modellen» (`web/data/modellstatistikk.json`) |
 | `serve.py` | lokalt API på :8000 |
 
-## 5. Modellen kort
+### 5. Modellen kort
 
 Detaljer og formler i `MODEL.md`. Hovedtrekk:
 
@@ -161,7 +216,7 @@ Detaljer og formler i `MODEL.md`. Hovedtrekk:
 - **ML:** hybrid oppå fysikken (features fra modellens tilstand). sklearn i produksjon (timesjobben installerer
   ikke torch), PyTorch GRU lokalt. Begge faller tilbake til ren fysikk hvis modellfila mangler.
 
-### Feltene
+#### Feltene
 
 | | Ekstraveggen | Sandviken | Helleneset |
 |---|---|---|---|
@@ -182,7 +237,7 @@ Tallene er fra `export_site_stats.py` (2023-2026, før fuktighetskorreksjonen). 
 sol oktober-februar og sol fra ca. kl 16-17 april-august. Helleneset fanger mye mer regn fordi svaet tar imot
 vanlig regn, ikke bare slagregn.
 
-## 6. Hva som skjer i nettsiden
+### 6. Hva som skjer i nettsiden
 
 - **Dag for dag** (`components/DagBokser.tsx`, logikk i `lib/dager.ts`): fem bokser, Nå, I morgen og tre
   dager til, farget etter status. På forsiden for hvert felt, og øverst på feltsiden. Folk planlegger og
@@ -215,9 +270,9 @@ vanlig regn, ikke bare slagregn.
 - Styling og fonter (Work Sans + Mabry) er laget i en egen frontend-økt. Samme design-tokens som nettføreren,
   så komponentene kan flyttes over senere.
 
-## 7. Hva vi har funnet ut
+### 7. Hva vi har funnet ut
 
-### 7.1 Fra litteraturen (`RESEARCH.md`)
+#### 7.1 Fra litteraturen (`RESEARCH.md`)
 
 - Gneis og granitt holder nesten ikke vann inne i steinen (porøsitet ~0.5 %). Vått berg er et spørsmål om en
   **vannfilm på ~0.1 mm** på overflaten, vann i sprekker og tak, og siging.
@@ -229,14 +284,14 @@ vanlig regn, ikke bare slagregn.
 - Veivær-modeller (METRo, RoadSurf) og bladfukt-modeller har samme oppbygning og gir startverdier.
 - Det finnes **ingen fasit** for noen naturlig fjellvegg. Lokale observasjoner er det som avgjør kvaliteten.
 
-### 7.2 Lokalt vær (MET Nordic 1 km)
+#### 7.2 Lokalt vær (MET Nordic 1 km)
 
 - Timesnedbøren på Ekstraveggen og Sandviken korrelerer bare 0.86. I 22 % av regntimene regner det bare det
   ene stedet.
 - Kjører vi Ekstraveggen-modellen på byvær i stedet for feltets eget, blir statusen en annen i 5 % av timene.
 - Konklusjon: hvert felt bruker sitt eget gridpunkt. Målestasjoner brukes til kontroll, ikke som erstatning.
 
-### 7.3 Skjeve tilbakemeldinger
+#### 7.3 Skjeve tilbakemeldinger
 
 Folk drar når de tror det er tørt, snur når det er vått og rapporterer det som overrasker. Simulering
 (`simulate_sweep.py`, balansert treff etter regn):
@@ -250,7 +305,7 @@ Kalibrering hjelper tydelig fra noen hundre, selv med skjeve data. Vekting gir l
 Evaluering må gjøres per situasjon (`under_regn`, `etter_regn`, `torkeperiode`). Total treffprosent lyver.
 Et tidsforløpskamera eller en fuktsensor på én vegg ville gitt data uten skjevhet.
 
-### 7.4 Regn: MET Nordic mot Florida (SN50540), 2023-2026, 33 456 timer
+#### 7.4 Regn: MET Nordic mot Florida (SN50540), 2023-2026, 33 456 timer
 
 | | Time | 6 timer | Døgn |
 |---|---|---|---|
@@ -266,12 +321,12 @@ Et tidsforløpskamera eller en fuktsensor på én vegg ville gitt data uten skje
 - Feltpunktene er nesten like gode som stasjonspunktet mot stasjonen, så på disse skalaene er forskjellen i
   griddet liten (med forbehold om at griddet glatter ut lokale forskjeller).
 
-### 7.5 Temperatur og vind
+#### 7.5 Temperatur og vind
 
 Temperatur: MAE 0.17 °C ved stasjonen, ingen skjevhet, hele året. Feltpunktene avviker 0.7-0.8 °C fra Florida
 (høyde og nærhet til sjøen, ikke feil). Vind: MAE ~1.1 m/s, ingen skjevhet.
 
-### 7.6 Luftfuktighet (det viktigste funnet)
+#### 7.6 Luftfuktighet (det viktigste funnet)
 
 - Sortert etter hva **varselet** sa, ser varselet for fuktig ut i fuktige timer (+6 ved ≥ 95 %) og for tørt i
   tørre. Sortert etter hva som ble **målt**, snur fortegnet (−4 ved målt ≥ 95 %). Det er altså mest tilfeldig
@@ -294,12 +349,12 @@ Temperatur: MAE 0.17 °C ved stasjonen, ingen skjevhet, hele året. Feltpunktene
 - **Forbehold:** Florida er en bystasjon. Feltene ligger i skog og ved sjøen og kan være fuktigere.
   `rh_korreksjon_styrke` (standard 1) kan senere kalibreres mot tilbakemeldinger: formen fra stasjonen, styrken fra feltet.
 
-### 7.7 Open-Meteo-arkivet
+#### 7.7 Open-Meteo-arkivet
 
 MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 2023-2026. Lengre historikk (fra
 2012) finnes på thredds (`metnordic_thredds.py`), men er ikke tatt i bruk.
 
-## 8. Beslutninger og hvorfor
+### 8. Beslutninger og hvorfor
 
 | Beslutning | Hvorfor |
 |---|---|
@@ -320,7 +375,7 @@ MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 202
 | Arkivet lagrer bare ledetid ≤ 48 t | Varselet går 120 t fram, men arkivet ville vokst 2.5 ganger. «Varslet dagen før» trenger bare ~24 t |
 | Monorepo `modeling/` + `web/` | Tydelig skille mellom Python og Next.js; Vercel bruker root `web` |
 
-## 9. Feil og fallgruver vi har gått i
+### 9. Feil og fallgruver vi har gått i
 
 - **`.vercelignore` må ha rot-ankrede mønstre** (`/modeling`, `/docs`). Et uankret `data` fjernet `web/data` og
   ga «Can't resolve '@/data/modellstatistikk.json'». `vercel.json` er fjernet; Vercel finner Next.js via root `web`.
@@ -346,7 +401,7 @@ MET Nordic finnes i Open-Meteo Historical Forecast fra 2022-11-15, uten hull 202
 - **DOM1-flisa er 1.2 GB** og ligger i `modeling/data/raw/` (ikke i git). Én flis (33-104-120) dekker de tre første feltene; de nye trenger flere fliser (`download_dom.py` setter dem sammen).
 - **Torch-installasjon** fyller disken raskt (cache). Bruk CUDA 12.8-hjulene for RTX 50-serien.
 
-## 10. Vanlige oppgaver
+### 10. Vanlige oppgaver
 
 **Legge til et felt** (utfyllende oppskrift for agenter i `docs/LEGG_TIL_FELT.md`)
 1. Kopier en `modeling/config/<felt>.yaml`, sett navn, `felt_id`, koordinater (maks 4 desimaler), veggretning,
@@ -387,7 +442,7 @@ select * from public.observasjoner where kilde not in ('dev','test') order by re
 select count(*) from public.stasjon_maling;
 ```
 
-## 11. Gjenstående, i prioritert rekkefølge
+### 11. Gjenstående, i prioritert rekkefølge
 
 1. **Få timesjobben til å gå av seg selv.** Sjekk Actions-fanen. Hvis GitHub fortsatt ikke starter den, kjør
    `supabase/valgfritt/cron_starter_github_jobb.sql` (krever et fine-grained GitHub-token med Actions: Read and write, lagt i Supabase Vault som `github_dispatch_token`).
@@ -434,7 +489,7 @@ select count(*) from public.stasjon_maling;
 14. **Senere:** integrasjon i nettføreren. FastAPI kan deployes som egen tjeneste, observasjonene kan flyttes til
     nettførerens database, og komponentene i `web/components` bruker samme design-tokens.
 
-## 12. Kreditering
+### 12. Kreditering
 
 Værdata fra MET Norway (CC BY 4.0 / NLOD), via Open-Meteo (CC BY 4.0). Målinger fra Frost (MET Norway).
 Høydedata © Kartverket (CC BY 4.0).

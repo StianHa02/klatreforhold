@@ -1,6 +1,6 @@
 """Kalibrerer fysikkmodellen mot observasjonene (tåler at folk mest er der når det er tørt).
 
-Bruker de eldste 70 % av observasjonene til kalibrering og de nyeste 30 % til å sjekke at det faktisk
+Deler kronologisk etter regnepisoder (omtrent 70/30) for å sjekke at det faktisk
 ble bedre. Med --write lagres parametrene i config/kalibrert/<felt>.yaml, som load_config bruker
 automatisk (timesjobben plukker dem opp når de er pushet).
 

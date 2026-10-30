@@ -1,4 +1,4 @@
-# Kjøretid (API, varsel, trening med sklearn). Dette er det Vercel og Docker installerer.
+# Kjøretid (API, varsel, trening med sklearn). Dette installeres av Actions og API-containeren.
 numpy>=1.26
 pandas>=2.1
 requests>=2.31

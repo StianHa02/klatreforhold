@@ -1,5 +1,10 @@
 # Drying rates, uncertainty, ground truth and history views
 
+> Historisk research fra oktober 2026. Bevarer opprinnelige funn, priser og forslag;
+> dette er ikke gjeldende implementasjonsstatus. Se [modell v2](MODELL_V2.md) og
+> [gjeldende overlevering](OVERLEVERING.md). Énparameterkalibrering, regnepisodedeling,
+> vinterfysikk, direkte MET/Nowcast og MEPS-støtte er nå implementert.
+
 Follow-up to `RESEARCH.md` (October 2026). That review covered wind-driven rain, film drying versus
 humidity, road- and leaf-wetness models and MET Nordic. This one covers four questions it left open:
 
@@ -203,4 +208,4 @@ from 2026-10-29, follows the findings above more closely:
 - **Fixed 0–2 mm scale** for water and rain in the forecast chart. The area between rock temperature and
   dew point is shaded green (rock warmer) or blue (condensation), stronger with the gap (full at 4 °C).
 
-The model recommendations above are listed as future work in `OVERLEVERING.md` §11.
+The historical recommendations above have partly been implemented; see the current status in [OVERLEVERING.md](OVERLEVERING.md).
