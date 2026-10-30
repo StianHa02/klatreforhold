@@ -10,12 +10,12 @@ export const FELTFARGE: Record<string, { farge: string; strek?: string }> = {
   ekstraveggen: { farge: 'var(--color-dark-400)' },
   helleneset: { farge: 'var(--color-accent-red-400)', strek: '6 4' },
   sandviken: { farge: 'var(--color-accent-blue-400)', strek: '2 3' },
-  bolstadoyri: { farge: '#705c1d', strek: '8 3' },
-  bymuren: { farge: '#695281', strek: '3 3' },
-  fabrikkveggen: { farge: '#39736c', strek: '8 3 2 3' },
-  loddefjord: { farge: '#8d4a31', strek: '10 3' },
-  neseveggen: { farge: '#576d23', strek: '2 2' },
-  trollkona: { farge: '#665040', strek: '5 2 1 2' },
+  bolstadoyri: { farge: '#c2378f', strek: '8 3' },
+  bymuren: { farge: '#7b45d1', strek: '3 3' },
+  fabrikkveggen: { farge: '#0d8076', strek: '8 3 2 3' },
+  loddefjord: { farge: '#c26500', strek: '10 3' },
+  neseveggen: { farge: '#2f8a1c', strek: '2 2' },
+  trollkona: { farge: '#0780a0', strek: '5 2 1 2' },
 }
 const MND = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des']
 const RUTE = 'var(--color-light-700)'

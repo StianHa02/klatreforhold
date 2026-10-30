@@ -15,7 +15,6 @@ export default function NesteDogn({ timer, naMs }: { timer: Time[]; naMs: number
   return (
     <section className="kort p-md">
       <h2 className="seksjon">Neste 4 døgn</h2>
-      <p className="byline">Varselet framover, time for time</p>
       <p className="mt-sm">
         {forsteTorre >= 0
           ? `Neste tørre vindu: ${navn.startsWith('I ') ? navn.toLowerCase() : navn} ${summer[forsteTorre].tekst}${summer[forsteTorre].usikker ? ' (usikkert)' : ''}.`

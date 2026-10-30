@@ -40,7 +40,6 @@ export default function Historikk({ timer, naMs, tidligere, obs }: {
   return (
     <section className="kort p-md">
       <h2 className="seksjon">Siste 7 døgn</h2>
-      <p className="byline">Hvordan veggen har vært, med klatrernes meldinger</p>
       <p className="mt-sm">{regnTekst(sisteRegn(fortid, naMs), iDag)}</p>
       <div className="mt-sm">
         <Ukerutenett
