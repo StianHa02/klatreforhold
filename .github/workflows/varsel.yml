@@ -27,6 +27,11 @@ jobs:
           cache: pip
           cache-dependency-path: modeling/requirements.txt
       - run: pip install -r requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: modeling/data/cache
+          key: weather-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: weather-v2-
       - name: Kjør modell og lagre i Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

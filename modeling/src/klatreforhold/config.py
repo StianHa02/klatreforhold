@@ -5,8 +5,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+from .version import MODEL_VERSION, config_hash
 
 ROOT = Path(__file__).resolve().parents[2]
+STEEPNESS_TILT = {1: 70.0, 2: 90.0, 3: 100.0, 4: 110.0}
 
 
 def _load_dotenv(path: Path | None = None) -> None:
@@ -45,6 +47,10 @@ class Crag:
     # "kontroll": stasjonen brukes bare til å sjekke varselet (standard). "erstatt": målingene erstatter
     # historikken modellen kjører på. Bruk "erstatt" bare hvis stasjonen står nær feltet (1-2 km).
     frost_bruk: str = "kontroll"
+    geology: str = "ukjent"
+    geometry_source: str = ""
+    geometry_checked: str = ""
+    steepness_id: int | None = None
 
 
 def _num(v):
@@ -74,17 +80,17 @@ def rh_correction_for_station(station: str | None, config_dir: Path) -> dict:
     return {}
 
 
-def load_config(path: str | Path) -> tuple[Crag, dict]:
+def load_config(path: str | Path, apply_calibration: bool = True) -> tuple[Crag, dict]:
     """Leser en felt-konfig (yaml) og returnerer (Crag, modellparametre)."""
     with open(path, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     c = cfg["crag"]
     crag = Crag(
         name=c["name"],
-        lat=round(float(c["lat"]), 4),
-        lon=round(float(c["lon"]), 4),
+        lat=float(c["lat"]),
+        lon=float(c["lon"]),
         face_azimuth_deg=float(c["face_azimuth_deg"]),
-        face_tilt_deg=float(c.get("face_tilt_deg", 90)),
+        face_tilt_deg=float(c.get("face_tilt_deg", STEEPNESS_TILT.get(c.get("steepness_id"), 90))),
         elevation_m=float(c.get("elevation_m", 0)),
         timezone=c.get("timezone", "Europe/Oslo"),
         horizon=c.get("horizon", [[0, 0], [360, 0]]),
@@ -92,15 +98,25 @@ def load_config(path: str | Path) -> tuple[Crag, dict]:
         rain_sheltered=bool(c.get("rain_sheltered", False)),
         frost_station=c.get("frost_station"),
         frost_bruk=str(c.get("frost_bruk", "kontroll")),
+        geology=c.get("geology", "ukjent"),
+        geometry_source=c.get("geometry_source", ""),
+        geometry_checked=str(c.get("geometry_checked", "")),
+        steepness_id=c.get("steepness_id"),
     )
+    if not 0 <= crag.face_tilt_deg <= 180 or not 0 <= crag.face_azimuth_deg < 360:
+        raise ValueError("Helning må være 0–180°, asimut 0–359.999° fra sann nord")
     params = {k: _num(v) for k, v in cfg.get("model", {}).items()}
     # Fuktighetskorreksjon for værvarselet, målt mot feltets Frost-stasjon over flere år
     # (scripts/verify_forecast.py --historikk --skriv-rh). Står den i feltets egen konfig, vinner den.
     if "rh_korreksjon" not in params and "rh_korreksjon_maned" not in params:
         params.update(rh_correction_for_station(crag.frost_station, Path(path).parent))
+    params.setdefault("rh_correction_source", "openmeteo")
     # Kalibrerte parametre (scripts/calibrate.py --write) overstyrer startverdiene
     kal = Path(path).parent / "kalibrert" / Path(path).name
-    if kal.exists():
+    if apply_calibration and kal.exists():
         with open(kal, encoding="utf-8") as f:
-            params.update({k: _num(v) for k, v in (yaml.safe_load(f) or {}).get("model", {}).items()})
+            fitted = yaml.safe_load(f) or {}
+        if (fitted.get("model_version") == MODEL_VERSION and fitted.get("validated") is True
+                and fitted.get("base_config_hash") == config_hash(crag, params)):
+            params.update({k: _num(v) for k, v in fitted.get("model", {}).items()})
     return crag, params

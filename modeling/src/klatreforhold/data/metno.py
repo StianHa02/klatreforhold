@@ -31,8 +31,10 @@ def fetch_locationforecast(lat: float, lon: float) -> pd.DataFrame:
             "dew_point_2m": inst.get("dew_point_temperature"),
             # precipitation_amount i next_1_hours gjelder timen ETTER tidsstempelet:
             # flyttes en time fram så det matcher "timen før" som resten av prosjektet bruker
-            "precipitation_next": n1.get("precipitation_amount", 0.0),
+            "precipitation_next": n1.get("precipitation_amount"),
         })
     df = pd.DataFrame(rows).set_index("time").sort_index()
-    df["precipitation"] = df["precipitation_next"].shift(1).fillna(0.0)
+    df["precipitation"] = df["precipitation_next"].shift(1)
+    df["weather_source"] = "locationforecast"
+    df["weather_kind"] = "forecast"
     return df.drop(columns="precipitation_next")

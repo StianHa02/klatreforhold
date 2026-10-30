@@ -8,6 +8,9 @@ Gratis for ikke-kommersiell bruk. Data: MET Norway (CC BY 4.0) via Open-Meteo (C
 from __future__ import annotations
 
 import pandas as pd
+import gzip
+import hashlib
+import json
 
 from .http import get
 
@@ -43,22 +46,36 @@ def _to_frame(js: dict) -> pd.DataFrame:
         df["cloud_cover"] = df["cloud_cover"] / 100.0
     # Open-Meteo: stråling og nedbør er snitt/sum for timen FØR tidsstempelet (samme som modellen antar)
     df.index.name = "time"
+    df["weather_source"] = "openmeteo"
+    df["weather_kind"] = "stitched_forecast"
     return df
 
 
 def fetch_history(lat: float, lon: float, start: str, end: str, model: str = "metno_seamless") -> pd.DataFrame:
-    """Timesdata fra arkiverte varsler. start/end: 'YYYY-MM-DD'. Henter i biter på 3 måneder.
+    """Timesdata fra arkiverte varsler. start/end: 'YYYY-MM-DD'. Henter og cacher én måned om gangen.
 
     MET Nordic finnes i Historical Forecast API fra 2022-11-15. For lengre historikk: bruk
     data/metnordic_thredds.py (analyser fra 2012). Gratis-grense: 10 000 kall/døgn, ikke-kommersielt.
     """
     parts = []
-    for s, e in _chunks(start, end, months=3):
-        js = get(HISTORICAL_URL, params={
+    from ..config import ROOT
+    cache_dir = ROOT / "data/cache/openmeteo_history"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    for s, e in _chunks(start, end, months=1):
+        request_params = {
             "latitude": round(lat, 4), "longitude": round(lon, 4),
             "start_date": s, "end_date": e, "hourly": ",".join(HOURLY),
             "models": model, "timezone": "GMT", "wind_speed_unit": "ms",
-        }).json()
+        }
+        key = hashlib.sha256(json.dumps(request_params, sort_keys=True).encode()).hexdigest()[:24]
+        path = cache_dir / f"{key}.json.gz"
+        if path.exists():
+            with gzip.open(path, "rt", encoding="utf-8") as stream:
+                js = json.load(stream)
+        else:
+            js = get(HISTORICAL_URL, params=request_params).json()
+            with gzip.open(path, "wt", encoding="utf-8") as stream:
+                json.dump(js, stream)
         parts.append(_to_frame(js))
     df = pd.concat(parts)
     return df[~df.index.duplicated()].sort_index()

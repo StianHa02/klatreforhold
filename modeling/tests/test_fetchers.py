@@ -34,7 +34,8 @@ def test_locationforecast_parse_shifts_precip():
     metno.get = lambda *a, **k: Fake({"properties": {"timeseries": ts}})
     df = metno.fetch_locationforecast(60.3346, 5.3122)
     # nedbør for 01-02 skal stå på 02:00 (timen før tidsstempelet)
-    assert df["precipitation"].tolist() == [0.0, 0.0, 1.0]
+    assert df["precipitation"].isna().iloc[0]
+    assert df["precipitation"].iloc[1:].tolist() == [0.0, 1.0]
 
 
 def test_frost_parse():

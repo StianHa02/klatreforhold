@@ -6,7 +6,7 @@ crag:
   lat: 60.627308
   lon: 5.878867
   elevation_m: 137.00     # veggfot: Kartverket DTM1 10 m bak nettførerpunktet (punktet ligger 13 m ut i skogen, 133 m), kontrollert 2026-10-29
-  geology: ukjent           # ikke sjekket mot NGU ennå
+  geology: Monzogranittisk til granodiorittisk gneis (NGU 1-50 000, kontrollert 2026-10-30; karttolkning)
   geometry_source: https://ute.bergenklatreklubb.no/felt/trollkona
   geometry_checked: '2026-10-29'
   timezone: Europe/Oslo
@@ -14,6 +14,7 @@ crag:
   frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
   face_azimuth_deg: 225   # nettfører
   face_tilt_deg: 110      # bratt overheng/tak (bratthet_id 4): anslått helning, juster ved behov
+  steepness_id: 4  # BKK-kategori; styrer også foreløpig regnskjerming
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
   # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut fra veggfoten (10 m bak nettførerpunktet), avstander 10–3000 m.
   horizon:

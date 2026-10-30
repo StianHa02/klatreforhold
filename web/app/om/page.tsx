@@ -37,17 +37,17 @@ function Kort({ tittel, tekst, children }: { tittel: string; tekst?: string; chi
 }
 
 const STEG = [
-  { tittel: 'Vær for akkurat dette feltet', tekst: 'Vi henter temperatur, luftfuktighet, nedbør, vind, skydekke og solinnstråling for feltets koordinater fra MET Norways værmodell (1 × 1 km), både for de siste dagene og de neste døgnene.' },
+  { tittel: 'Vær for akkurat dette feltet', tekst: 'Vi henter temperatur, luftfuktighet, nedbør, vind, skydekke og solinnstråling for feltets koordinater. MET Nordic (1 × 1 km) brukes nærmest i tid, med Open-Meteo som reserve og ECMWF for dagene lenger fram. Fersk nedbørradar dekker de neste to timene når data er tilgjengelige.' },
   { tittel: 'Regn som treffer veggen', tekst: 'Ut fra vindretning, vindstyrke og hvilken vei veggen vender, regner vi ut hvor mye av regnet som faktisk treffer fjellet. På sva treffer mer av det vanlige regnet direkte.' },
   { tittel: 'Temperaturen i berget', tekst: 'Et energiregnskap for overflaten: sol på veggen (med terrenget rundt fra Kartverket), varmestråling, vind og varme fra berget innenfor. Det gir bergtemperaturen time for time.' },
   { tittel: 'Vannet på veggen', tekst: 'Vi holder regnskap med vannfilmen, vannet i tak og sprekker og et sakte sigereservoar. Kondens legger til vann, fordampning tar det bort.' },
-  { tittel: 'Tørt, fuktig eller vått', tekst: 'Er det nesten ikke vann igjen, er det tørt. Litt vann gir fuktig, mer gir vått. Er berget under null grader, blir det is.' },
+  { tittel: 'Tørt, fuktig, vått eller is/snø', tekst: 'Tørt gjelder den representative hovedveggen; enkeltruter kan avvike. Vi følger vann, is og snø hver for seg. Frysing frigir varme, og smelting bruker varme før smeltevannet kan tørke.' },
 ]
 
 const VIDERE = [
-  { status: 'ferdig', tittel: 'Fysisk modell for tre felt', tekst: 'Ekstraveggen, Sandviken og Helleneset, med eget vær, egen retning og egen horisont. Varselet oppdateres hver time.' },
+  { status: 'ferdig', tittel: 'Fysisk modell for ni felt', tekst: 'Hvert felt har eget vær, egen retning, bratthet og horisont. Varselet oppdateres hver time.' },
   { status: 'pågår', tittel: 'Samle tilbakemeldinger', tekst: 'Hver gang noen sier hvordan fjellet faktisk var, sammenligner vi med varselet for samme time. Det er dette alt videre bygger på.' },
-  { status: 'neste', tittel: 'Kalibrere modellen per felt', tekst: 'Med noen hundre tilbakemeldinger tilpasser vi hvor mye regn hver vegg fanger, hvor mye vann tak og sprekker holder, og hvor fort det tørker.' },
+  { status: 'neste', tittel: 'Kalibrere modellen per felt', tekst: 'Vi tilpasser først én parameter for tørkeeffektivitet. Tilpasningen må bli bedre på andre regnepisoder og ikke gi flere feilvarsler om tørt før den tas i bruk.' },
   { status: 'senere', tittel: 'Maskinlæring oppå fysikken', tekst: 'Modeller i scikit-learn og PyTorch som får fysikkmodellens anslag som utgangspunkt og lærer det fysikken ikke fanger, som trær, sigestriper og lav. De tas bare i bruk hvis de slår fysikken på nye data.' },
   { status: 'senere', tittel: 'En fasit som ikke avhenger av hvem som drar', tekst: 'Et kamera eller en enkel fuktsensor på én vegg ville gitt en observasjon hver time, også når ingen klatrer.' },
   { status: 'senere', tittel: 'Inn i nettføreren', tekst: 'Varselet vist på feltsidene i BKKs nettfører, og et spørsmål om forholdene når du logger en bestigning.' },
@@ -111,7 +111,8 @@ export default async function OmModellen() {
         </ol>
         <p className="max-w-[65ch] text-sm leading-relaxed text-text-subtle">
           Modellen bygger på det samme prinsippet som brukes for å varsle glatte veier og bladfuktighet i landbruket.
-          Alle parametre er foreløpig startverdier fra forskning på stein og bygningsfysikk, ikke tilpasset hver vegg.
+          Parametrene er foreløpige anslag. Retning, bratthet og terreng er hentet fra kart og nettfører;
+          vindeksponering er vurdert lokalt. Overheng skjermer mot regn, men kan fortsatt få siging og kondens.
         </p>
       </Seksjon>
 
@@ -122,25 +123,55 @@ export default async function OmModellen() {
         </p>
         <FeltForklaring felt={felt} />
         <Kort tittel="Andel tørre timer på dagtid (kl 08–20)"
-              tekst="Om sommeren er veggene tørre to av tre timer. Fra oktober til mars snur det. Helleneset er et sva og får mer av regnet rett på seg.">
+              tekst="Modellberegning med feltets eget vær. Sva fanger mer direkte nedbør, mens vind, skygge og vann i sprekker påvirker hvor lenge det blir vått. En våtere vegg kan ha korte tørkeepisoder når været først tillater det.">
           <MaanedLinjer serier={felt.map((f) => ({ slug: f.slug, navn: f.navn, verdier: f.tort_dagtid_per_maned }))}
                         maks={1} steg={0.25} enhet={prosent} label="Andel tørre timer på dagtid per måned for hvert felt" />
         </Kort>
         <Kort tittel="Timer med sol på veggen, per døgn"
-              tekst="Alle tre vender mot vest, så sola kommer først på ettermiddagen. Fra oktober til februar står den for lavt til å nå over terrenget.">
+              tekst="Direkte sol krever at solen står foran bergflaten og over terrenghorisonten, og at skyene slipper gjennom nok lys. Ekstraveggen vender mot nordvest, Helleneset mot vest og Sandvikens hovedvegg mot sør.">
           <MaanedStolper serier={felt.map((f) => ({ slug: f.slug, navn: f.navn, verdier: f.soltimer_per_dogn }))}
                          maks={solMaks} steg={2} enhet={(v) => `${v} t`} label="Timer med direkte sol på veggen per døgn, per måned" />
         </Kort>
-        <Kort tittel="Hvor lenge det tar å tørke etter regn"
-              tekst="Fra regnet stopper til modellen sier tørt. Prikken er det typiske, streken viser hvor halvparten av tilfellene havner.">
+        <Kort tittel="Tørketid i episodene som fullføres"
+              tekst="Modellanslag etter minst 2 mm nedbør på 12 timer, fulgt av tre timer opphold. Prikken er medianen og streken den midterste halvparten, bare for episoder som tørker innen 72 timer før nytt regn. Snø/is vises separat i antallene under.">
           <Spenn
-            maks={36}
+            maks={72}
             label="Tørketid etter regn for hvert felt, sommer og vinter"
             rader={[
               { gruppe: 'Sommer (april–september)', spenn: felt.filter((f) => f.torketid_timer.sommer).map((f) => ({ slug: f.slug, navn: f.navn, ...f.torketid_timer.sommer! })) },
               { gruppe: 'Vinter (oktober–mars)', spenn: felt.filter((f) => f.torketid_timer.vinter).map((f) => ({ slug: f.slug, navn: f.navn, ...f.torketid_timer.vinter! })) },
             ]}
           />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm tabular-nums">
+              <caption className="sr-only">Alle kvalifiserende regnepisoder, også de som ikke tørker</caption>
+              <thead><tr>
+                <th scope="col" className="p-sm">Felt og sesong</th>
+                <th scope="col" className="p-sm">Tørket</th>
+                <th scope="col" className="p-sm">Nytt regn</th>
+                <th scope="col" className="p-sm">Vått etter 72 t</th>
+                <th scope="col" className="p-sm">Ufullstendig</th>
+                <th scope="col" className="p-sm">Snø/is</th>
+                <th scope="col" className="p-sm">Tørt innen 6 / 12 / 24 t</th>
+              </tr></thead>
+              <tbody>{felt.flatMap((f) => (['sommer', 'vinter'] as const).map((sesong) => {
+                const s = f.torkeepisoder[sesong]
+                return <tr key={`${f.slug}-${sesong}`} className="border-t border-border-subtle">
+                  <th scope="row" className="p-sm font-normal">{f.navn}, {sesong}</th>
+                  <td className="p-sm">{s.utfall.tort}</td><td className="p-sm">{s.utfall.nytt_regn}</td>
+                  <td className="p-sm">{s.utfall.fortsatt_vatt}</td><td className="p-sm">{s.utfall.ufullstendig}</td>
+                  <td className="p-sm">{s.vinterpaavirket}</td>
+                  <td className="p-sm">{(['6', '12', '24'] as const).map((h) => s.innen_timer[h].andel === null ? '–' : prosent(s.innen_timer[h].andel)).join(' / ')}</td>
+                </tr>
+              }))}</tbody>
+            </table>
+          </div>
+          <p className="byline">Andelene gjelder episoder der utfallet er kjent ved hvert tidspunkt. Nytt regn teller som avbrutt tørking; ufullstendig historikk inngår bare så lenge den kan vurderes.</p>
+        </Kort>
+        <Kort tittel="Feltene sammenlignet med samme vær"
+              tekst="Et kontrollforsøk med identisk vær fra Ekstraveggen. Det viser betydningen av veggretning, bratthet, skygge og de foreløpige lokale parametrene. Dette er ikke feltenes faktiske værhistorikk.">
+          <MaanedLinjer serier={Object.entries(statistikk.felles_vaer.felt).map(([slug, f]) => ({ slug, navn: f.navn, verdier: f.tort_dagtid_per_maned }))}
+                        maks={1} steg={0.25} enhet={prosent} label="Modellberegnede tørre dagtimer ved identisk vær" />
         </Kort>
       </Seksjon>
 
@@ -158,7 +189,7 @@ export default async function OmModellen() {
                   <tr className="border-b border-border-subtle">
                     <th scope="col" className="p-sm font-normal">Felt</th>
                     <th scope="col" className="p-sm font-normal">Tilbakemeldinger</th>
-                    <th scope="col" className="p-sm font-normal">Tørt / fuktig / vått</th>
+                    <th scope="col" className="p-sm font-normal">Tørt / fuktig / vått / is/snø</th>
                     <th scope="col" className="p-sm font-normal">Varselet stemte</th>
                     <th scope="col" className="p-sm font-normal">Varsler i arkivet</th>
                   </tr>
@@ -170,7 +201,7 @@ export default async function OmModellen() {
                         <a className="focus rounded-sm underline-offset-2 hover:underline" href={`/felt/${f.felt}`}>{navn[f.felt] ?? f.felt}</a>
                       </th>
                       <td className="p-sm">{f.observasjoner}</td>
-                      <td className="p-sm">{f.tort} / {f.fuktig} / {f.vatt}</td>
+                      <td className="p-sm">{f.tort} / {f.fuktig} / {f.vatt} / {f.is ?? 0}</td>
                       <td className="p-sm">{f.andel_riktig === null ? '–' : `${Math.round(f.andel_riktig * 100)} % av ${f.vurdert}`}</td>
                       <td className="p-sm">{f.kjoringer} siden {dag(f.forste_varsel)} kl {klokke(f.forste_varsel)}</td>
                     </tr>
@@ -195,8 +226,8 @@ export default async function OmModellen() {
           det avgjøres om modellen kan tørking.
         </p>
         <p className="max-w-[65ch] text-text-tinted">
-          Hjelper skjeve tilbakemeldinger likevel? Vi testet det på en simulert vegg som tørker saktere enn startverdiene
-          våre, med brukere som mest drar når varselet sier tørt.
+          Derfor teller vi uavhengige regnepisoder og tester på andre episoder enn dem vi tilpasser modellen til.
+          Meldinger fra samme regnvær gir nyttig informasjon, men teller ikke som uavhengige forsøk.
         </p>
         {sim.length > 0 && (
           <Kort tittel="Treff i timene etter regn, simulert"
@@ -205,8 +236,8 @@ export default async function OmModellen() {
           </Kort>
         )}
         <p className="max-w-[65ch] text-sm leading-relaxed text-text-subtle">
-          Med noen hundre tilbakemeldinger blir varselet tydelig bedre. Også «det var tørt» er nyttig, særlig rett etter
-          regn: det forteller hvor fort veggen tørker. Så si fra, også når alt er som det skal.
+          Også «det var tørt» er nyttig, særlig rett etter regn: det forteller hvor fort veggen tørker.
+          Vi trenger meldinger når varselet stemmer og når det bommer, før vi kan måle hvor godt modellen virker.
         </p>
       </Seksjon>
 
@@ -233,8 +264,9 @@ export default async function OmModellen() {
           <li>Feltenes koordinater er kartpunkter, ikke nøyaktig foten av veggen. Det påvirker når sola beregnes å treffe.</li>
         </ul>
         <p className="byline">
-          Værdata: MET Norway (CC BY 4.0) via Open-Meteo. Terreng: Kartverket DOM1 (CC BY 4.0).
-          Statistikken på denne siden ble beregnet {statistikk.generert}.
+          Værdata: MET Norway direkte og via Open-Meteo (CC BY 4.0). Historikkgrafene bruker arkiverte modellvarsler,
+          ikke målt bergfuktighet. Terreng: Kartverket DOM/DTM (CC BY 4.0).
+          Modell {statistikk.modellversjon}, beregnet {statistikk.generert}; de første {statistikk.oppvarming_dogn} døgnene er utelatt som oppvarming.
         </p>
       </Seksjon>
     </article>

@@ -43,8 +43,9 @@ def test_kontroll_does_not_touch_model_input(monkeypatch=None):
     crag, _ = load_config(ROOT / "config" / "ekstraveggen.yaml")
     assert crag.frost_bruk == "kontroll"
     w = _w()
-    import klatreforhold.data.openmeteo as om
-    om.fetch_forecast = lambda *a, **k: w
+    import klatreforhold.data.pipeline as pipeline
+    original_fetch = pipeline.fetch_weather
+    pipeline.fetch_weather = lambda *a, **k: w
     called = {"n": 0}
     orig = P.with_observations
     P.with_observations = lambda ww, c: called.__setitem__("n", called["n"] + 1) or ww
@@ -55,6 +56,7 @@ def test_kontroll_does_not_touch_model_input(monkeypatch=None):
         P.get_weather(crag)
         assert called["n"] == 1
     finally:
+        pipeline.fetch_weather = original_fetch
         P.with_observations = orig
 
 

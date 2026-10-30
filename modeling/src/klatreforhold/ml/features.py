@@ -69,9 +69,9 @@ def labels_from_frame(df: pd.DataFrame, timezone: str = "Europe/Oslo") -> pd.Ser
     t = pd.to_datetime(df["time"])
     if t.dt.tz is None:
         t = t.dt.tz_localize(timezone, ambiguous="NaT", nonexistent="shift_forward")
-    t = t.dt.tz_convert("UTC").dt.floor("h")
+    t = t.dt.tz_convert("UTC").dt.ceil("h")  # observasjonen hører til intervallet som slutter her
     if "wet" in df:
         y = df["wet"].astype(bool)
     else:
-        y = df["status"].str.lower().isin(["vatt", "vått", "fuktig", "wet", "damp"])
+        y = df["status"].str.lower().isin(["vatt", "vått", "fuktig", "wet", "damp", "is", "ice", "snow"])
     return pd.Series(y.to_numpy(), index=t, name="wet").groupby(level=0).max()

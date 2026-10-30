@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import os
 import threading
 from pathlib import Path
@@ -49,6 +50,23 @@ class CsvStorage:
 
     def save_forecast(self, felt: str, rows: list[dict]) -> int:
         return 0  # varselarkiv lagres bare i Supabase
+
+    def load_checkpoint(self, felt, before, signature):
+        path = self.dir / f"{felt}_tilstand.json"
+        if not path.exists():
+            return None
+        rows = json.loads(path.read_text(encoding="utf-8"))
+        valid = [r for r in rows if r["config_hash"] == signature and pd.Timestamp(r["tid"]) <= before]
+        return max(valid, key=lambda r: r["tid"]) if valid else None
+
+    def save_checkpoints(self, rows):
+        for felt in {r["felt"] for r in rows}:
+            self.dir.mkdir(parents=True, exist_ok=True)
+            path = self.dir / f"{felt}_tilstand.json"
+            selected = [r for r in rows if r["felt"] == felt]
+            tmp = path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(selected, allow_nan=False), encoding="utf-8")
+            tmp.replace(path)
 
     def save_station_forecast(self, rows: list[dict]) -> int:
         return 0
@@ -126,6 +144,17 @@ class SupabaseStorage:
                         headers={"Prefer": "resolution=merge-duplicates,return=minimal"}, timeout=30)
         r.raise_for_status()
 
+    def load_checkpoint(self, felt, before, signature):
+        r = self.s.get(f"{self.base}/modelltilstand", params={"felt": f"eq.{felt}",
+            "tid": f"lte.{before.isoformat()}", "config_hash": f"eq.{signature}",
+            "select": "*", "order": "tid.desc", "limit": "1"}, timeout=20)
+        r.raise_for_status()
+        rows = r.json()
+        return rows[0] if rows else None
+
+    def save_checkpoints(self, rows):
+        return self._upsert("modelltilstand", rows, "felt,tid,config_hash")
+
     def _upsert(self, table: str, rows: list[dict], conflict: str) -> int:
         if not rows:
             return 0
@@ -150,7 +179,7 @@ class SupabaseStorage:
         if not rows:
             return 0
         r = self.s.post(f"{self.base}/varsel", json=rows, params={"on_conflict": "felt,generert,tid"},
-                        headers={"Prefer": "resolution=merge-duplicates,return=minimal"}, timeout=30)
+                        headers={"Prefer": "resolution=ignore-duplicates,return=minimal"}, timeout=30)
         r.raise_for_status()
         return len(rows)
 

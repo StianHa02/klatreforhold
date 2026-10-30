@@ -6,7 +6,7 @@ crag:
   lat: 60.397949
   lon: 5.200333
   elevation_m: 11.70     # veggfot: Kartverket DTM1 3-10 m foran nettførerpunktet (punktet ligger i veggen, 21 m), kontrollert 2026-10-29
-  geology: ukjent           # ikke sjekket mot NGU ennå
+  geology: Granittisk til granodiorittisk gneis, stedvis migmatittisk (NGU 1-50 000, kontrollert 2026-10-30; karttolkning)
   geometry_source: https://ute.bergenklatreklubb.no/felt/fabrikkveggen
   geometry_checked: '2026-10-29'
   timezone: Europe/Oslo
@@ -14,6 +14,7 @@ crag:
   frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
   face_azimuth_deg: 193   # nettfører
   face_tilt_deg: 90      # vertikalt (bratthet_id 2)
+  steepness_id: 2  # BKK-kategori; styrer også foreløpig regnskjerming
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
   # Sann nord, alle retninger. DTM-bakke + 1.5 m, 6 m ut (veggfoten), avstander 10–3000 m.
   horizon:

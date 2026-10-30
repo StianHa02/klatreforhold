@@ -1,4 +1,5 @@
 -r requirements.txt
+pytest>=8
 matplotlib>=3.8          # figurer (scripts/run_history.py)
 rasterio>=1.3            # horisont fra Kartverket
 pyproj>=3.6

@@ -39,12 +39,13 @@ def test_strata_and_metrics():
 def test_calibration_moves_towards_truth():
     crag, p = load_config(CFG)
     w = _weather(days=60)
-    truth = {"holds_capacity_mm": 1.5, "holds_drying_factor": 0.15}
+    truth = {"evaporation_efficiency": .4}
     tw = run_model(w, crag, {**p, **truth})["wet"]
     obs = w.index[::7]
     r = calibrate(w, tw.loc[obs], crag, p, maxiter=60)
     assert r.nll_etter < r.nll_for
-    assert r.params["holds_capacity_mm"] > p["holds_capacity_mm"]  # beveger seg mot sannheten (1.5)
+    assert .25 <= r.params["evaporation_efficiency"] < 1
+    assert set(r.params) == {"evaporation_efficiency"}
 
 
 def test_calibrated_overlay_is_loaded():
@@ -53,8 +54,14 @@ def test_calibrated_overlay_is_loaded():
         base.write_text(CFG.read_text(encoding="utf-8"), encoding="utf-8")
         (Path(d) / "kalibrert").mkdir()
         (Path(d) / "kalibrert" / "x.yaml").write_text("model:\n  holds_capacity_mm: 1.23\n", encoding="utf-8")
-        _, params = load_config(base)
-        assert params["holds_capacity_mm"] == 1.23
+        crag, params = load_config(base)
+        assert params["holds_capacity_mm"] == .6
+        from klatreforhold.version import MODEL_VERSION, config_hash
+        import yaml
+        (Path(d) / "kalibrert/x.yaml").write_text(yaml.safe_dump({
+            "model_version": MODEL_VERSION, "validated": True, "base_config_hash": config_hash(crag, params),
+            "model": {"evaporation_efficiency": .7}}), encoding="utf-8")
+        assert load_config(base)[1]["evaporation_efficiency"] == .7
 
 
 if __name__ == "__main__":

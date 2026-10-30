@@ -59,7 +59,7 @@ def test_supabase_payloads():
     n = st.save_forecast("ekstraveggen", [{"felt": "ekstraveggen", "generert": "x", "tid": "y"}])
     _, url, kw = st.s.calls[-1]
     assert n == 1 and kw["params"]["on_conflict"] == "felt,generert,tid"
-    assert "merge-duplicates" in kw["headers"]["Prefer"]
+    assert "ignore-duplicates" in kw["headers"]["Prefer"]
 
 
 def test_training_excludes_dev():
@@ -78,7 +78,7 @@ def test_labels_from_supabase_rows():
     df = pd.DataFrame([{"tid": "2026-10-27T13:30:00+00:00", "status": "tort"},
                        {"tid": "2026-10-27T14:10:00+00:00", "status": "fuktig"}])
     y = labels_from_frame(df)
-    assert y.tolist() == [False, True] and str(y.index[0]) == "2026-10-27 13:00:00+00:00"
+    assert y.tolist() == [False, True] and str(y.index[0]) == "2026-10-27 14:00:00+00:00"
     assert labels_from_frame(pd.DataFrame()).empty
 
 
@@ -91,6 +91,18 @@ def test_dotenv_does_not_override():
         os.environ["KF_TEST_A"] = "fra_miljo"
         _load_dotenv(p)
         assert os.environ["KF_TEST_A"] == "fra_miljo" and os.environ["KF_TEST_B"] == "sitert"
+
+
+def test_checkpoint_selects_compatible_past_state():
+    import pandas as pd
+    with tempfile.TemporaryDirectory() as d:
+        st = CsvStorage(Path(d))
+        rows = [{"felt": "test", "tid": t, "config_hash": h, "model_version": "2.0.0", "state": {"ice_film": 2.}}
+                for t, h in [("2026-10-01T00:00Z", "a"), ("2026-10-02T00:00Z", "a"), ("2026-10-03T00:00Z", "b")]]
+        st.save_checkpoints(rows)
+        hit = st.load_checkpoint("test", pd.Timestamp("2026-10-02T12:00Z"), "a")
+        assert hit["tid"] == "2026-10-02T00:00Z" and hit["state"]["ice_film"] == 2.
+        assert st.load_checkpoint("test", pd.Timestamp("2026-09-01T00:00Z"), "a") is None
 
 
 if __name__ == "__main__":

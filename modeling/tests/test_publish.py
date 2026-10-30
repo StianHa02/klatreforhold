@@ -14,7 +14,7 @@ def _varsel(timer: int) -> dict:
         "tid": (na + pd.Timedelta(hours=i)).isoformat(), "status": "vatt", "vann_mm": 0.3, "p_vatt": None,
         "bergtemp": 8.0, "duggpunkt": 7.0, "nedbor_mm": 0.0, "regn_mot_veggen_mm": 0.0, "sol_pa_veggen": False,
     } for i in range(timer + 1)]
-    return {"na": na.isoformat(), "timer": timer_}
+    return {"na": na.isoformat(), "generert": na.isoformat(), "timer": timer_}
 
 
 def test_arkiv_kutter_lange_ledetider():

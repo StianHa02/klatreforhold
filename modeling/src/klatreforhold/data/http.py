@@ -16,7 +16,13 @@ _session.headers["User-Agent"] = USER_AGENT
 
 def get(url: str, params: dict | None = None, auth=None, retries: int = 3, timeout: int = 60):
     for attempt in range(retries):
-        r = _session.get(url, params=params, auth=auth, timeout=timeout)
+        try:
+            r = _session.get(url, params=params, auth=auth, timeout=timeout)
+        except (requests.Timeout, requests.ConnectionError):
+            if attempt == retries - 1:
+                raise
+            time.sleep(2 ** attempt)
+            continue
         if r.status_code in (429, 500, 502, 503, 504) and attempt < retries - 1:
             time.sleep(2 ** attempt * 5)
             continue

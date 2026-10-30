@@ -5,11 +5,12 @@ import { type ButtonHTMLAttributes, useMemo, useState } from 'react'
 import { type Status, type Time, statusFarge } from '@/lib/api'
 import { STATUS_TEKST } from '@/lib/dager'
 
-type Valg = Exclude<Status, 'is'>
+type Valg = Status
 const VALG: { verdi: Valg; tekst: string; farge: string }[] = [
   { verdi: 'tort', tekst: 'Tørt', farge: 'bg-forhold-tort' },
   { verdi: 'fuktig', tekst: 'Fuktig', farge: 'bg-forhold-fuktig' },
   { verdi: 'vatt', tekst: 'Vått', farge: 'bg-forhold-vatt' },
+  { verdi: 'is', tekst: 'Is/snø', farge: 'bg-forhold-is' },
 ]
 const TIMER = Array.from({ length: 18 }, (_, i) => i + 6) // kl 06–23
 
@@ -104,7 +105,7 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
     <section className="rounded-xl border border-border-subtle bg-surface-default p-md">
       <h2 className="h3">Har du vært på feltet?</h2>
       <p className="mt-xs text-sm text-text-subtle">
-        Si hvordan fjellet faktisk var, også om det var tørt. Det er dette modellen lærer av.
+        Si hvordan hovedveggen faktisk var, også om det var tørt. Enkeltruter kan avvike.
       </p>
       <fieldset className="mt-md">
         <legend className="mb-xs text-sm">Dag</legend>
@@ -178,7 +179,7 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
         />
       </label>
       <p className="mt-md text-sm">Hvordan var fjellet?</p>
-      <div className="mt-xs grid grid-cols-3 gap-sm">
+      <div className="mt-xs grid grid-cols-2 gap-sm sm:grid-cols-4">
         {VALG.map((v) => (
           <button
             key={v.verdi}

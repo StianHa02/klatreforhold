@@ -1,5 +1,10 @@
 # Overlevering: klatreforhold
 
+Tillegg 30. oktober 2026: [modell v2](MODELL_V2.md) er implementert på `feat/bergen-conditions-v2`,
+rebasert på main `9db616c`, med alle ni felt. Dokumentet dekker forskningen, managerens tilbakemeldinger,
+feltkontroll og utrulling. [Databasemigrasjonen](../supabase/migrations/20261030090000_modell_v2.sql)
+ble kjørt 30. oktober 2026 før publisering av v2-koden. Status og resultater nedenfor gjelder tidligere versjoner.
+
 Status per 27. oktober 2026. Dette dokumentet er for den som tar over (menneske eller agent): hva som er
 bygget, hva vi har funnet ut, hvilke valg som er tatt og hvorfor, hva som gikk galt underveis, og hva som
 gjenstår. Detaljene om modellen står i [`MODEL.md`](MODEL.md), litteraturen i [`RESEARCH.md`](RESEARCH.md)

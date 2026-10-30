@@ -27,9 +27,7 @@ from ..physics.wetness import DEFAULTS, run_model
 
 # Parametre som kalibreres, med (prior-median, prior-sd i log-rom, nedre, øvre grense)
 PARAMS = {
-    "wdr_coefficient":     (0.12, 0.7, 0.01, 0.4),   # hvor mye slagregn veggen fanger
-    "holds_capacity_mm":   (0.6, 0.7, 0.05, 3.0),    # vann i tak/sprekker
-    "holds_drying_factor": (0.5, 0.7, 0.05, 1.0),    # hvor fort tak/sprekker tørker
+    "evaporation_efficiency": (1.0, 0.5, 0.25, 2.0),  # én identifiserbar tørkeparameter først
 }
 # wind_exposure kalibreres IKKE: i slagregnformelen ganges den med wdr_coefficient, så dataene kan ikke
 # skille dem (kun produktet er identifiserbart). Den beholdes fra konfigen.
@@ -66,7 +64,7 @@ def _from_x(x: np.ndarray) -> dict:
     return out
 
 
-def _window(weather: pd.DataFrame, obs_index: pd.DatetimeIndex, spinup_days: int = 14) -> pd.DataFrame:
+def _window(weather: pd.DataFrame, obs_index: pd.DatetimeIndex, spinup_days: int = 90) -> pd.DataFrame:
     """Kutt værserien til perioden med observasjoner (+ innkjøring), så kalibreringen går raskt."""
     start = obs_index.min() - pd.Timedelta(days=spinup_days)
     return weather.loc[start: obs_index.max()]
@@ -88,7 +86,7 @@ def calibrate(weather: pd.DataFrame, labels: pd.Series, crag: Crag, base_params:
     prior = {k: base.get(k, v[0]) for k, v in PARAMS.items()}
     mu = _to_x(prior)
     sd = np.array([v[1] for v in PARAMS.values()]) / max(prior_strength, 1e-6) ** 0.5
-    threshold = base["wet_threshold_mm"]
+    threshold = base["damp_threshold_mm"]  # etiketten betyr fuktig ELLER vått
     cache: dict[tuple, float] = {}
 
     def objective(x):
@@ -96,8 +94,8 @@ def calibrate(weather: pd.DataFrame, labels: pd.Series, crag: Crag, base_params:
         if key in cache:
             return cache[key]
         p = {**base, **_from_x(x)}
-        res = run_model(ww, crag, p, substeps=6)
-        water = res["water_mm"].reindex(labels.index).to_numpy()
+        res = run_model(ww, crag, p, substeps=12)
+        water = np.maximum(res["water_mm"], res["ice_mm"] + res["snow_mm"]).reindex(labels.index).to_numpy()
         val = neg_log_lik(water, y, wt, threshold) + 0.5 * float(np.sum(((x - mu) / sd) ** 2))
         cache[key] = val
         if verbose:
@@ -106,7 +104,8 @@ def calibrate(weather: pd.DataFrame, labels: pd.Series, crag: Crag, base_params:
 
     nll0 = objective(mu)
     opt = minimize(objective, mu, method="Nelder-Mead",
-                   options={"maxiter": maxiter, "xatol": 0.02, "fatol": 0.01, "initial_simplex": None})
+                   options={"maxiter": maxiter, "xatol": 0.01, "fatol": 0.001,
+                            "initial_simplex": np.array([mu, mu + .2])})
     best = _from_x(opt.x)
     return Resultat(params=best, prior_params=prior, nll_for=nll0, nll_etter=float(opt.fun), n=len(y))
 

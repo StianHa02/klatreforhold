@@ -1,84 +1,44 @@
-"""Beregner horisontprofil (og himmelsynsfaktor) for veggen fra Kartverkets høydemodell.
+"""Regenerer horisont fra DOM/DTM. --write oppdaterer bare valgt feltkonfig.
 
-1. Last ned DOM1 (overflatemodell, med trær og bygg) som GeoTIFF fra https://hoydedata.no
-   for et område på ~2-3 km rundt feltet (lisens CC BY 4.0, kreditér Kartverket).
-2. python scripts/horizon_from_dem.py --dem data/raw/dom1_bones.tif
-3. Lim inn 'horizon'-lista som skrives ut i config/ekstraveggen.yaml, og bruk sky_view_factor.
-
-Krever: pip install rasterio pyproj
+Kartverket DTM gir bakkehøyden; DOM inkluderer trær og bygg langs synsstrålene.
+Sann nord beregnes geodetisk, uavhengig av rasterets koordinatsystem.
 """
 import argparse
-
-import numpy as np
+from dataclasses import replace
+from pathlib import Path
+import re
 from _common import DEFAULT_CONFIG
-
 from klatreforhold.config import load_config
+from klatreforhold.physics.terrain import terrain_horizon
+from klatreforhold.physics.solar import sky_view_factor
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
-    ap.add_argument("--dem", required=True, help="GeoTIFF med DOM1/DTM1")
-    ap.add_argument("--offset-m", type=float, default=3.0, help="observatør så mange meter ut fra veggen")
+    ap.add_argument("--dem", required=True)
+    ap.add_argument("--ground-elevation", type=float, help="DTM-høyde ved veggpunktet; ellers fra konfig")
     ap.add_argument("--eye-height-m", type=float, default=1.5)
+    ap.add_argument("--offset-m", type=float, default=3)
+    ap.add_argument("--step-deg", type=float, default=5)
+    ap.add_argument("--min-dist-m", type=float, default=10)
     ap.add_argument("--max-dist-m", type=float, default=3000)
-    ap.add_argument("--step-deg", type=float, default=2.0)
-    ap.add_argument("--min-dist-m", type=float, default=10.0,
-                    help="ignorer terreng nærmere enn dette (1 m-modellen er støyete helt inntil veggen: trær, blokker)")
+    ap.add_argument("--write", action="store_true")
     a = ap.parse_args()
-
-    import rasterio
-    from pyproj import Transformer
-
     crag, _ = load_config(a.config)
-    with rasterio.open(a.dem) as ds:
-        z = ds.read(1).astype(float)
-        if ds.nodata is not None:
-            z[z == ds.nodata] = np.nan
-        tr = Transformer.from_crs("EPSG:4326", ds.crs, always_xy=True)
-        x0, y0 = tr.transform(crag.lon, crag.lat)
-        az = np.deg2rad(crag.face_azimuth_deg)
-        x0 += a.offset_m * np.sin(az)
-        y0 += a.offset_m * np.cos(az)
-        res = abs(ds.transform.a)
-        inv = ~ds.transform
-
-        def height(x, y):
-            c, r = inv * (x, y)
-            r, c = int(r), int(c)
-            if 0 <= r < z.shape[0] and 0 <= c < z.shape[1]:
-                return z[r, c]
-            return np.nan
-
-        zg = height(x0, y0)
-        zobs = zg + a.eye_height_m
-        dists = np.arange(max(res, a.min_dist_m), a.max_dist_m, res)
-        profile = []
-        for azd in np.arange(0, 360, a.step_deg):
-            # bak veggen: veggen selv blokkerer
-            rel = (azd - crag.face_azimuth_deg + 180) % 360 - 180
-            if abs(rel) >= 90:
-                profile.append((azd, 90.0))
-                continue
-            th = np.deg2rad(azd)
-            xs, ys = x0 + dists * np.sin(th), y0 + dists * np.cos(th)
-            hs = np.array([height(x, y) for x, y in zip(xs, ys)])
-            ang = np.degrees(np.arctan2(hs - zobs, dists))
-            profile.append((azd, float(np.nanmax(np.r_[ang, 0.0]))))
-
-    prof = np.array(profile)
-    # himmelsynsfaktor for vertikal flate: integral over halvkula foran veggen
-    front = prof[np.abs((prof[:, 0] - crag.face_azimuth_deg + 180) % 360 - 180) < 90]
-    rel = np.deg2rad((front[:, 0] - crag.face_azimuth_deg + 180) % 360 - 180)
-    h = np.deg2rad(front[:, 1])
-    dphi = np.deg2rad(a.step_deg)
-    svf = float(np.sum(np.cos(rel) * (np.pi / 2 - h - np.sin(h) * np.cos(h)) / 2) * dphi / np.pi)
-    print(f"Bakkehøyde ved observatør: {zg:.1f} m")
-    print("horizon:")
-    for azd, el in prof:
-        print(f"  - [{azd:.0f}, {el:.1f}]")
-    print("  - [360, %.1f]" % prof[0, 1])
-    print(f"sky_view_factor: {svf:.2f}   (flat terreng gir 0.50)")
+    ground = a.ground_elevation if a.ground_elevation is not None else crag.elevation_m
+    horizon = terrain_horizon(crag, a.dem, ground, a.eye_height_m, a.offset_m, a.step_deg, a.min_dist_m, a.max_dist_m)
+    svf = sky_view_factor(replace(crag, horizon=horizon))
+    block = "  horizon:\n" + "".join(f"    - [{az:g}, {el:.2f}]\n" for az, el in horizon)
+    print(block + f"sky_view_factor: {svf:.4f}")
+    if a.write:
+        path = Path(a.config)
+        text = path.read_text(encoding="utf-8")
+        text, n = re.subn(r"(?m)^  horizon:\n(?:    - .*\n)+", block, text)
+        if n != 1:
+            raise ValueError("Fant ikke én horisont å oppdatere")
+        text = re.sub(r"(?m)^  sky_view_factor:.*$", f"  sky_view_factor: {svf:.4f}  # kontrollverdi; beregnes fra horisont og helning", text)
+        path.write_text(text, encoding="utf-8")
 
 
 if __name__ == "__main__":

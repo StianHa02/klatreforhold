@@ -29,6 +29,7 @@ Slugen er ikke alltid feltnavnet i ASCII: Bolstadøyri er `bolstadoeyri`. Finn d
 | `koordinater.lat/lng` | `lat`, `lon` (full presisjon; avrundes til 4 desimaler i MET-kall) |
 | `orientering` (grader, kompass) | `face_azimuth_deg` |
 | `bratthet_id` 1 sva / 2 vertikalt / 3 overheng / 4 bratt overheng, tak | `face_tilt_deg` 70 / 90 / 100 / 110 (1, 3 og 4 er anslag; merk det i kommentaren) |
+| `bratthet_id` | `steepness_id` (behold kategorien også når helningen er oppmålt; brukes til foreløpig regnskjerming) |
 | `regnsikkert` | `rain_sheltered` |
 | side-URL | `geometry_source`, og datoen i `geometry_checked` |
 
@@ -57,9 +58,10 @@ Slugen er ikke alltid feltnavnet i ASCII: Bolstadøyri er `bolstadoeyri`. Finn d
 - `model:`: behold standardverdiene. Sett `wind_exposure` etter terrenget (skjermet skog ~0.4–0.5,
   åpen kyst ~0.8) og skriv at det er et anslag. Ikke legg inn kalibrerte verdier for hånd.
 
-**Gotcha:** `fetch_history.py` og `calibrate.py` navngir filer etter `name.lower()`, mens
-`verify_forecast.py`, `export_site_stats.py` og `load_config` (kalibrert/) bruker filnavnet. For felt med
-æøå i navnet (Bolstadøyri) må historikk-CSV og kalibreringsfil døpes om til slugen.
+**Gotcha:** `fetch_history.py` navngir filer etter `name.lower()`, mens
+`verify_forecast.py` og `export_site_stats.py` bruker filnavnet. For felt med æøå i navnet
+(Bolstadøyri) må historikk-CSV døpes om til slugen. I v2 bruker `calibrate.py` samme filnavn og
+konfigurasjonsmappe som `load_config`, også når feltnavnet har æøå.
 
 ## 3. Frost-stasjon
 
@@ -94,6 +96,10 @@ python scripts\horizon_from_dem.py --config config\<slug>.yaml --dem data\raw\do
   utsnittet for lite eller mangler en rute.
 - Se over horisonten: høye verdier mot veggretningen betyr som regel at veggen selv eller trær rett foran
   er med (prøv `--offset-m`), og 0 overalt betyr at rasteret er tomt.
+- I v2 beregnes himmelfaktoren fra helning og horisont under kjøring. Et overheng har mindre synlig
+  himmel også uten terreng, så en lav verdi er ikke alene bevis på feil. Behold de kontrollerte
+  veggfot-offsettene for Bolstadøyri/Fabrikkveggen (+6 m), Trollkona (−10 m) og Loddefjord (−12 m).
+  Ikke erstatt dem med standarden +3 m uten ny terrengkontroll.
 
 ## 5. Sjekk
 

@@ -41,7 +41,8 @@ def test_wind_from_behind_gives_less_wall_rain():
     b = _weather(precipitation=2.0, wind_direction=120.0)
     ra, rb = run_model(a, crag, p), run_model(b, crag, p)
     assert rb["wind_driven_rain_mm"].sum() == 0, "vind bakfra gir ikke slagregn"
-    assert ra["rain_on_face_mm"].sum() > 2 * rb["rain_on_face_mm"].sum()
+    assert ra["rain_on_face_mm"].sum() > rb["rain_on_face_mm"].sum()
+    np.testing.assert_allclose(ra["rain_on_face_mm"] - rb["rain_on_face_mm"], ra["wind_driven_rain_mm"])
 
 
 def test_condensation_when_warm_humid_air_after_cold():

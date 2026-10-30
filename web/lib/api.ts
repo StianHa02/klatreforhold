@@ -8,6 +8,13 @@ export type Time = {
   tort: boolean
   p_vatt: number | null
   vann_mm: number
+  is_mm?: number
+  sno_mm?: number
+  sol_mulig?: boolean
+  direkte_sol_wm2?: number
+  vaerkilde?: string
+  nedborkilde?: string
+  fase_estimert?: boolean
   bergtemp: number
   duggpunkt: number
   lufttemp: number
@@ -23,6 +30,10 @@ export type Time = {
 }
 
 export type Varsel = {
+  modellversjon?: string
+  konfigurasjon?: string
+  initialisering_usikker?: boolean
+  reservekilder?: string[]
   felt: { slug: string; navn: string; felt_id: number | null; lat: number; lon: number; orientering: number }
   generert: string
   na: string

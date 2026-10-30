@@ -1,93 +1,97 @@
 # Sandviken (felt_id 33), Bergen
-# Kilde: BKK nettfører (felt-tabellen): orientering 270, bratthet 2 (vertikalt), sol fra 12:00 (nettføreren),
+# Kilde: BKK nettfører 2026-10-29: orientering 195, bratthet 2 (vertikalt),
 # regnsikkert = false. Beskrivelse: "Feltet tørker raskt etter regnvær."
 crag:
   name: Sandviken
   felt_id: 33
-  lat: 60.4166
-  lon: 5.3190
-  elevation_m: 78        # bakkehøyde fra DOM1
+  lat: 60.416611
+  lon: 5.319018
+  elevation_m: 78.97     # Kartverket DTM, kontrollert 2026-10-29
+  geology: Migmatittgneis (NGU 1:50 000; nær grense mellom to gneisenheter)
+  geometry_source: https://ute.bergenklatreklubb.no/felt/sandviken
+  geometry_checked: '2026-10-29'
   timezone: Europe/Oslo
   frost_station: SN50540  # Bergen - Florida (krever FROST_CLIENT_ID)
   frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
-  face_azimuth_deg: 270
+  face_azimuth_deg: 195   # representativ sørvendt hovedvegg; vestvendte sektorer avviker
   face_tilt_deg: 90
+  steepness_id: 2        # BKK: vertikalt
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
-  # med scripts/horizon_from_dem.py --step-deg 5 (ignorerer nærmeste 10 m). 90 = bak veggen.
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
   horizon:
-    - [0, 90.0]
-    - [5, 90.0]
-    - [10, 90.0]
-    - [15, 90.0]
-    - [20, 90.0]
-    - [25, 90.0]
-    - [30, 90.0]
-    - [35, 90.0]
-    - [40, 90.0]
-    - [45, 90.0]
-    - [50, 90.0]
-    - [55, 90.0]
-    - [60, 90.0]
-    - [65, 90.0]
-    - [70, 90.0]
-    - [75, 90.0]
-    - [80, 90.0]
-    - [85, 90.0]
-    - [90, 90.0]
-    - [95, 90.0]
-    - [100, 90.0]
-    - [105, 90.0]
-    - [110, 90.0]
-    - [115, 90.0]
-    - [120, 90.0]
-    - [125, 90.0]
-    - [130, 90.0]
-    - [135, 90.0]
-    - [140, 90.0]
-    - [145, 90.0]
-    - [150, 90.0]
-    - [155, 90.0]
-    - [160, 90.0]
-    - [165, 90.0]
-    - [170, 90.0]
-    - [175, 90.0]
-    - [180, 90.0]
-    - [185, 0.0]
-    - [190, 0.0]
-    - [195, 0.0]
-    - [200, 0.0]
-    - [205, 0.0]
-    - [210, 0.0]
-    - [215, 0.0]
-    - [220, 0.0]
-    - [225, 0.0]
-    - [230, 0.0]
-    - [235, 0.0]
-    - [240, 0.0]
-    - [245, 0.0]
-    - [250, 2.5]
-    - [255, 0.0]
-    - [260, 2.3]
-    - [265, 28.4]
-    - [270, 28.4]
-    - [275, 32.4]
-    - [280, 34.9]
-    - [285, 25.6]
-    - [290, 20.2]
-    - [295, 7.5]
-    - [300, 4.9]
-    - [305, 7.2]
-    - [310, 23.8]
-    - [315, 37.0]
-    - [320, 34.3]
-    - [325, 38.3]
-    - [330, 45.0]
-    - [335, 48.7]
-    - [340, 52.0]
-    - [345, 55.9]
-    - [350, 58.5]
-    - [355, 59.5]
-    - [360, 90.0]
+    - [0, 56.89]
+    - [5, 58.69]
+    - [10, 60.40]
+    - [15, 59.30]
+    - [20, 60.07]
+    - [25, 60.74]
+    - [30, 60.11]
+    - [35, 60.31]
+    - [40, 60.94]
+    - [45, 60.47]
+    - [50, 60.85]
+    - [55, 60.33]
+    - [60, 58.66]
+    - [65, 56.45]
+    - [70, 54.19]
+    - [75, 51.40]
+    - [80, 49.45]
+    - [85, 48.52]
+    - [90, 48.03]
+    - [95, 42.08]
+    - [100, 41.42]
+    - [105, 42.04]
+    - [110, 39.43]
+    - [115, 33.74]
+    - [120, 31.68]
+    - [125, 27.28]
+    - [130, 16.18]
+    - [135, 21.18]
+    - [140, 20.26]
+    - [145, 9.27]
+    - [150, 6.69]
+    - [155, 5.34]
+    - [160, 1.61]
+    - [165, 0.00]
+    - [170, 0.00]
+    - [175, 0.00]
+    - [180, 0.00]
+    - [185, 0.00]
+    - [190, 0.00]
+    - [195, 0.00]
+    - [200, 0.00]
+    - [205, 0.00]
+    - [210, 0.00]
+    - [215, 0.00]
+    - [220, 0.00]
+    - [225, 0.00]
+    - [230, 0.00]
+    - [235, 0.00]
+    - [240, 0.00]
+    - [245, 0.00]
+    - [250, 0.00]
+    - [255, 2.49]
+    - [260, 0.00]
+    - [265, 19.91]
+    - [270, 17.13]
+    - [275, 25.24]
+    - [280, 16.74]
+    - [285, 11.86]
+    - [290, 19.98]
+    - [295, 19.98]
+    - [300, 18.42]
+    - [305, 31.05]
+    - [310, 30.57]
+    - [315, 34.94]
+    - [320, 42.32]
+    - [325, 47.75]
+    - [330, 52.53]
+    - [335, 55.18]
+    - [340, 57.01]
+    - [345, 59.08]
+    - [350, 58.37]
+    - [355, 56.74]
+    - [360, 56.89]
   rain_sheltered: false
 
 # Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
@@ -96,7 +100,7 @@ model:
   # Regn som treffer veggen
   wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
   wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
-  wind_exposure: 0.6            # reduksjon av 10 m-vind ved veggen (trær/terreng), 0-1
+  wind_exposure: 0.5  # foreløpig lokalt anslag, ikke kalibrert
   direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
   runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
   # Vannlagre (mm)
@@ -117,7 +121,7 @@ model:
   rock_conductivity: 2.5        # W/m/K
   conduction_depth_m: 0.25      # avstand til "dyp" bergnode
   deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
-  sky_view_factor: 0.34         # fra DOM1 (flatt terreng = 0.5)
+  sky_view_factor: 0.4581  # kontrollverdi; beregnes fra horisont og helning
   # Terskler for status
   wet_threshold_mm: 0.05        # film eller tak over dette = vått
   damp_threshold_mm: 0.01

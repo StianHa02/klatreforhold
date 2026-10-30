@@ -15,3 +15,13 @@ modeling/outputs/*
 .env
 .idea/
 .vercel/
+modeling/data/cache/
+
+# Lokale agent-, nettleser- og byggefiler
+.codex/
+.playwright-mcp/
+.playwright/
+playwright-report/
+test-results/
+*.tsbuildinfo
+supabase/.temp/

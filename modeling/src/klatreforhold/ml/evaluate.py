@@ -34,7 +34,8 @@ def _metrics(y: np.ndarray, pred: np.ndarray) -> dict:
     spec = float((~pred & ~y).sum() / n_dry) if n_dry else None    # tørt varslet når det var tørt
     bal = None if sens is None or spec is None else (sens + spec) / 2
     return {"n": int(len(y)), "n_vatt": n_wet, "n_tort": n_dry, "treff_total": float((pred == y).mean()) if len(y) else None,
-            "treff_vatt": sens, "treff_tort": spec, "balansert": bal}
+            "treff_vatt": sens, "treff_tort": spec, "balansert": bal,
+            "falskt_tort": int((~pred & y).sum()), "falskt_tort_andel": None if sens is None else 1-sens}
 
 
 def evaluate(pred_wet: pd.Series, labels: pd.Series, weather: pd.DataFrame) -> dict:
@@ -55,7 +56,27 @@ def simple_rules(weather: pd.DataFrame) -> dict[str, pd.Series]:
     w = weather
     rain = w["precipitation"].fillna(0) > 0
     dpd = w["air_temperature"] - dew_point_c(w["air_temperature"], w["relative_humidity"])
-    return {"regel_RH_90": (w["relative_humidity"] >= 90) | rain, "regel_duggpunkt_2C": (dpd < 2.0) | rain}
+    return {"regel_RH_90": (w["relative_humidity"] >= 90) | rain, "regel_duggpunkt_2C": (dpd < 2.0) | rain,
+            "regel_12t_etter_regn": hours_since(w.precipitation >= .2) < 12}
+
+
+def rain_event_ids(weather: pd.DataFrame) -> pd.Series:
+    rain = weather.precipitation.ge(.2)
+    gap = hours_since(rain.shift(1, fill_value=False))
+    return (rain & (gap >= 6)).cumsum().rename("regnepisode")
+
+
+def event_split(weather, labels, fraction=.7):
+    groups = rain_event_ids(weather).reindex(labels.index)
+    groups = groups[groups > 0]
+    unique = sorted(groups.unique())
+    if len(unique) < 10:
+        raise ValueError(f"Trenger minst 10 uavhengige regnepisoder; fant {len(unique)}")
+    cut = unique[min(len(unique)-1, max(1, int(len(unique)*fraction)))]
+    train, test = groups.index[groups < cut], groups.index[groups >= cut]
+    if labels.loc[train].nunique() < 2 or labels.loc[test].nunique() < 2:
+        raise ValueError("Både trenings- og testepisoder må inneholde tørt og ikke-tørt")
+    return train, test
 
 
 def forecast_skill_by_lead(archive: pd.DataFrame, labels: pd.Series,

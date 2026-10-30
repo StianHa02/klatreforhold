@@ -1,5 +1,9 @@
 # Modellen: hvordan vi regner ut om veggen er våt
 
+Oppdatering 30. oktober 2026: se [modell v2](MODELL_V2.md) for ny solgeometri, bratthet, værkilder,
+vinterfysikk og tørkestatistikk, og [sammenligningen med v1](MODELL_V2_RESULTATER.md).
+Resultatene nedenfor beskriver den tidligere modellen.
+
 Vi har ingen sensor på veggen og ingen pålitelige observasjoner av "tørt/vått". Derfor starter vi
 med en **fysisk modell** som bare trenger offentlige værdata. Den kan kalibreres og forbedres med
 ML når vi får ekte observasjoner.

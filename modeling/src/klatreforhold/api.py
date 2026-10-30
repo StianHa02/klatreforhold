@@ -39,7 +39,7 @@ app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("KLATREFORHOLD_C
 
 
 class Observasjon(BaseModel):
-    status: Literal["tort", "fuktig", "vatt"] = Field(description="Hva brukeren opplevde på veggen")
+    status: Literal["tort", "fuktig", "vatt", "is"] = Field(description="Hva brukeren opplevde på hovedveggen")
     tid: datetime | None = Field(None, description="Når brukeren var der (standard: nå)")
     predikert_status: Literal["tort", "fuktig", "vatt", "is"] | None = Field(None, description="Hva varselet sa")
     kommentar: str | None = Field(None, max_length=500)
@@ -51,7 +51,7 @@ def _known(slug: str):
         raise HTTPException(404, f"Ukjent felt: {slug}")
 
 
-def _varsel(slug: str, timer: int = 24, kilde: str = "openmeteo", na: datetime | None = None) -> dict:
+def _varsel(slug: str, timer: int = 24, kilde: str = "auto", na: datetime | None = None) -> dict:
     key = (slug, timer, kilde, na.isoformat() if na else None)
     with _lock:
         hit = _cache.get(key)
@@ -77,7 +77,7 @@ def felt():
 
 
 @app.get("/api/felt/{slug}/varsel")
-def varsel(slug: str, timer: int = Query(24, ge=1, le=120), kilde: Literal["openmeteo", "metno"] = "openmeteo",
+def varsel(slug: str, timer: int = Query(24, ge=1, le=120), kilde: Literal["auto", "openmeteo", "metno", "metnordic"] = "auto",
            na: datetime | None = Query(None, description="for testing: late som om klokka er dette")):
     _known(slug)
     try:
@@ -130,21 +130,5 @@ def cron_lagre_varsel(authorization: str | None = Header(None)):
     secret = os.environ.get("CRON_SECRET")
     if not secret or not authorization or not hmac.compare_digest(authorization, f"Bearer {secret}"):
         raise HTTPException(401, "Ugyldig nøkkel")
-    resultat = {}
-    for c in list_crags():
-        slug = c["slug"]
-        try:
-            v = predict(slug, hours=48)
-            generert = pd.Timestamp(v["na"]).tz_convert("UTC")
-            rows = [{
-                "felt": slug, "generert": generert.isoformat(),
-                "tid": pd.Timestamp(h["tid"]).tz_convert("UTC").isoformat(),
-                "ledetid_timer": int((pd.Timestamp(h["tid"]) - generert) / pd.Timedelta(hours=1)),
-                "status": h["status"], "vann_mm": h["vann_mm"], "p_vatt": h["p_vatt"], "bergtemp": h["bergtemp"],
-                "duggpunkt": h["duggpunkt"], "nedbor_mm": h["nedbor_mm"],
-                "regn_mot_veggen_mm": h["regn_mot_veggen_mm"], "sol_pa_veggen": h["sol_pa_veggen"],
-            } for h in v["timer"]]
-            resultat[slug] = storage.save_forecast(slug, rows)
-        except Exception as err:  # ett felt som feiler skal ikke stoppe resten
-            resultat[slug] = f"feil: {err}"
-    return {"lagret": resultat}
+    from .publish import publish_all
+    return {"lagret": publish_all(storage)}

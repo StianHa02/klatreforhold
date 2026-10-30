@@ -189,7 +189,7 @@ export async function hentObservasjoner(slug: string, fra?: Date): Promise<Obser
   }
 }
 
-const STATUSER = ['tort', 'fuktig', 'vatt'] as const
+const STATUSER = ['tort', 'fuktig', 'vatt', 'is'] as const
 const PREDIKERT = ['tort', 'fuktig', 'vatt', 'is'] as const
 
 export type NyObservasjon = { status: string; tid?: string | null; predikert_status?: string | null; kommentar?: string | null; kilde?: string }
@@ -281,6 +281,7 @@ export type FeltStatistikk = {
   tort: number
   fuktig: number
   vatt: number
+  is?: number
   vurdert: number
   andel_riktig: number | null
   kjoringer: number

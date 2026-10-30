@@ -15,6 +15,9 @@ from klatreforhold.config import load_config
 from klatreforhold.ml.features import build_features, load_labels
 from klatreforhold.ml.train import evaluate_physics, evaluate_simple_rules, time_split, train_sklearn, train_torch
 from klatreforhold.physics.wetness import run_model
+from klatreforhold.physics.forcing import prepare_weather
+from klatreforhold.version import MODEL_VERSION, config_hash
+from klatreforhold.ml.evaluate import event_split
 
 
 def load_weather(path):
@@ -38,9 +41,9 @@ def main():
     ap.add_argument("--torch", action="store_true", help="tren også GRU-modell (PyTorch, CUDA hvis mulig)")
     a = ap.parse_args()
     crag, params = load_config(a.config)
-    w = load_weather(a.weather)
+    w = prepare_weather(load_weather(a.weather))
     phys = run_model(w, crag, params)
-    X = build_features(w.interpolate(limit=3), phys, crag.timezone)
+    X = build_features(w, phys, crag.timezone)
     X = X[w["air_temperature"].notna()]  # ikke tren på utfylte hull
     def labels(p):
         if p == "supabase":
@@ -58,9 +61,9 @@ def main():
     if y.empty:
         raise SystemExit("Ingen etiketter ennå")
     y = y.groupby(level=0).max().reindex(X.index).dropna().astype(bool)
-    tr, te = time_split(X, y)
+    tr, te = event_split(w, y)
     print(f"Trening: {tr.min()} -> {tr.max()} ({len(tr)} t), test: {te.min()} -> {te.max()} ({len(te)} t)")
-    results = {**evaluate_simple_rules(w.interpolate(limit=3), y, te), "fysikk_alene": evaluate_physics(X, y, te)}
+    results = {**evaluate_simple_rules(w, y, te), "fysikk_alene": evaluate_physics(X, y, te)}
     sk_model, sk_cols, results["sklearn_med_fysikk"] = train_sklearn(X, y, tr, te, use_physics=True)
     _, _, results["sklearn_uten_fysikk"] = train_sklearn(X, y, tr, te, use_physics=False)
     if a.torch:
@@ -68,11 +71,13 @@ def main():
     print(json.dumps(results, indent=2, ensure_ascii=False))
     if a.save:
         import joblib
-        from pathlib import Path
         slug = Path(a.config).stem
         import os
         mdir = Path(os.environ.get("KLATREFORHOLD_MODEL_DIR", ROOT / "models"))
         mdir.mkdir(exist_ok=True)
+        # Kandidat lagres, men aktiveres først etter uavhengig hendelsesvalidering.
+        (mdir / f"{slug}_metadata.json").write_text(json.dumps({"model_version": MODEL_VERSION,
+            "config_hash": config_hash(crag, params), "validated": False, "results": results}, indent=2), encoding="utf-8")
         # Endelig modell trenes på ALLE etiketter (testsplitten over var bare for å måle)
         all_t = y.index
         final_sk = sk_model.__class__(**sk_model.get_params()).fit(X.loc[all_t, sk_cols], y.loc[all_t].astype(int))

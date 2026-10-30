@@ -1,256 +1,2506 @@
 {
- "generert": "2026-10-27",
+ "generert": "2026-10-30",
+ "modellversjon": "2.0.0",
+ "oppvarming_dogn": 90,
  "felt": {
-  "ekstraveggen": {
-   "navn": "Ekstraveggen",
-   "orientering": 300.0,
+  "bolstadoyri": {
+   "navn": "Bolstadøyri",
+   "orientering": 213.0,
    "helning": 90.0,
    "periode": [
-    "2023-01-01",
+    "2023-04-01",
     "2026-10-28"
    ],
    "tort_per_maned": [
-    0.393,
-    0.3,
-    0.349,
-    0.739,
-    0.714,
-    0.669,
-    0.748,
-    0.558,
-    0.421,
-    0.365,
-    0.327,
-    0.281
+    0.207,
+    0.408,
+    0.307,
+    0.726,
+    0.664,
+    0.556,
+    0.639,
+    0.461,
+    0.453,
+    0.372,
+    0.283,
+    0.265
    ],
    "tort_dagtid_per_maned": [
-    0.399,
-    0.305,
-    0.326,
-    0.747,
-    0.705,
-    0.668,
-    0.73,
-    0.556,
-    0.429,
-    0.374,
-    0.337,
-    0.285
+    0.206,
+    0.4,
+    0.307,
+    0.744,
+    0.655,
+    0.571,
+    0.648,
+    0.465,
+    0.438,
+    0.371,
+    0.279,
+    0.271
+   ],
+   "soltimer_per_dogn": [
+    0.269,
+    2.953,
+    3.413,
+    6.479,
+    5.589,
+    5.125,
+    5.468,
+    4.54,
+    4.467,
+    2.986,
+    0.756,
+    0.0
+   ],
+   "torketid_timer": {
+    "sommer": {
+     "median": 9.0,
+     "q25": 5.0,
+     "q75": 16.25,
+     "n": 148
+    },
+    "vinter": {
+     "median": 19.5,
+     "q25": 11.75,
+     "q75": 28.25,
+     "n": 24
+    }
+   },
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 9.0,
+      "q25": 5.0,
+      "q75": 16.25,
+      "n": 148
+     },
+     "utfall": {
+      "tort": 148,
+      "nytt_regn": 203,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.14245014245014245,
+       "n": 351,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.25925925925925924,
+       "n": 351,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.3903133903133903,
+       "n": 351,
+       "ukjent": 0
+      }
+     },
+     "n": 362,
+     "vinterpaavirket": 11
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 19.5,
+      "q25": 11.75,
+      "q75": 28.25,
+      "n": 24
+     },
+     "utfall": {
+      "tort": 24,
+      "nytt_regn": 124,
+      "fortsatt_vatt": 2,
+      "ufullstendig": 1
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.02,
+       "n": 150,
+       "ukjent": 1
+      },
+      "12": {
+       "andel": 0.05333333333333334,
+       "n": 150,
+       "ukjent": 1
+      },
+      "24": {
+       "andel": 0.1,
+       "n": 150,
+       "ukjent": 1
+      }
+     },
+     "n": 278,
+     "vinterpaavirket": 127
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 476,
+   "nedbor_mm_per_ar": 2272,
+   "vintertimer": 3081,
+   "massefeil_maks_mm": 1.9845236565174673e-14,
+   "energifeil_maks_j_m2": 3.699824446812272e-09,
+   "konfigurasjon": "7fb8386b5305fbaa"
+  },
+  "bymuren": {
+   "navn": "Bymuren",
+   "orientering": 218.0,
+   "helning": 100.0,
+   "periode": [
+    "2023-04-01",
+    "2026-10-28"
+   ],
+   "tort_per_maned": [
+    0.578,
+    0.532,
+    0.478,
+    0.862,
+    0.853,
+    0.82,
+    0.858,
+    0.736,
+    0.658,
+    0.626,
+    0.573,
+    0.412
+   ],
+   "tort_dagtid_per_maned": [
+    0.583,
+    0.541,
+    0.467,
+    0.875,
+    0.852,
+    0.848,
+    0.861,
+    0.74,
+    0.659,
+    0.637,
+    0.579,
+    0.428
+   ],
+   "soltimer_per_dogn": [
+    3.387,
+    3.694,
+    3.273,
+    6.454,
+    5.952,
+    5.108,
+    5.516,
+    4.218,
+    4.058,
+    3.477,
+    2.844,
+    1.946
+   ],
+   "torketid_timer": {
+    "sommer": {
+     "median": 2.0,
+     "q25": 0.0,
+     "q75": 4.0,
+     "n": 281
+    },
+    "vinter": {
+     "median": 5.0,
+     "q25": 1.0,
+     "q75": 12.0,
+     "n": 101
+    }
+   },
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 2.0,
+      "q25": 0.0,
+      "q75": 4.0,
+      "n": 281
+     },
+     "utfall": {
+      "tort": 281,
+      "nytt_regn": 82,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.6584022038567493,
+       "n": 363,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.7245179063360881,
+       "n": 363,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.7713498622589532,
+       "n": 363,
+       "ukjent": 0
+      }
+     },
+     "n": 363,
+     "vinterpaavirket": 0
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 5.0,
+      "q25": 1.0,
+      "q75": 12.0,
+      "n": 101
+     },
+     "utfall": {
+      "tort": 101,
+      "nytt_regn": 167,
+      "fortsatt_vatt": 2,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.2222222222222222,
+       "n": 270,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.2814814814814815,
+       "n": 270,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.34444444444444444,
+       "n": 270,
+       "ukjent": 0
+      }
+     },
+     "n": 328,
+     "vinterpaavirket": 58
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 154,
+   "nedbor_mm_per_ar": 2149,
+   "vintertimer": 253,
+   "massefeil_maks_mm": 5.440092820663267e-15,
+   "energifeil_maks_j_m2": 2.621163730509579e-09,
+   "konfigurasjon": "8fb61a3abebf2a16"
+  },
+  "ekstraveggen": {
+   "navn": "Ekstraveggen",
+   "orientering": 322.0,
+   "helning": 90.0,
+   "periode": [
+    "2023-04-01",
+    "2026-10-28"
+   ],
+   "tort_per_maned": [
+    0.387,
+    0.352,
+    0.325,
+    0.75,
+    0.722,
+    0.688,
+    0.753,
+    0.568,
+    0.438,
+    0.373,
+    0.332,
+    0.271
+   ],
+   "tort_dagtid_per_maned": [
+    0.39,
+    0.357,
+    0.309,
+    0.756,
+    0.71,
+    0.686,
+    0.733,
+    0.571,
+    0.446,
+    0.379,
+    0.343,
+    0.277
    ],
    "soltimer_per_dogn": [
     0.0,
-    0.01,
-    0.8,
-    2.38,
-    3.27,
-    3.5,
-    3.5,
-    2.23,
-    1.09,
-    0.32,
+    0.012,
+    0.377,
+    1.643,
+    2.879,
+    2.983,
+    2.96,
+    1.371,
+    0.633,
+    0.166,
     0.0,
     0.0
    ],
    "torketid_timer": {
     "sommer": {
      "median": 7.0,
-     "q25": 3.25,
+     "q25": 3.0,
      "q75": 13.0,
-     "n": 166
+     "n": 189
     },
     "vinter": {
-     "median": 20.0,
+     "median": 14.0,
      "q25": 11.0,
-     "q75": 30.5,
-     "n": 70
+     "q75": 25.0,
+     "n": 49
     }
    },
-   "regn_pa_veggen_mm_per_ar": 418.0,
-   "nedbor_mm_per_ar": 2027.0
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 7.0,
+      "q25": 3.0,
+      "q75": 13.0,
+      "n": 189
+     },
+     "utfall": {
+      "tort": 189,
+      "nytt_regn": 168,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.24929971988795518,
+       "n": 357,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.3949579831932773,
+       "n": 357,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.48739495798319327,
+       "n": 357,
+       "ukjent": 0
+      }
+     },
+     "n": 359,
+     "vinterpaavirket": 2
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 14.0,
+      "q25": 11.0,
+      "q75": 25.0,
+      "n": 49
+     },
+     "utfall": {
+      "tort": 49,
+      "nytt_regn": 229,
+      "fortsatt_vatt": 2,
+      "ufullstendig": 1
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.02491103202846975,
+       "n": 281,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.07473309608540925,
+       "n": 281,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.12857142857142856,
+       "n": 280,
+       "ukjent": 1
+      }
+     },
+     "n": 344,
+     "vinterpaavirket": 63
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 345,
+   "nedbor_mm_per_ar": 1981,
+   "vintertimer": 1075,
+   "massefeil_maks_mm": 6.099287741534454e-15,
+   "energifeil_maks_j_m2": 2.421643330308143e-09,
+   "konfigurasjon": "3a9e679d305a43be"
   },
-  "helleneset": {
-   "navn": "Helleneset",
-   "orientering": 270.0,
-   "helning": 70.0,
+  "fabrikkveggen": {
+   "navn": "Fabrikkveggen",
+   "orientering": 193.0,
+   "helning": 90.0,
    "periode": [
-    "2023-01-01",
+    "2023-04-01",
     "2026-10-28"
    ],
    "tort_per_maned": [
-    0.401,
-    0.313,
-    0.337,
-    0.711,
-    0.641,
-    0.602,
-    0.695,
-    0.503,
-    0.402,
-    0.366,
-    0.356,
-    0.282
+    0.456,
+    0.436,
+    0.367,
+    0.756,
+    0.721,
+    0.661,
+    0.772,
+    0.597,
+    0.471,
+    0.428,
+    0.386,
+    0.286
    ],
    "tort_dagtid_per_maned": [
-    0.407,
-    0.312,
-    0.328,
-    0.708,
-    0.637,
-    0.603,
-    0.689,
-    0.494,
-    0.411,
-    0.365,
-    0.368,
+    0.457,
+    0.439,
+    0.362,
+    0.763,
+    0.717,
+    0.678,
+    0.759,
+    0.598,
+    0.484,
+    0.432,
+    0.409,
     0.294
    ],
    "soltimer_per_dogn": [
-    1.52,
-    2.22,
-    2.62,
-    4.77,
-    5.06,
-    5.41,
-    5.44,
-    3.93,
-    2.87,
-    2.05,
-    1.27,
-    0.74
+    1.14,
+    2.741,
+    3.855,
+    6.755,
+    6.5,
+    6.133,
+    6.524,
+    4.839,
+    4.408,
+    2.845,
+    1.289,
+    0.0
    ],
    "torketid_timer": {
     "sommer": {
-     "median": 11.0,
-     "q25": 8.0,
-     "q75": 17.0,
-     "n": 142
+     "median": 9.0,
+     "q25": 5.0,
+     "q75": 13.75,
+     "n": 178
     },
     "vinter": {
-     "median": 20.5,
-     "q25": 14.0,
-     "q75": 32.25,
-     "n": 60
+     "median": 12.5,
+     "q25": 8.0,
+     "q75": 20.25,
+     "n": 64
     }
    },
-   "regn_pa_veggen_mm_per_ar": 1143.0,
-   "nedbor_mm_per_ar": 1989.0
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 9.0,
+      "q25": 5.0,
+      "q75": 13.75,
+      "n": 178
+     },
+     "utfall": {
+      "tort": 178,
+      "nytt_regn": 153,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.1933534743202417,
+       "n": 331,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.39274924471299094,
+       "n": 331,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.525679758308157,
+       "n": 331,
+       "ukjent": 0
+      }
+     },
+     "n": 333,
+     "vinterpaavirket": 2
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 12.5,
+      "q25": 8.0,
+      "q75": 20.25,
+      "n": 64
+     },
+     "utfall": {
+      "tort": 64,
+      "nytt_regn": 220,
+      "fortsatt_vatt": 2,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.03146853146853147,
+       "n": 286,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.11188811188811189,
+       "n": 286,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.1853146853146853,
+       "n": 286,
+       "ukjent": 0
+      }
+     },
+     "n": 334,
+     "vinterpaavirket": 48
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 766,
+   "nedbor_mm_per_ar": 1864,
+   "vintertimer": 627,
+   "massefeil_maks_mm": 4.475586568020162e-15,
+   "energifeil_maks_j_m2": 3.44221007253509e-09,
+   "konfigurasjon": "fd954d0ac3964055"
   },
-  "sandviken": {
-   "navn": "Sandviken",
-   "orientering": 270.0,
-   "helning": 90.0,
+  "helleneset": {
+   "navn": "Helleneset",
+   "orientering": 274.0,
+   "helning": 70.0,
    "periode": [
-    "2023-01-01",
+    "2023-04-01",
     "2026-10-28"
    ],
    "tort_per_maned": [
-    0.454,
-    0.382,
-    0.423,
-    0.765,
-    0.712,
-    0.651,
-    0.737,
-    0.552,
-    0.487,
-    0.462,
-    0.438,
-    0.351
+    0.405,
+    0.355,
+    0.364,
+    0.739,
+    0.67,
+    0.641,
+    0.715,
+    0.537,
+    0.455,
+    0.422,
+    0.394,
+    0.299
    ],
    "tort_dagtid_per_maned": [
-    0.452,
-    0.381,
-    0.406,
-    0.771,
-    0.702,
-    0.658,
-    0.731,
-    0.55,
-    0.505,
-    0.464,
-    0.455,
-    0.351
+    0.414,
+    0.35,
+    0.347,
+    0.738,
+    0.667,
+    0.649,
+    0.71,
+    0.539,
+    0.472,
+    0.422,
+    0.409,
+    0.307
    ],
    "soltimer_per_dogn": [
-    1.5,
-    2.13,
-    2.37,
-    3.73,
-    2.85,
-    3.75,
-    3.58,
-    2.67,
-    2.47,
-    1.94,
-    1.22,
-    0.72
+    1.333,
+    1.988,
+    2.229,
+    5.295,
+    5.597,
+    5.383,
+    5.355,
+    4.016,
+    3.133,
+    2.138,
+    1.1,
+    0.591
+   ],
+   "torketid_timer": {
+    "sommer": {
+     "median": 9.0,
+     "q25": 6.0,
+     "q75": 14.0,
+     "n": 186
+    },
+    "vinter": {
+     "median": 14.5,
+     "q25": 9.75,
+     "q75": 22.25,
+     "n": 68
+    }
+   },
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 9.0,
+      "q25": 6.0,
+      "q75": 14.0,
+      "n": 186
+     },
+     "utfall": {
+      "tort": 186,
+      "nytt_regn": 172,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.1340782122905028,
+       "n": 358,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.36312849162011174,
+       "n": 358,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.505586592178771,
+       "n": 358,
+       "ukjent": 0
+      }
+     },
+     "n": 358,
+     "vinterpaavirket": 0
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 14.5,
+      "q25": 9.75,
+      "q75": 22.25,
+      "n": 68
+     },
+     "utfall": {
+      "tort": 68,
+      "nytt_regn": 216,
+      "fortsatt_vatt": 1,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.028070175438596492,
+       "n": 285,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.08771929824561403,
+       "n": 285,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.18947368421052632,
+       "n": 285,
+       "ukjent": 0
+      }
+     },
+     "n": 325,
+     "vinterpaavirket": 40
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 1119,
+   "nedbor_mm_per_ar": 1938,
+   "vintertimer": 1031,
+   "massefeil_maks_mm": 4.4853010194856324e-14,
+   "energifeil_maks_j_m2": 2.992237568832934e-09,
+   "konfigurasjon": "d6167511bb4462f7"
+  },
+  "loddefjord": {
+   "navn": "Loddefjord",
+   "orientering": 266.0,
+   "helning": 110.0,
+   "periode": [
+    "2023-04-01",
+    "2026-10-28"
+   ],
+   "tort_per_maned": [
+    0.632,
+    0.638,
+    0.876,
+    0.968,
+    0.996,
+    0.993,
+    0.994,
+    0.964,
+    0.936,
+    0.925,
+    0.709,
+    0.552
+   ],
+   "tort_dagtid_per_maned": [
+    0.639,
+    0.645,
+    0.868,
+    0.967,
+    0.995,
+    0.992,
+    0.998,
+    0.965,
+    0.938,
+    0.93,
+    0.717,
+    0.56
+   ],
+   "soltimer_per_dogn": [
+    0.0,
+    0.129,
+    1.087,
+    3.527,
+    4.065,
+    4.017,
+    3.911,
+    2.468,
+    1.783,
+    0.732,
+    0.044,
+    0.0
+   ],
+   "torketid_timer": {
+    "sommer": {
+     "median": 0.0,
+     "q25": 0.0,
+     "q75": 0.0,
+     "n": 337
+    },
+    "vinter": {
+     "median": 0.0,
+     "q25": 0.0,
+     "q75": 0.0,
+     "n": 200
+    }
+   },
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "n": 337
+     },
+     "utfall": {
+      "tort": 337,
+      "nytt_regn": 6,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.967930029154519,
+       "n": 343,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.9795918367346939,
+       "n": 343,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.9825072886297376,
+       "n": 343,
+       "ukjent": 0
+      }
+     },
+     "n": 344,
+     "vinterpaavirket": 1
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "n": 200
+     },
+     "utfall": {
+      "tort": 200,
+      "nytt_regn": 101,
+      "fortsatt_vatt": 2,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.5973597359735974,
+       "n": 303,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.6237623762376238,
+       "n": 303,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.6468646864686468,
+       "n": 303,
+       "ukjent": 0
+      }
+     },
+     "n": 350,
+     "vinterpaavirket": 47
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 6,
+   "nedbor_mm_per_ar": 1937,
+   "vintertimer": 66,
+   "massefeil_maks_mm": 3.4208746946262636e-15,
+   "energifeil_maks_j_m2": 2.0581865101121366e-09,
+   "konfigurasjon": "10eb9f2b50c66b51"
+  },
+  "neseveggen": {
+   "navn": "Neseveggen",
+   "orientering": 195.0,
+   "helning": 100.0,
+   "periode": [
+    "2023-04-01",
+    "2026-10-28"
+   ],
+   "tort_per_maned": [
+    0.62,
+    0.515,
+    0.565,
+    0.858,
+    0.862,
+    0.845,
+    0.902,
+    0.812,
+    0.727,
+    0.725,
+    0.609,
+    0.499
+   ],
+   "tort_dagtid_per_maned": [
+    0.617,
+    0.528,
+    0.553,
+    0.872,
+    0.868,
+    0.875,
+    0.907,
+    0.824,
+    0.736,
+    0.738,
+    0.628,
+    0.504
+   ],
+   "soltimer_per_dogn": [
+    2.774,
+    3.882,
+    4.102,
+    7.022,
+    6.371,
+    5.5,
+    5.96,
+    5.0,
+    4.917,
+    4.01,
+    2.378,
+    1.376
+   ],
+   "torketid_timer": {
+    "sommer": {
+     "median": 2.0,
+     "q25": 0.0,
+     "q75": 5.0,
+     "n": 275
+    },
+    "vinter": {
+     "median": 3.0,
+     "q25": 1.0,
+     "q75": 9.0,
+     "n": 164
+    }
+   },
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 2.0,
+      "q25": 0.0,
+      "q75": 5.0,
+      "n": 275
+     },
+     "utfall": {
+      "tort": 275,
+      "nytt_regn": 51,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.6932515337423313,
+       "n": 326,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.7914110429447853,
+       "n": 326,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.8374233128834356,
+       "n": 326,
+       "ukjent": 0
+      }
+     },
+     "n": 327,
+     "vinterpaavirket": 1
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 3.0,
+      "q25": 1.0,
+      "q75": 9.0,
+      "n": 164
+     },
+     "utfall": {
+      "tort": 164,
+      "nytt_regn": 143,
+      "fortsatt_vatt": 1,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.35714285714285715,
+       "n": 308,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.4512987012987013,
+       "n": 308,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.5162337662337663,
+       "n": 308,
+       "ukjent": 0
+      }
+     },
+     "n": 348,
+     "vinterpaavirket": 40
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 177,
+   "nedbor_mm_per_ar": 1679,
+   "vintertimer": 153,
+   "massefeil_maks_mm": 4.107825191113079e-15,
+   "energifeil_maks_j_m2": 2.2901076590642333e-09,
+   "konfigurasjon": "3770dd3fd0cbfb39"
+  },
+  "sandviken": {
+   "navn": "Sandviken",
+   "orientering": 195.0,
+   "helning": 90.0,
+   "periode": [
+    "2023-04-01",
+    "2026-10-28"
+   ],
+   "tort_per_maned": [
+    0.512,
+    0.47,
+    0.379,
+    0.752,
+    0.706,
+    0.641,
+    0.744,
+    0.568,
+    0.489,
+    0.462,
+    0.449,
+    0.345
+   ],
+   "tort_dagtid_per_maned": [
+    0.52,
+    0.468,
+    0.382,
+    0.758,
+    0.707,
+    0.651,
+    0.737,
+    0.576,
+    0.511,
+    0.466,
+    0.463,
+    0.348
+   ],
+   "soltimer_per_dogn": [
+    2.925,
+    3.729,
+    3.327,
+    6.254,
+    6.04,
+    5.65,
+    5.903,
+    4.403,
+    4.458,
+    3.311,
+    2.644,
+    1.645
    ],
    "torketid_timer": {
     "sommer": {
      "median": 7.0,
-     "q25": 3.0,
+     "q25": 4.0,
      "q75": 12.0,
-     "n": 187
+     "n": 200
     },
     "vinter": {
-     "median": 14.0,
+     "median": 13.0,
      "q25": 8.0,
-     "q75": 23.0,
-     "n": 107
+     "q75": 19.0,
+     "n": 79
     }
    },
-   "regn_pa_veggen_mm_per_ar": 515.0,
-   "nedbor_mm_per_ar": 2204.0
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 7.0,
+      "q25": 4.0,
+      "q75": 12.0,
+      "n": 200
+     },
+     "utfall": {
+      "tort": 200,
+      "nytt_regn": 163,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.25895316804407714,
+       "n": 363,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.42424242424242425,
+       "n": 363,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.5509641873278237,
+       "n": 363,
+       "ukjent": 0
+      }
+     },
+     "n": 363,
+     "vinterpaavirket": 0
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 13.0,
+      "q25": 8.0,
+      "q75": 19.0,
+      "n": 79
+     },
+     "utfall": {
+      "tort": 79,
+      "nytt_regn": 202,
+      "fortsatt_vatt": 1,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.0425531914893617,
+       "n": 282,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.13829787234042554,
+       "n": 282,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.24113475177304963,
+       "n": 282,
+       "ukjent": 0
+      }
+     },
+     "n": 328,
+     "vinterpaavirket": 46
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 857,
+   "nedbor_mm_per_ar": 2149,
+   "vintertimer": 432,
+   "massefeil_maks_mm": 6.467049118441537e-15,
+   "energifeil_maks_j_m2": 3.082504917983897e-09,
+   "konfigurasjon": "0061b0384604cf92"
+  },
+  "trollkona": {
+   "navn": "Trollkona",
+   "orientering": 225.0,
+   "helning": 110.0,
+   "periode": [
+    "2023-04-01",
+    "2026-10-28"
+   ],
+   "tort_per_maned": [
+    0.642,
+    0.583,
+    0.621,
+    0.914,
+    0.947,
+    0.977,
+    0.947,
+    0.834,
+    0.826,
+    0.685,
+    0.59,
+    0.462
+   ],
+   "tort_dagtid_per_maned": [
+    0.648,
+    0.584,
+    0.618,
+    0.919,
+    0.945,
+    0.974,
+    0.939,
+    0.831,
+    0.823,
+    0.687,
+    0.575,
+    0.467
+   ],
+   "soltimer_per_dogn": [
+    0.0,
+    0.941,
+    1.82,
+    2.877,
+    2.024,
+    1.608,
+    1.79,
+    1.75,
+    2.383,
+    1.522,
+    0.189,
+    0.0
+   ],
+   "torketid_timer": {
+    "sommer": {
+     "median": 0.0,
+     "q25": 0.0,
+     "q75": 0.0,
+     "n": 325
+    },
+    "vinter": {
+     "median": 0.0,
+     "q25": 0.0,
+     "q75": 5.0,
+     "n": 105
+    }
+   },
+   "torkeepisoder": {
+    "sommer": {
+     "fullfort": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "n": 325
+     },
+     "utfall": {
+      "tort": 325,
+      "nytt_regn": 37,
+      "fortsatt_vatt": 0,
+      "ufullstendig": 0
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.8397790055248618,
+       "n": 362,
+       "ukjent": 0
+      },
+      "12": {
+       "andel": 0.8784530386740331,
+       "n": 362,
+       "ukjent": 0
+      },
+      "24": {
+       "andel": 0.8977900552486188,
+       "n": 362,
+       "ukjent": 0
+      }
+     },
+     "n": 365,
+     "vinterpaavirket": 3
+    },
+    "vinter": {
+     "fullfort": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 5.0,
+      "n": 105
+     },
+     "utfall": {
+      "tort": 105,
+      "nytt_regn": 97,
+      "fortsatt_vatt": 2,
+      "ufullstendig": 1
+     },
+     "innen_timer": {
+      "6": {
+       "andel": 0.4019607843137255,
+       "n": 204,
+       "ukjent": 1
+      },
+      "12": {
+       "andel": 0.45588235294117646,
+       "n": 204,
+       "ukjent": 1
+      },
+      "24": {
+       "andel": 0.4852941176470588,
+       "n": 204,
+       "ukjent": 1
+      }
+     },
+     "n": 277,
+     "vinterpaavirket": 72
+    }
+   },
+   "regn_pa_veggen_mm_per_ar": 8,
+   "nedbor_mm_per_ar": 2422,
+   "vintertimer": 555,
+   "massefeil_maks_mm": 1.4106771306643395e-14,
+   "energifeil_maks_j_m2": 1.9863364286720753e-09,
+   "konfigurasjon": "3c468a9dc1a60d2d"
   }
  },
- "simulering": [
-  {
-   "n": 150,
-   "modell": "kalibrert",
-   "snitt": 0.838,
-   "min": 0.781,
-   "maks": 0.921,
-   "frø": 3
-  },
-  {
-   "n": 150,
-   "modell": "kalibrert+vekter",
-   "snitt": 0.847,
-   "min": 0.813,
-   "maks": 0.87,
-   "frø": 3
-  },
-  {
-   "n": 150,
-   "modell": "startverdier",
-   "snitt": 0.787,
-   "min": 0.783,
-   "maks": 0.79,
-   "frø": 3
-  },
-  {
-   "n": 400,
-   "modell": "kalibrert",
-   "snitt": 0.931,
-   "min": 0.905,
-   "maks": 0.949,
-   "frø": 3
-  },
-  {
-   "n": 400,
-   "modell": "kalibrert+vekter",
-   "snitt": 0.905,
-   "min": 0.867,
-   "maks": 0.949,
-   "frø": 3
-  },
-  {
-   "n": 400,
-   "modell": "startverdier",
-   "snitt": 0.78,
-   "min": 0.764,
-   "maks": 0.793,
-   "frø": 3
+ "felles_vaer": {
+  "kilde": "Ekstraveggen",
+  "felt": {
+   "bolstadoyri": {
+    "navn": "Bolstadøyri",
+    "orientering": 213.0,
+    "helning": 90.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.398,
+     0.381,
+     0.336,
+     0.744,
+     0.707,
+     0.627,
+     0.734,
+     0.543,
+     0.424,
+     0.39,
+     0.336,
+     0.274
+    ],
+    "tort_dagtid_per_maned": [
+     0.402,
+     0.379,
+     0.333,
+     0.744,
+     0.697,
+     0.624,
+     0.725,
+     0.54,
+     0.435,
+     0.393,
+     0.352,
+     0.285
+    ],
+    "soltimer_per_dogn": [
+     0.247,
+     2.741,
+     3.047,
+     6.229,
+     5.476,
+     5.208,
+     5.331,
+     4.234,
+     4.1,
+     2.887,
+     0.533,
+     0.0
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 8.0,
+      "q25": 5.0,
+      "q75": 14.25,
+      "n": 172
+     },
+     "vinter": {
+      "median": 16.5,
+      "q25": 10.0,
+      "q75": 22.25,
+      "n": 44
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 8.0,
+       "q25": 5.0,
+       "q75": 14.25,
+       "n": 172
+      },
+      "utfall": {
+       "tort": 172,
+       "nytt_regn": 186,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.17597765363128492,
+        "n": 358,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.3324022346368715,
+        "n": 358,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.4581005586592179,
+        "n": 358,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 1
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 16.5,
+       "q25": 10.0,
+       "q75": 22.25,
+       "n": 44
+      },
+      "utfall": {
+       "tort": 44,
+       "nytt_regn": 236,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 1
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.0176678445229682,
+        "n": 283,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.0636042402826855,
+        "n": 283,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.12411347517730496,
+        "n": 282,
+        "ukjent": 1
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 61
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 528,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 976,
+    "massefeil_maks_mm": 6.162605148407607e-15,
+    "energifeil_maks_j_m2": 3.401055437279865e-09
+   },
+   "bymuren": {
+    "navn": "Bymuren",
+    "orientering": 218.0,
+    "helning": 100.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.54,
+     0.519,
+     0.519,
+     0.879,
+     0.883,
+     0.854,
+     0.88,
+     0.779,
+     0.691,
+     0.681,
+     0.531,
+     0.397
+    ],
+    "tort_dagtid_per_maned": [
+     0.548,
+     0.522,
+     0.495,
+     0.894,
+     0.882,
+     0.883,
+     0.893,
+     0.777,
+     0.686,
+     0.691,
+     0.542,
+     0.415
+    ],
+    "soltimer_per_dogn": [
+     3.409,
+     3.729,
+     3.521,
+     6.663,
+     6.137,
+     5.483,
+     5.79,
+     4.581,
+     4.475,
+     3.61,
+     2.9,
+     2.032
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 1.0,
+      "q25": 0.0,
+      "q75": 4.0,
+      "n": 288
+     },
+     "vinter": {
+      "median": 4.0,
+      "q25": 0.0,
+      "q75": 10.0,
+      "n": 122
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 1.0,
+       "q25": 0.0,
+       "q75": 4.0,
+       "n": 288
+      },
+      "utfall": {
+       "tort": 288,
+       "nytt_regn": 69,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.6974789915966386,
+        "n": 357,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.7647058823529411,
+        "n": 357,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.8067226890756303,
+        "n": 357,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 2
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 4.0,
+       "q25": 0.0,
+       "q75": 10.0,
+       "n": 122
+      },
+      "utfall": {
+       "tort": 122,
+       "nytt_regn": 164,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.2638888888888889,
+        "n": 288,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.3402777777777778,
+        "n": 288,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.4027777777777778,
+        "n": 288,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 56
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 113,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 316,
+    "massefeil_maks_mm": 4.010680676458378e-15,
+    "energifeil_maks_j_m2": 2.9724560590693727e-09
+   },
+   "ekstraveggen": {
+    "navn": "Ekstraveggen",
+    "orientering": 322.0,
+    "helning": 90.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.387,
+     0.352,
+     0.325,
+     0.75,
+     0.722,
+     0.688,
+     0.753,
+     0.568,
+     0.438,
+     0.373,
+     0.332,
+     0.271
+    ],
+    "tort_dagtid_per_maned": [
+     0.39,
+     0.357,
+     0.309,
+     0.756,
+     0.71,
+     0.686,
+     0.733,
+     0.571,
+     0.446,
+     0.379,
+     0.343,
+     0.277
+    ],
+    "soltimer_per_dogn": [
+     0.0,
+     0.012,
+     0.377,
+     1.643,
+     2.879,
+     2.983,
+     2.96,
+     1.371,
+     0.633,
+     0.166,
+     0.0,
+     0.0
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 7.0,
+      "q25": 3.0,
+      "q75": 13.0,
+      "n": 189
+     },
+     "vinter": {
+      "median": 14.0,
+      "q25": 11.0,
+      "q75": 25.0,
+      "n": 49
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 7.0,
+       "q25": 3.0,
+       "q75": 13.0,
+       "n": 189
+      },
+      "utfall": {
+       "tort": 189,
+       "nytt_regn": 168,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.24929971988795518,
+        "n": 357,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.3949579831932773,
+        "n": 357,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.48739495798319327,
+        "n": 357,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 2
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 14.0,
+       "q25": 11.0,
+       "q75": 25.0,
+       "n": 49
+      },
+      "utfall": {
+       "tort": 49,
+       "nytt_regn": 229,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 1
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.02491103202846975,
+        "n": 281,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.07473309608540925,
+        "n": 281,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.12857142857142856,
+        "n": 280,
+        "ukjent": 1
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 63
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 345,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 1075,
+    "massefeil_maks_mm": 6.099287741534454e-15,
+    "energifeil_maks_j_m2": 2.421643330308143e-09
+   },
+   "fabrikkveggen": {
+    "navn": "Fabrikkveggen",
+    "orientering": 193.0,
+    "helning": 90.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.433,
+     0.416,
+     0.363,
+     0.753,
+     0.723,
+     0.655,
+     0.751,
+     0.57,
+     0.45,
+     0.422,
+     0.361,
+     0.284
+    ],
+    "tort_dagtid_per_maned": [
+     0.434,
+     0.42,
+     0.359,
+     0.761,
+     0.718,
+     0.652,
+     0.747,
+     0.578,
+     0.472,
+     0.429,
+     0.378,
+     0.297
+    ],
+    "soltimer_per_dogn": [
+     1.183,
+     2.624,
+     3.736,
+     6.78,
+     6.46,
+     5.95,
+     6.347,
+     4.863,
+     4.392,
+     2.795,
+     1.189,
+     0.0
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 8.0,
+      "q25": 4.0,
+      "q75": 13.0,
+      "n": 185
+     },
+     "vinter": {
+      "median": 14.0,
+      "q25": 8.5,
+      "q75": 21.5,
+      "n": 59
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 8.0,
+       "q25": 4.0,
+       "q75": 13.0,
+       "n": 185
+      },
+      "utfall": {
+       "tort": 185,
+       "nytt_regn": 172,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.22128851540616246,
+        "n": 357,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.38375350140056025,
+        "n": 357,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.5070028011204482,
+        "n": 357,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 2
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 14.0,
+       "q25": 8.5,
+       "q75": 21.5,
+       "n": 59
+      },
+      "utfall": {
+       "tort": 59,
+       "nytt_regn": 222,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.024734982332155476,
+        "n": 283,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.0989399293286219,
+        "n": 283,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.17314487632508835,
+        "n": 283,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 61
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 714,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 837,
+    "massefeil_maks_mm": 6.1374516580059435e-15,
+    "energifeil_maks_j_m2": 3.134573489660397e-09
+   },
+   "helleneset": {
+    "navn": "Helleneset",
+    "orientering": 274.0,
+    "helning": 70.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.368,
+     0.324,
+     0.328,
+     0.711,
+     0.66,
+     0.622,
+     0.706,
+     0.519,
+     0.403,
+     0.363,
+     0.315,
+     0.254
+    ],
+    "tort_dagtid_per_maned": [
+     0.371,
+     0.323,
+     0.318,
+     0.711,
+     0.651,
+     0.623,
+     0.702,
+     0.517,
+     0.415,
+     0.359,
+     0.319,
+     0.259
+    ],
+    "soltimer_per_dogn": [
+     1.376,
+     1.835,
+     2.24,
+     5.304,
+     5.492,
+     5.383,
+     5.435,
+     4.04,
+     3.267,
+     2.155,
+     1.056,
+     0.613
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 9.0,
+      "q25": 6.0,
+      "q75": 15.0,
+      "n": 168
+     },
+     "vinter": {
+      "median": 16.0,
+      "q25": 9.25,
+      "q75": 20.75,
+      "n": 50
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 9.0,
+       "q25": 6.0,
+       "q75": 15.0,
+       "n": 168
+      },
+      "utfall": {
+       "tort": 168,
+       "nytt_regn": 188,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.12640449438202248,
+        "n": 356,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.3146067415730337,
+        "n": 356,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.4606741573033708,
+        "n": 356,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 3
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 16.0,
+       "q25": 9.25,
+       "q75": 20.75,
+       "n": 50
+      },
+      "utfall": {
+       "tort": 50,
+       "nytt_regn": 228,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.010714285714285714,
+        "n": 280,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.07142857142857142,
+        "n": 280,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.14285714285714285,
+        "n": 280,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 64
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 1121,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 1381,
+    "massefeil_maks_mm": 2.3495094758629875e-14,
+    "energifeil_maks_j_m2": 3.23325366480276e-09
+   },
+   "loddefjord": {
+    "navn": "Loddefjord",
+    "orientering": 266.0,
+    "helning": 110.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.65,
+     0.685,
+     0.911,
+     0.975,
+     0.999,
+     0.997,
+     0.995,
+     0.976,
+     0.966,
+     0.932,
+     0.731,
+     0.577
+    ],
+    "tort_dagtid_per_maned": [
+     0.648,
+     0.692,
+     0.91,
+     0.972,
+     0.999,
+     0.996,
+     0.998,
+     0.978,
+     0.97,
+     0.937,
+     0.738,
+     0.577
+    ],
+    "soltimer_per_dogn": [
+     0.0,
+     0.118,
+     1.152,
+     3.569,
+     4.097,
+     4.217,
+     4.0,
+     2.645,
+     1.942,
+     0.757,
+     0.044,
+     0.0
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "n": 353
+     },
+     "vinter": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "n": 205
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 0.0,
+       "q25": 0.0,
+       "q75": 0.0,
+       "n": 353
+      },
+      "utfall": {
+       "tort": 353,
+       "nytt_regn": 4,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.9747899159663865,
+        "n": 357,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.9859943977591037,
+        "n": 357,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.988795518207283,
+        "n": 357,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 2
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 0.0,
+       "q25": 0.0,
+       "q75": 0.0,
+       "n": 205
+      },
+      "utfall": {
+       "tort": 205,
+       "nytt_regn": 88,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.6474576271186441,
+        "n": 295,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.6677966101694915,
+        "n": 295,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.6813559322033899,
+        "n": 295,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 49
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 6,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 69,
+    "massefeil_maks_mm": 3.7763778107206825e-15,
+    "energifeil_maks_j_m2": 4.118192009627819e-09
+   },
+   "neseveggen": {
+    "navn": "Neseveggen",
+    "orientering": 195.0,
+    "helning": 100.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.569,
+     0.553,
+     0.508,
+     0.875,
+     0.87,
+     0.84,
+     0.875,
+     0.785,
+     0.687,
+     0.686,
+     0.554,
+     0.431
+    ],
+    "tort_dagtid_per_maned": [
+     0.576,
+     0.556,
+     0.486,
+     0.887,
+     0.87,
+     0.867,
+     0.882,
+     0.786,
+     0.694,
+     0.688,
+     0.569,
+     0.437
+    ],
+    "soltimer_per_dogn": [
+     2.849,
+     3.741,
+     4.102,
+     7.172,
+     6.298,
+     5.317,
+     5.976,
+     4.944,
+     5.133,
+     3.86,
+     2.444,
+     1.344
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 1.0,
+      "q25": 0.0,
+      "q75": 4.0,
+      "n": 287
+     },
+     "vinter": {
+      "median": 4.0,
+      "q25": 1.0,
+      "q75": 10.0,
+      "n": 128
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 1.0,
+       "q25": 0.0,
+       "q75": 4.0,
+       "n": 287
+      },
+      "utfall": {
+       "tort": 287,
+       "nytt_regn": 70,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.6890756302521008,
+        "n": 357,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.7619047619047619,
+        "n": 357,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.803921568627451,
+        "n": 357,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 2
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 4.0,
+       "q25": 1.0,
+       "q75": 10.0,
+       "n": 128
+      },
+      "utfall": {
+       "tort": 128,
+       "nytt_regn": 160,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.2827586206896552,
+        "n": 290,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.3724137931034483,
+        "n": 290,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.4241379310344828,
+        "n": 290,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 54
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 168,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 235,
+    "massefeil_maks_mm": 3.83026943495679e-15,
+    "energifeil_maks_j_m2": 2.8035174182150513e-09
+   },
+   "sandviken": {
+    "navn": "Sandviken",
+    "orientering": 195.0,
+    "helning": 90.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.475,
+     0.457,
+     0.375,
+     0.764,
+     0.736,
+     0.675,
+     0.762,
+     0.595,
+     0.479,
+     0.457,
+     0.403,
+     0.313
+    ],
+    "tort_dagtid_per_maned": [
+     0.476,
+     0.456,
+     0.375,
+     0.77,
+     0.734,
+     0.68,
+     0.759,
+     0.603,
+     0.5,
+     0.465,
+     0.423,
+     0.318
+    ],
+    "soltimer_per_dogn": [
+     2.914,
+     3.671,
+     3.618,
+     6.429,
+     6.234,
+     6.075,
+     6.121,
+     4.742,
+     4.817,
+     3.436,
+     2.689,
+     1.72
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 7.0,
+      "q25": 4.0,
+      "q75": 10.0,
+      "n": 195
+     },
+     "vinter": {
+      "median": 12.0,
+      "q25": 8.0,
+      "q75": 17.75,
+      "n": 74
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 7.0,
+       "q25": 4.0,
+       "q75": 10.0,
+       "n": 195
+      },
+      "utfall": {
+       "tort": 195,
+       "nytt_regn": 162,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.2605042016806723,
+        "n": 357,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.4425770308123249,
+        "n": 357,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.5434173669467787,
+        "n": 357,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 2
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 12.0,
+       "q25": 8.0,
+       "q75": 17.75,
+       "n": 74
+      },
+      "utfall": {
+       "tort": 74,
+       "nytt_regn": 210,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.038461538461538464,
+        "n": 286,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.13636363636363635,
+        "n": 286,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.23076923076923078,
+        "n": 286,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 58
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 639,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 680,
+    "massefeil_maks_mm": 5.152562404520111e-15,
+    "energifeil_maks_j_m2": 3.567492967704311e-09
+   },
+   "trollkona": {
+    "navn": "Trollkona",
+    "orientering": 225.0,
+    "helning": 110.0,
+    "periode": [
+     "2023-04-01",
+     "2026-10-28"
+    ],
+    "tort_per_maned": [
+     0.651,
+     0.631,
+     0.805,
+     0.958,
+     0.994,
+     0.988,
+     0.976,
+     0.959,
+     0.942,
+     0.921,
+     0.712,
+     0.589
+    ],
+    "tort_dagtid_per_maned": [
+     0.647,
+     0.642,
+     0.807,
+     0.957,
+     0.988,
+     0.986,
+     0.976,
+     0.954,
+     0.938,
+     0.917,
+     0.714,
+     0.586
+    ],
+    "soltimer_per_dogn": [
+     0.0,
+     0.812,
+     1.712,
+     2.769,
+     2.016,
+     1.792,
+     1.847,
+     1.694,
+     2.15,
+     1.464,
+     0.178,
+     0.0
+    ],
+    "torketid_timer": {
+     "sommer": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "n": 349
+     },
+     "vinter": {
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 1.0,
+      "n": 194
+     }
+    },
+    "torkeepisoder": {
+     "sommer": {
+      "fullfort": {
+       "median": 0.0,
+       "q25": 0.0,
+       "q75": 0.0,
+       "n": 349
+      },
+      "utfall": {
+       "tort": 349,
+       "nytt_regn": 9,
+       "fortsatt_vatt": 0,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.9441340782122905,
+        "n": 358,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.9692737430167597,
+        "n": 358,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.9748603351955307,
+        "n": 358,
+        "ukjent": 0
+       }
+      },
+      "n": 359,
+      "vinterpaavirket": 1
+     },
+     "vinter": {
+      "fullfort": {
+       "median": 0.0,
+       "q25": 0.0,
+       "q75": 1.0,
+       "n": 194
+      },
+      "utfall": {
+       "tort": 194,
+       "nytt_regn": 97,
+       "fortsatt_vatt": 2,
+       "ufullstendig": 0
+      },
+      "innen_timer": {
+       "6": {
+        "andel": 0.5836177474402731,
+        "n": 293,
+        "ukjent": 0
+       },
+       "12": {
+        "andel": 0.6245733788395904,
+        "n": 293,
+        "ukjent": 0
+       },
+       "24": {
+        "andel": 0.6484641638225256,
+        "n": 293,
+        "ukjent": 0
+       }
+      },
+      "n": 344,
+      "vinterpaavirket": 51
+     }
+    },
+    "regn_pa_veggen_mm_per_ar": 7,
+    "nedbor_mm_per_ar": 1981,
+    "vintertimer": 42,
+    "massefeil_maks_mm": 3.7763778107206825e-15,
+    "energifeil_maks_j_m2": 2.164597390219569e-09
+   }
   }
- ]
+ },
+ "simulering": null
 }
