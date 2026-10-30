@@ -96,7 +96,7 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
   }
 
   return (
-    <section className="kort p-md">
+    <section className="kort p-sm sm:p-md">
       <h2 className="seksjon">Har du vært der?</h2>
       <fieldset className="mt-sm">
         <legend className="sr-only">Dag</legend>

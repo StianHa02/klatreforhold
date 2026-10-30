@@ -241,7 +241,7 @@ export type UkeRad = {
   lang: string // til skjermlesere
   merknad?: string
   celler: (UkeCelle | null)[]
-  sum: { regn: string; sol: string; vind: string }
+  sum: { regn: string; sol: string; vind: string; linje: string } // linje: alt på én linje, til mobil
   na?: number // posisjon for «nå» i timer (0–24)
   meldinger: UkeMelding[]
   tabell: UkeTabellRad[]
@@ -292,7 +292,13 @@ export function lagUkeRad(dag: Dag, o: { iDag: string; naMs: number; varslet?: M
       + `${vind !== null ? `, snittvind ${Math.round(vind)} m/s` : ''}. Åpne for time for time.`,
     merknad: o.merknad,
     celler,
-    sum: { regn: regn >= 0.1 ? regn.toFixed(1) : '–', sol: `${sol} t`, vind: vind !== null ? String(Math.round(vind)) : '–' },
+    sum: {
+      regn: regn >= 0.1 ? regn.toFixed(1) : '–',
+      sol: `${sol} t`,
+      vind: vind !== null ? String(Math.round(vind)) : '–',
+      // hardt mellomrom inni hver verdi, så linja bare brytes ved «·» på smale skjermer
+      linje: `${regn >= 0.1 ? regn.toFixed(1) : '0'}\u00a0mm · ${sol}\u00a0t\u00a0sol${vind !== null ? ` · ${Math.round(vind)}\u00a0m/s` : ''}`,
+    },
     na: n.dato === dag.dato ? n.time + n.minutt / 60 : undefined,
     meldinger,
     tabell: dag.timer.flatMap((t, h): UkeTabellRad[] => (t ? [{

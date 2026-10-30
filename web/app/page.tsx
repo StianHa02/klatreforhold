@@ -31,7 +31,7 @@ export default async function Home() {
             {varsler.map((v) => (
               <li key={v.felt.slug}>
                 <a href={`/felt/${v.felt.slug}`} className="group kort focus flex flex-col transition hover:border-border-tinted">
-                  <span className="flex flex-col gap-sm p-md">
+                  <span className="flex flex-col gap-sm p-sm sm:p-md">
                     <span className="flex items-baseline justify-between gap-md">
                       <span className="font-mabry text-xl leading-tight">{v.felt.navn}</span>
                       <span className="text-sm text-text-subtle">vender mot {v.felt.orientering}°</span>

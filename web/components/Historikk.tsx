@@ -38,7 +38,7 @@ export default function Historikk({ timer, naMs, tidligere, obs }: {
     : undefined
 
   return (
-    <section className="kort p-md">
+    <section className="kort p-sm sm:p-md">
       <h2 className="seksjon">Siste 7 døgn</h2>
       <div className="mt-sm">
         <Ukerutenett

@@ -88,6 +88,7 @@ assert(rad.navn === 'I går' && rad.celler.length === 24 && rad.na === undefined
 assert(rad.meldinger.length === 1 && Math.abs(rad.meldinger[0].pos - (14 + 20 / 60)) < 1e-9, 'melding plassert kl 14:20 norsk tid')
 assert(rad.meldinger[0].etter === true && rad.meldinger[0].for === false, 'riktig i etterkant, feil dagen før')
 assert(rad.sum.regn === '1.2' && rad.sum.sol === '2 t' && rad.sum.vind === '3' && rad.tabell.length === 24, 'summer og tabell')
+assert(rad.sum.linje.replace(/\u00a0/g, ' ') === '1.2 mm · 2 t sol · 3 m/s', 'summene på én linje')
 assert(rad.celler[13]!.solMulig && !rad.celler[13]!.sol && rad.celler[15]!.sol && !rad.celler[12]!.solMulig && rad.tabell[13].solMulig, 'sol mulig mot direkte sol')
 assert(rad.celler[14]!.v === 'vatt' && rad.celler[13]!.v === null && rad.tabell[4].regn === '1.2', 'varslet dagen før per time')
 assert(rad.tabell[5].regn === '' && rad.tabell[13].h === 13 && rad.tabell[13].temp === '9°' && rad.tabell[13].berg === '8°' && rad.tabell[13].vindTekst === '3 m/s fra sørvest' && !rad.tabell.some((t) => t.na), 'timetabell: temperatur, vind og ingen «nå» i går')
