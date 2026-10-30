@@ -17,6 +17,8 @@ crag:
   steepness_id: 3  # BKK-kategori; styrer også foreløpig regnskjerming
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
   # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
+  # 145–205° justert etter observasjon 30.10.2026: første sol kl. 12 (asimut ~174°, høyde 15,6°),
+  # effektiv sol gjennom trær ca. kl. 13. DOM1 ga 0° her. 145–170° er en nedre grense; >205° er uverifisert.
   horizon:
     - [0, 50.87]
     - [5, 53.41]
@@ -47,19 +49,19 @@ crag:
     - [130, 5.92]
     - [135, 3.18]
     - [140, 2.16]
-    - [145, 0.00]
-    - [150, 0.00]
-    - [155, 0.00]
-    - [160, 0.00]
-    - [165, 0.00]
-    - [170, 0.00]
-    - [175, 0.00]
-    - [180, 0.00]
-    - [185, 0.00]
-    - [190, 0.00]
-    - [195, 0.00]
-    - [200, 0.00]
-    - [205, 0.00]
+    - [145, 16.0]
+    - [150, 16.0]
+    - [155, 16.0]
+    - [160, 16.0]
+    - [165, 16.0]
+    - [170, 16.0]
+    - [175, 15.5]
+    - [180, 15.5]
+    - [185, 15.5]
+    - [190, 13.0]
+    - [195, 10.0]
+    - [200, 6.0]
+    - [205, 3.0]
     - [210, 0.00]
     - [215, 0.00]
     - [220, 0.00]
@@ -104,9 +106,11 @@ model:
   runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
   # Vannlagre (mm)
   film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
-  holds_capacity_mm: 0.6        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  # Overhengende vegg med få hyller: observert tørt 17., 21., 23., 24. og 30.10.2026 (også etter 67 mm på 3 døgn),
+  # mens startverdiene 0.6 / 0.5 ga vått 17.10 og 30.10. Ingen våt-observasjoner ennå, så ikke kalibrert.
+  holds_capacity_mm: 0.3        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
   film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
-  holds_drying_factor: 0.5      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  holds_drying_factor: 1.0      # tak/sprekker tørker med denne andelen av potensiell fordampning
   # Siging (sakte reservoar matet av nedbør over feltet)
   seep_enabled: true
   seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
