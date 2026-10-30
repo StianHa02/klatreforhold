@@ -1,4 +1,4 @@
-"""Varsel for feltet: kjører modellen på siste døgn + varsel og skriver status per time.
+"""Varsel for feltet: enkel kontroll som skriver status per time fra fem døgn historikk + varsel (Open-Meteo).
 
   python scripts/predict_now.py              # Open-Meteo (MET Nordic, med stråling)
   python scripts/predict_now.py --source metno   # api.met.no Locationforecast

@@ -37,7 +37,7 @@ def main():
     ap.add_argument("--labels", required=True, nargs="+",
                     help="én eller flere etikettfiler, eller 'supabase' for å hente observasjonene direkte")
     ap.add_argument("--med-dev", action="store_true", help="ta med observasjoner registrert fra utvikling (kilde=dev)")
-    ap.add_argument("--save", action="store_true", help="lagre modellene i models/ så API-et bruker dem")
+    ap.add_argument("--save", action="store_true", help="lagre kandidater i models/; krever separat validering før aktivering")
     ap.add_argument("--torch", action="store_true", help="tren også GRU-modell (PyTorch, CUDA hvis mulig)")
     a = ap.parse_args()
     crag, params = load_config(a.config)

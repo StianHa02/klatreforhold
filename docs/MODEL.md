@@ -1,4 +1,4 @@
-# Modellen: hvordan vi regner ut om veggen er våt
+# Historisk modell v1: hvordan vi regnet ut om veggen var våt
 
 Oppdatering 30. oktober 2026: se [modell v2](MODELL_V2.md) for ny solgeometri, bratthet, værkilder,
 vinterfysikk og tørkestatistikk, og [sammenligningen med v1](MODELL_V2_RESULTATER.md).

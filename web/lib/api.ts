@@ -10,6 +10,7 @@ export type Time = {
   is_sno?: boolean // modellen sa «is» (is/snø på veggen); vises som vått
   tort: boolean
   p_vatt: number | null
+  p_tort?: number | null // ukalibrert MEPS-andel; kan mangle i eldre varsler
   vann_mm: number
   is_mm?: number
   sno_mm?: number
@@ -42,6 +43,7 @@ export type Varsel = {
   na: string
   kilde: string
   ml_modell: boolean
+  ensemble?: { medlemmer: number; utstedt: string | null; til: string } | null
   sammendrag: {
     status_na: Status
     status_na_tekst: string
