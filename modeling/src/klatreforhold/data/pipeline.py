@@ -34,10 +34,12 @@ def fetch_weather(crag, source="auto", start=None, now=None, history_hours=24):
     begin = pd.Timestamp(start) if start is not None else display_start - pd.Timedelta(days=30)
     # Prognose-API-et har nylig historikk også. Det unngår et tregt flerårsarkiv i timesjobben.
     past_days = min(92, max(2, math.ceil((now - begin).total_seconds()/86400)))
-    w = openmeteo.fetch_forecast(crag.lat, crag.lon, past_days=past_days, forecast_days=6)
+    # forecast_days teller hele UTC-døgn fra i dag. 120 t fram fra kl 23 UTC rekker inn i døgn sju,
+    # så 6 døgn ga «Været dekker ikke hele det forespurte varselet» den siste timen før midnatt UTC.
+    w = openmeteo.fetch_forecast(crag.lat, crag.lon, past_days=past_days, forecast_days=7)
     if start is None and w.loc[:now].air_temperature.le(0).any() and past_days < 90:
         past_days = min(92, 90 + math.ceil(history_hours/24))
-        w = openmeteo.fetch_forecast(crag.lat, crag.lon, past_days=past_days, forecast_days=6)
+        w = openmeteo.fetch_forecast(crag.lat, crag.lon, past_days=past_days, forecast_days=7)
         begin = max(w.index.min(), display_start - pd.Timedelta(days=90))
     w = w.sort_index().loc[begin:]
     fallback = []
