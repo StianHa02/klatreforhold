@@ -28,7 +28,7 @@ export default function HourStrip({ timer, naIndeks = 0 }: { timer: Time[]; naIn
               <span
                 aria-hidden
                 className={`-mb-[2px] h-[3px] w-full ${
-                  t.sol_pa_veggen ? 'bg-[var(--color-accent-red-400)]' : t.sol_mulig ? 'bg-[var(--color-accent-red-200)]' : ''
+                  t.sol_pa_veggen ? 'bg-[var(--color-accent-red-400)]' : t.sol_mulig ? 'sol-mulig' : ''
                 }`}
               />
               <span
@@ -51,7 +51,7 @@ export default function HourStrip({ timer, naIndeks = 0 }: { timer: Time[]; naIn
           direkte sol på veggen
         </span>
         <span className="flex items-center gap-xs">
-          <span aria-hidden className="inline-block h-[3px] w-sm bg-[var(--color-accent-red-200)]" />
+          <span aria-hidden className="inline-block h-[3px] w-sm sol-mulig" />
           sol mulig ved klar himmel
         </span>
         <span>0.4 = mm regn</span>

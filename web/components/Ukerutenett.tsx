@@ -1,6 +1,6 @@
 'use client'
 
-import { type ButtonHTMLAttributes, type ReactNode, useState } from 'react'
+import { type ButtonHTMLAttributes, type CSSProperties, type ReactNode, useState } from 'react'
 import { type Status, statusFarge } from '@/lib/api'
 import { BOKSTAV, SKALA_MM, STATUS_TEKST, type UkeRad, biter, pad } from '@/lib/dager'
 
@@ -9,7 +9,7 @@ import { BOKSTAV, SKALA_MM, STATUS_TEKST, type UkeRad, biter, pad } from '@/lib/
 // Trykk på en dag for time for time (tabellen er også den tilgjengelige versjonen av rutenettet).
 // All tekst lages på serveren, så klienten formaterer ingen datoer selv.
 
-// På mobil står navn, summer og pil på én linje og stripen i full bredde under; fra sm: fire kolonner
+// På mobil står navn og pil på én linje og stripen i full bredde under, summene først når dagen åpnes; fra sm: fire kolonner
 const RAD = 'grid grid-cols-[auto_minmax(0,1fr)_1.25rem] items-center gap-x-sm gap-y-[4px] sm:grid-cols-[6rem_minmax(0,1fr)_9rem_1.25rem]'
 const STRIPE = 'max-sm:col-span-full max-sm:row-start-2' // stripen: egen rad på mobil
 const MERKER = [6, 12, 18] // klokkeslett over stripene
@@ -60,7 +60,6 @@ export default function Ukerutenett({ rader, bryter = false }: {
                   {r.merknad && <span className="block text-xs text-text-subtle">{r.merknad}</span>}
                 </span>
                 <Band rad={r} visFor={visFor} />
-                <span aria-hidden className="text-right text-sm tabular-nums text-text-tinted sm:hidden">{r.sum.linje}</span>
                 <span aria-hidden className="grid grid-cols-3 text-right text-sm tabular-nums max-sm:hidden">
                   <span>{r.sum.regn}</span>
                   <span>{r.sum.sol}</span>
@@ -69,6 +68,7 @@ export default function Ukerutenett({ rader, bryter = false }: {
                 <Pil />
                 <span className="sr-only">{r.lang}</span>
               </summary>
+              <p aria-hidden className="px-xs pt-xs text-sm tabular-nums text-text-tinted sm:hidden">Hele døgnet: {r.sum.linje}</p>
               <Tabell rad={r} visVarslet={bryter} />
             </details>
           </li>
@@ -85,11 +85,26 @@ function Band({ rad, visFor }: { rad: UkeRad; visFor: boolean }) {
   const naHoyre = rad.na !== undefined && rad.celler.slice(Math.ceil(rad.na)).every((c) => !c)
   return (
     <span aria-hidden className={`relative block ${STRIPE}`} style={{ height: BAND_TOPP + BAND_H + 2 + REGN_H }}>
-      <span className="absolute inset-x-0 top-0 grid h-[3px] grid-cols-24">
-        {rad.celler.map((c, h) => (
-          <span key={h} className={c?.sol ? 'bg-[var(--color-accent-red-400)]' : c?.solMulig ? 'bg-[var(--color-accent-red-200)]' : ''} />
-        ))}
-      </span>
+      {/* Én bit per sammenhengende soltype. Stiplene tegnes over hele raden og vises bare gjennom biten,
+          så alle biter og alle døgn står på samme stipling */}
+      {biter(rad.celler.map((c) => (c?.sol ? 'sol' : c?.solMulig ? 'mulig' : null))).map((b) => {
+        if (b.v === null) return null
+        const timer = b.til - b.fra
+        return (
+          <span
+            key={b.fra}
+            className={`absolute top-0 h-[3px] overflow-hidden ${b.v === 'sol' ? 'bg-[var(--color-accent-red-400)]' : ''}`}
+            style={{ left: pst(b.fra), width: pst(timer) }}
+          >
+            {b.v === 'mulig' && (
+              <span
+                className="sol-mulig absolute inset-y-0"
+                style={{ '--sol-timer': 24, left: `${(-b.fra / timer) * 100}%`, width: `${(24 / timer) * 100}%` } as CSSProperties}
+              />
+            )}
+          </span>
+        )
+      })}
       {biter(verdier).map((b) => {
         if (b.v === null) return null
         // Biten som starter eller slutter i timen med «nå» går helt inn til streken med rett kant,
@@ -299,7 +314,7 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
         ))}
         {visFor && nokkel(<span aria-hidden className="inline-block h-[12px] w-[14px] rounded-[2px] bg-surface-tinted" />, 'ikke lagret')}
         {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-400)]" />, 'direkte sol på veggen')}
-        {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] bg-[var(--color-accent-red-200)]" />, 'sol mulig ved klar himmel')}
+        {nokkel(<span aria-hidden className="inline-block h-[3px] w-[14px] sol-mulig" />, 'sol mulig ved klar himmel')}
         {nokkel(<span aria-hidden className="inline-block h-[9px] w-[5px] rounded-b-[2px] bg-[var(--color-accent-blue-400)]" />, 'regn')}
       </div>
       {harMeldinger && (
@@ -329,7 +344,7 @@ function Pil() {
       fill="none"
       stroke="currentColor"
       strokeWidth={1.5}
-      className="justify-self-end text-text-subtle transition group-open:rotate-180 group-hover/rad:text-text-default motion-reduce:transition-none"
+      className="justify-self-end text-text-subtle max-sm:col-start-3 transition group-open:rotate-180 group-hover/rad:text-text-default motion-reduce:transition-none"
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
     </svg>
@@ -341,7 +356,7 @@ function Sol({ sol, mulig }: { sol: boolean; mulig: boolean }) {
   if (!sol && !mulig) return null
   return (
     <span className="inline-flex items-center gap-[6px]" title={sol ? 'Direkte sol på veggen' : 'Sola står foran veggen, men det er skyet'}>
-      <span aria-hidden className={`inline-block h-[3px] w-[14px] ${sol ? 'bg-[var(--color-accent-red-400)]' : 'bg-[var(--color-accent-red-200)]'}`} />
+      <span aria-hidden className={`inline-block h-[3px] w-[14px] ${sol ? 'bg-[var(--color-accent-red-400)]' : 'sol-mulig'}`} />
       <span className="max-sm:sr-only">{sol ? 'Direkte sol' : 'Skyet'}</span>
     </span>
   )
