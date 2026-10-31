@@ -1,6 +1,6 @@
-"""Prediksjon for ett felt: status nå og for hver time de neste 24 timene.
+"""Prediksjon for ett felt: status nå og for hver time fremover (standard 24, timesjobben 120).
 
-Fysikkmodellen kjøres på ~7 døgn historikk + varsel, slik at vannlagrene (tak/sprekker, siging)
+Fysikkmodellen kjøres på minst 30 døgn innkjøring (eller fra lagret tilstand) + varsel, slik at vannlagrene (tak/sprekker, siging)
 er "varmet opp" når vi kommer til nå. Hvis det finnes en trent ML-modell i models/, legges
 sannsynligheten for vått ved (p_vatt).
 """
@@ -138,7 +138,7 @@ def _ml_probability(slug: str, crag: Crag, weather: pd.DataFrame, physics: pd.Da
             from .ml.torch_model import GRUWetModel
             return GRUWetModel.load(torch_path).predict_proba(X)
         except ImportError:
-            pass  # torch er ikke installert (f.eks. på Vercel): bruk sklearn-modellen
+            pass  # torch er ikke installert (f.eks. i timesjobben): bruk sklearn-modellen
         except Exception as err:
             print(f"Torch-modell feilet: {err}")
     if sk_path.exists():
@@ -256,7 +256,8 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
     w = weather if weather is not None else get_weather(crag, source, start, weather_now, history_hours)
     w = w.loc[:now + pd.Timedelta(hours=hours)]
     # Ensemblet hentes bare for direkte MET-vær; gitt vær (tester, offline) bruker det som sendes inn.
-    if ensemble is None and weather is None and source in ("auto", "metnordic")             and not os.environ.get("KLATREFORHOLD_OFFLINE_WEATHER"):
+    if (ensemble is None and weather is None and source in ("auto", "metnordic")
+            and not os.environ.get("KLATREFORHOLD_OFFLINE_WEATHER")):
         ensemble = fetch_ensemble(crag, weather_now)
     if checkpoint:
         w = w.loc[start:]

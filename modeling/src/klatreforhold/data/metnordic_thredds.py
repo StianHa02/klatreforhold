@@ -78,8 +78,8 @@ def _point(url, lat, lon, kind):
         raise ValueError("Punktet er utenfor MET Nordic")
     n = len(meta["time"])
     # Et samlet uttrekk av ni variabler over ~60 timer bruker over 20 sekunder
-    # hos THREDDS. Tre variabler per kall tok 8–10 s i livekontrollen. Analysefilen
-    # inneholder bare én time og kan fortsatt leses samlet.
+    # hos THREDDS, så prognosen hentes tre variabler om gangen. Analysefilen
+    # inneholder bare én time og kan leses samlet.
     batch_size = 3 if kind == "forecast" else max(1, len(variables))
     data = {}
     for offset in range(0, len(variables), batch_size):

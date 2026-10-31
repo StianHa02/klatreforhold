@@ -1,4 +1,4 @@
-// Typer og henting fra klatreforhold-API-et (Python, FastAPI).
+// Typer for varsel-JSON-en og små formateringshjelpere.
 // Nettsiden viser tre tilstander. Modellen regner også ut «is» (is/snø på veggen), men det er like lite
 // klatrbart som vått, så kilde.ts gjør det om til «vatt» før det når komponentene.
 export type Status = 'tort' | 'fuktig' | 'vatt'
@@ -10,7 +10,7 @@ export type Time = {
   is_sno?: boolean // modellen sa «is» (is/snø på veggen); vises som vått
   tort: boolean
   p_vatt: number | null
-  p_tort?: number | null // ukalibrert MEPS-andel; kan mangle i eldre varsler
+  p_tort?: number | null // ukalibrert MEPS-andel; null uten ensemble
   vann_mm: number
   is_mm?: number
   sno_mm?: number
@@ -28,7 +28,7 @@ export type Time = {
   vind_ms: number
   vindretning: number
   sol_pa_veggen: boolean
-  sol_wm2?: number // stråling på flaten; mangler i varsler laget før historikken kom
+  sol_wm2?: number // stråling på flaten
   timer_til_tort: number | null
   grunner: string[]
 }

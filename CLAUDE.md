@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-Guidance for agents working in this repository. Current code reviewed 2026-10-30.
+Guidance for agents working in this repository.
 Read [README](README.md), [current handover](docs/OVERLEVERING.md) and [model v2](docs/MODELL_V2.md).
-The handover's historical section and the research papers preserve older decisions, not current tasks.
+The research papers preserve older findings and proposals, not current tasks.
 
 ## Architecture and layout
 

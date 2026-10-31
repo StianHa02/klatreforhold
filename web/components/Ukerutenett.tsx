@@ -317,7 +317,7 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
   )
 }
 
-// Pil ned til høyre i raden, som i nettførerens Accordion (ChevronDownIcon i components/Icons.tsx).
+// Pil ned til høyre i raden, som i nettførerens Accordion.
 // Snur når dagen er åpen, og blir mørkere når musa er over raden.
 function Pil() {
   return (
@@ -360,7 +360,6 @@ function Treff({ ok }: { ok: boolean }) {
   )
 }
 
-// Fane i nettførerens stil: blå strek under den valgte
 function Fane({ valgt, ...rest }: { valgt: boolean } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button type="button" aria-pressed={valgt} className="fane" {...rest} />
 }

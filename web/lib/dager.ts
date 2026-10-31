@@ -4,7 +4,7 @@ import type { Observasjoner, Status, Time, Varsel } from './api'
 
 export const REGN_MM = 0.2 // mm/t som teller som regn
 const OPPHOLD_T = 2 // timer uten regn som fortsatt regnes som samme byge
-export const SKALA_MM = 2 // fast skala i alle grafer: regn i mm/t og vann på veggen i mm
+export const SKALA_MM = 2 // fast skala i ukerutenettet: regn i mm/t og vann på veggen i mm
 export const KLATRE_FRA = 8 // klatretimer: timene som starter kl 08 til og med kl 20 (kl 08–21)
 export const KLATRE_TIL = 21
 const MIN_VINDU_T = 3 // så mange timer på rad må det være tørt for at dagen regnes som klatrbar

@@ -12,7 +12,7 @@ crag:
   timezone: Europe/Oslo
   frost_station: SN50540  # Bergen - Florida (krever FROST_CLIENT_ID)
   frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
-  face_azimuth_deg: 322   # oppdatert nettfører, støttet av DTM; hovedveggen
+  face_azimuth_deg: 322   # nettfører, støttet av DTM; hovedveggen
   face_tilt_deg: 90       # vertikalt (bratthet_id 2)
   steepness_id: 2        # BKK: vertikalt; eksplisitt helning overstyrer kategorianslaget
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)

@@ -12,11 +12,10 @@ Varselet går 120 timer frem og 168 timer tilbake. Parametrene er foreløpige og
 ## Dokumentasjon
 
 - [Modell, datakilder og valideringskrav](docs/MODELL_V2.md)
-- [Overlevering: kode, gjenstående arbeid og historikk](docs/OVERLEVERING.md)
+- [Overlevering: kode, gjenstående arbeid og fallgruver](docs/OVERLEVERING.md)
 - [Deploy og drift](docs/DEPLOY.md)
 - [Legge til et felt](docs/LEGG_TIL_FELT.md)
-- Historisk: [v1-modell](docs/MODEL.md), [research](docs/RESEARCH.md),
-  [oppfølging](docs/RESEARCH_2.md), [v1/v2-sammenligning](docs/MODELL_V2_RESULTATER.md)
+- Bakgrunn: [research](docs/RESEARCH.md), [oppfølging](docs/RESEARCH_2.md)
 
 ## Lokal utvikling
 

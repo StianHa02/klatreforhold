@@ -1,15 +1,13 @@
 # Deploy: Vercel + Supabase + GitHub Actions
 
-Oppdatert mot kodegrunnlaget 30. oktober 2026. Ingen egen API-server i produksjon:
-Actions → Python-modell → Supabase → Next.js på Vercel (`web/`).
-Denne guiden bekrefter ikke siste produksjonskjøring eller kontoenes aktuelle forbruk.
+Ingen egen API-server i produksjon: Actions → Python-modell → Supabase → Next.js på Vercel (`web/`).
 
 ## Database og timesjobb
 
 Prosjektets Supabase-URL er `https://nmiydpcmfxkhtztzgzfx.supabase.co`.
 Kontroller anvendte migrasjoner mot de seks filene i `supabase/migrations/` før en ny installasjon.
 V2 krever `20261030090000_modell_v2.sql`, som legger til `modelltilstand` og arkivmetadata.
-Tidligere overlevering rapporterer den kjørt 30. oktober 2026. Ikke kjør gamle migrasjoner blindt på nytt.
+Ikke kjør gamle migrasjoner blindt på nytt.
 `20261030180000_vaer_og_rydding.sql` legger til `vaer`, `lagre_vaer()`, `rydd_arkiv()` og cron-jobben
 `rydd-arkiv`. Kjør den før koden som skriver `vaer` deployes; uten den får timesjobben `vaer_feil` per felt,
 men varselet publiseres likevel. Prøv nye migrasjoner lokalt først (README, «Lokal Supabase»).

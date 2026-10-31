@@ -1,9 +1,6 @@
 # Turning open weather data into dry-rock forecasts
 
-> Historisk research fra oktober 2026. Bevarer opprinnelige funn, priser og forslag;
-> dette er ikke gjeldende implementasjonsstatus. Se [modell v2](MODELL_V2.md) og
-> [gjeldende overlevering](OVERLEVERING.md). Énparameterkalibrering, regnepisodedeling,
-> vinterfysikk, direkte MET/Nowcast og MEPS-støtte er nå implementert.
+> Research fra oktober 2026, bevart som bakgrunn. Gjeldende modell står i [modell v2](MODELL_V2.md).
 
 Whether Ekstraveggen is wet or dry can be predicted from public data alone. The prediction comes from a small physics model that tracks a sub-millimetre water film, not from a humidity threshold, and the club's first version already has the right structure. Gneiss and granite hold almost no water inside the stone, so wetness on the wall comes from a thin surface film, from water in cracks and vegetation, and from seepage. Each of these behaves on a different timescale, from hours to weeks. Road-weather models (METRo, RoadSurf) and leaf-wetness models already handle the same bookkeeping, and their published parameters give good starting values. MET Nordic, MET Norway's free 1 km hourly analysis, is the only free source that supplies every input, including downwelling longwave radiation, which matters for condensation. The biggest weakness is not the physics or the data. **There is no ground truth for any natural rock face, let alone this one.** The wind-driven-rain coefficient, the film capacity and the seepage threshold are all borrowed from buildings, roads or crops. The highest-value next step is therefore a structured wet/dry log from local climbers, ideally with a time-lapse camera, and then calibrating five to eight parameters against it. Several API details in this report come from documentation and were not tested live during the research, because the research environment could not reach MET's servers. These are flagged where they matter.
 

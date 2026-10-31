@@ -1,8 +1,6 @@
 # Modell v2: undersøkelse, endringer og feltkontroll
 
-Kodegrunnlag kontrollert 30. oktober 2026: modell 2.0.0 er på `main`, med alle ni felt.
-Dette er gjeldende modellguide. `MODEL.md` og arkivdelen av `OVERLEVERING.md` bevarer eldre resultater.
-Tidligere overlevering rapporterer migrasjonen kjørt 30. oktober; produksjon er ikke kontrollert på nytt her.
+Gjeldende modellguide for modell 2.0.0, med alle ni felt.
 
 ## Sammenligningen med 8a.nu / Vertical-Life
 
@@ -126,25 +124,32 @@ THREDDS brukte mer enn 20 sekunder på et samlet prognoseuttrekk med ni variable
 Prognosen hentes derfor i tre mindre uttrekk fra samme låste modellkjøring; livekontrollen brukte
 8–10 sekunder per uttrekk. Tidsaksene må stemme før delene settes sammen. Tidsavbrudd gir fortsatt reserve.
 
-Fuktighetskorreksjonen som ble tilpasset Open-Meteo mot Frost brukes bare på den kilden.
-Den overføres ikke ukritisk til direkte MET. Hver time har vær- og nedbørskilde, og prognose,
+Frost-stasjoner brukes til å kontrollere varselet, ikke til å erstatte feltets vær: været er svært lokalt,
+og Florida (SN50540) ligger 4–6 km fra feltene. Med `frost_bruk: kontroll` lagrer timesjobben varselet for
+stasjonens koordinater sammen med målingene (`stasjon_varsel`, `stasjon_maling`), så vi måler varselets feil
+og ikke forskjellen mellom to steder. `erstatt` passer bare for stasjoner 1–2 km fra feltet.
+
+Kontrollen mot Florida viste at Open-Meteo-fuktigheten er 3–5 prosentpoeng for høy på ettermiddagen og
+for høy februar–oktober. `config/stasjoner/rh_korreksjon.yaml` (skrevet av `verify_forecast.py --historikk
+--skriv-rh`) har en glatt månedsverdi pluss døgnsvingning per stasjon, tilpasset over alle timer.
+En verdi i feltets egen konfig vinner, og `rh_korreksjon_styrke` skalerer den. Korreksjonen brukes bare
+på Open-Meteo og overføres ikke ukritisk til direkte MET. Hver time har vær- og nedbørskilde, og prognose,
 arkiv, kalibrering og lagrede tilstander har modellversjon/konfigurasjonssignatur.
 Open-Meteos [historiske prognoser](https://open-meteo.com/en/docs/historical-forecast-api) er sammensatte
 serier, ikke et arkiv over hva vår tjeneste faktisk varslet. Arkivert treffsikkerhet må derfor bruke
 prognosene som ble lagret ved utsendelse.
 
-## Hva grafen om tørketid nå betyr
+## Hva grafen om tørketid betyr
 
 En episode krever minst 2 mm nedbør over 12 timer, fulgt av tre timer med mindre enn 0,2 mm/time.
 Et felt som allerede er tørt etter regnet får null timer. Nytt regn før tørking, fortsatt vått etter
 72 timer og manglende slutthistorikk telles som egne utfall. Is/snø-episoder telles separat.
-Tidligere utelot grafen episoder med nytt regn, og kunne registrere uavsluttet tørking som 73 timer.
 
-Median og kvartiler gjelder nå uttrykkelig episodene som tørker før nytt regn innen 72 timer.
+Median og kvartiler gjelder bare episodene som tørker før nytt regn innen 72 timer.
 Antall øvrige utfall og andel tørre innen 6/12/24 timer vises også. Kort betinget tørketid betyr ikke
 at et felt oftere er tørt totalt. Alle ni felt har både lokalt vær og et kontrollforsøk med samme vær.
 
-[Trinnvis sammenligning med v1](MODELL_V2_RESULTATER.md) bruker samme værår per felt.
+En trinnvis sammenligning med v1 (`scripts/compare_model_v2.py`) bruker samme værår per felt.
 I sluttmodellen har Ekstraveggen flere våte dagtimer enn Helleneset om vinteren (70,54 mot 67,54 %),
 men litt færre om sommeren (31,48 mot 32,24 %). Dette er simulering, ikke validering av managerens
 erfaring. Forskjellen er beholdt og må undersøkes med faktiske observasjoner.
@@ -174,14 +179,8 @@ ikke automatisk i v2. Ingen modell er trent på managerens generelle inntrykk el
 
 ## Kontroll og utrulling
 
-Ved den opprinnelige v2-kontrollen: 45 backendtester, frontendtester og TypeScript-kontroll.
-Dette avsnittet beskriver den daterte kontrollen, ikke et løpende testantall. Testene dekker blant annet
-masse-/overflateenergibalanse, frysing/tining, tidssteg, lagret tilstand, overheng, DST, manglende regn,
-værreserver, radarintegrasjon og tørkeepisoder. Live kontroll har gitt 121 prognosetimer og 168
-historikktimer, med direkte MET og reservekilde. Grafer er regenerert for alle ni felt.
-En full test av timesjobben under MET-tidsavbrudd ga komplette prognoser for åtte felt med reservekilden.
-Bolstadøyri avdekket den kortere innkjøringshistorikken; etter rettelsen ga en ny livekjøring også der
-121 prognosetimer og 168 historikktimer. Ingen av disse kontrollene skrev til databasen.
+Testene dekker blant annet masse-/overflateenergibalanse, frysing/tining, tidssteg, lagret tilstand, overheng, DST, manglende regn,
+værreserver, radarintegrasjon og tørkeepisoder.
 
 Kommandoer fra `modeling/`. Sammenligning og statistikkeksport krever lokale historikk-CSV-er
 og skriver dokumentasjon/resultater; de er ikke nødvendige for en vanlig testsjekk:
@@ -195,13 +194,10 @@ python scripts/export_site_stats.py
 
 Fra `web/`: `npm test`, `npm run typecheck` og `npm run build`.
 
-[`20261030090000_modell_v2.sql`](../supabase/migrations/20261030090000_modell_v2.sql) ble kjørt i
-prosjektets Supabase 30. oktober 2026 før publisering av v2-koden. Den tillater isobservasjoner og legger til arkivmetadata og tabellen `modelltilstand`,
-med tilgang bare for service role. V2 er nå på main. Ved ny publisering skal én ordinær timesjobb
-kontrolleres for ni felt, riktige kilder og modellversjon 2.0.0. Historiske arkivrader beholdes.
-Databasemigrasjonen og en vellykket timesjobb må bekreftes ved utrulling; lokale tester alene
-bekrefter ikke produksjonsstatus. Lokale Playwright-rapporter, agentinnstillinger, værdata og
-byggecache holdes utenfor Git.
+[`20261030090000_modell_v2.sql`](../supabase/migrations/20261030090000_modell_v2.sql) tillater
+isobservasjoner og legger til arkivmetadata og tabellen `modelltilstand`, med tilgang bare for service role.
+Ved ny publisering skal én ordinær timesjobb kontrolleres for ni felt, riktige kilder og modellversjon 2.0.0.
+Historiske arkivrader beholdes. Lokale tester alene bekrefter ikke produksjonsstatus.
 
 ## MEPS-usikkerhet
 
@@ -211,4 +207,4 @@ kreves. Timesfeltet `p_tort` er andelen som gir tørt berg, ikke en kalibrert sa
 komplementet til ML-feltet `p_vatt`. Toppnivå `ensemble` har `medlemmer`, `utstedt` og `til`.
 Uten ensemble eller etter dekningsslutt er `p_tort` null; hovedvarselet fortsetter ved kildefeil.
 Dataene lagres i `varsel_siste`, men ikke som egne kolonner i `varsel`. Nettsiden viser ennå ikke
-prosentene. Importfeilen i den første MEPS-versjonen er rettet i repository-oppryddingen.
+prosentene.

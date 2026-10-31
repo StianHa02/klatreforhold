@@ -33,8 +33,7 @@ function datoMinusDager(iso: string, dager: number) {
 const pad = (h: number) => String(h).padStart(2, '0')
 
 // Brukeren forteller hvordan det faktisk var, for nå eller et tidspunkt de siste dagene.
-// Timeknappene har en strek i fargen modellen mener timen hadde (eierens valg fra 2026-10-29; før det
-// var varselet skjult for ikke å påvirke svaret, se OVERLEVERING §8). Serveren slår opp varselet
+// Timeknappene har en strek i fargen modellen mener timen hadde. Serveren slår opp varselet
 // for samme time i varselarkivet og regner ut om det stemte.
 export default function Feedback({ slug, na, statusPerTime = {} }: {
   slug: string
