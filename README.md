@@ -15,6 +15,7 @@ Varselet går 120 timer frem og 168 timer tilbake. Parametrene er foreløpige og
 - [Overlevering: kode, gjenstående arbeid og fallgruver](docs/OVERLEVERING.md)
 - [Deploy og drift](docs/DEPLOY.md)
 - [Legge til et felt](docs/LEGG_TIL_FELT.md)
+- [Bønes værstasjon som datakilde](docs/BONES_STASJON.md)
 - Bakgrunn: [research](docs/RESEARCH.md), [oppfølging](docs/RESEARCH_2.md)
 
 ## Lokal utvikling
