@@ -13,7 +13,7 @@ export default function HourStrip({ timer, naIndeks = 0 }: { timer: Time[]; naIn
       <h2 className="seksjon mb-sm">Time for time</h2>
       <ol
         style={kolonner}
-        className="grid grid-cols-[repeat(var(--m),minmax(0,1fr))] gap-x-px gap-y-md sm:grid-cols-[repeat(var(--n),minmax(0,1fr))]"
+        className="isolate grid grid-cols-[repeat(var(--m),minmax(0,1fr))] gap-x-px gap-y-md sm:grid-cols-[repeat(var(--n),minmax(0,1fr))]"
       >
         {timer.map((t, i) => {
           return (
@@ -33,7 +33,7 @@ export default function HourStrip({ timer, naIndeks = 0 }: { timer: Time[]; naIn
               />
               <span
                 className={`h-lg w-full ${statusFarge[t.status]} ${i < naIndeks ? 'opacity-50' : ''} ${
-                  i === naIndeks ? 'ring-2 ring-text-default ring-offset-1' : ''
+                  i === naIndeks ? 'relative z-10 ring-2 ring-text-default ring-offset-1' : ''
                 }`}
               />
               <span className="text-text-subtle">{t.nedbor_mm >= 0.1 ? t.nedbor_mm.toFixed(1) : ''}</span>
