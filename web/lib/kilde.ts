@@ -252,6 +252,8 @@ async function predikertFra(slug: string, tid: Date): Promise<string | null> {
   }
 }
 
+const DOBBELTKLIKK_MS = 10 * 60e3
+
 /** Validerer og lagrer. Returnerer [http-status, svar]. */
 export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promise<[number, unknown]> {
   if (!brukerSupabase) {
@@ -286,8 +288,16 @@ export async function lagreObservasjon(slug: string, obs: NyObservasjon): Promis
     // KLATREFORHOLD_KILDE=dev lokalt, så testklikk kan holdes utenfor treningsdataene
     kilde: (process.env.KLATREFORHOLD_KILDE || obs.kilde || 'web').slice(0, 40),
   }
+  const svar = { lagret: { ...rad, riktig: riktig === null ? '' : riktig ? 1 : 0 } }
+  // Dobbeltklikk: samme felt, tid og status innen ti minutter gir samme svar uten ny rad
+  const siden = new Date(nå - DOBBELTKLIKK_MS).toISOString()
+  const like = await sb<{ id: number }[]>(
+    `observasjoner?felt=eq.${encodeURIComponent(slug)}&tid=eq.${encodeURIComponent(rad.tid)}` +
+      `&status=eq.${encodeURIComponent(rad.status)}&registrert=gte.${encodeURIComponent(siden)}&select=id&limit=1`,
+  )
+  if (like.length) return [200, { ...svar, duplikat: true }]
   await sb('observasjoner', { method: 'POST', body: JSON.stringify(rad), headers: { Prefer: 'return=minimal' } })
-  return [201, { lagret: { ...rad, riktig: riktig === null ? '' : riktig ? 1 : 0 } }]
+  return [201, svar]
 }
 
 export type { Time }
