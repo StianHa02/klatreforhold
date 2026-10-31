@@ -175,6 +175,19 @@
   @apply focus -mb-[2px] cursor-pointer border-b-2 border-transparent px-sm py-xs text-sm text-text-subtle transition hover:text-text-default aria-pressed:border-b-state-info aria-pressed:text-text-default;
 }
 
+/* Stiplet solstrek: sola står foran veggen, men det er skyet. Skilles fra direkte sol på form, ikke bare nyanse.
+   Mønsteret følger timene, ikke piksler: to sentrerte stiper per time, så nabotimer og rader står på linje.
+   `--sol-timer` er hvor mange timer elementet dekker (1 for én celle eller tegnforklaring) */
+@utility sol-mulig {
+  --sol-periode: calc(100% / (var(--sol-timer, 1) * 2));
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(var(--sol-periode) / 4),
+    var(--color-accent-red-400) calc(var(--sol-periode) / 4) calc(var(--sol-periode) * 3 / 4),
+    transparent calc(var(--sol-periode) * 3 / 4) var(--sol-periode)
+  );
+}
+
 @utility lenke {
   @apply focus rounded-sm underline decoration-border-strong decoration-2 underline-offset-4 hover:decoration-text-default;
 }
