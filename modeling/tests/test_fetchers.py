@@ -50,8 +50,7 @@ def test_frost_parse():
 
 
 
-def test_observations_replace_history_only():
-    import os
+def test_observations_replace_history_only(monkeypatch):
     import pandas as pd
     from klatreforhold import predict
     from klatreforhold.config import Crag
@@ -59,8 +58,8 @@ def test_observations_replace_history_only():
     w = pd.DataFrame({"precipitation": [0.0, 0.0, 0.0, 2.0], "air_temperature": [10.0] * 4,
                       "dew_point_2m": [5.0] * 4, "ghi": [100.0] * 4}, index=idx)
     obs = pd.DataFrame({"precipitation": [1.0, None], "air_temperature": [12.0, 13.0]}, index=idx[:2])
-    frost.fetch_recent = lambda *a, **k: obs
-    os.environ.setdefault("FROST_CLIENT_ID", "x")
+    monkeypatch.setattr(frost, "fetch_recent", lambda *a, **k: obs)
+    monkeypatch.setenv("FROST_CLIENT_ID", "x")  # .env kan ha en tom verdi
     out = predict.with_observations(w, Crag("t", 60, 5, 270, frost_station="SN1"))
     assert out["precipitation"].tolist() == [1.0, 0.0, 0.0, 2.0]  # hull i målingene fylles fra modellen
     assert out["air_temperature"].tolist() == [12.0, 13.0, 10.0, 10.0]
