@@ -11,7 +11,6 @@ RUN pip install -r requirements.txt \
 COPY src ./src
 COPY config ./config
 COPY scripts ./scripts
-COPY app.py ./
 
 # data/ (etiketter) og models/ (trente modeller) monteres som volumer i docker-compose.yml
 RUN mkdir -p data/labels models

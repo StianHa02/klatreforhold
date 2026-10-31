@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Tokens hentet fra BKK nettfører (app/globals.css), så komponentene kan flyttes rett over. */
+/* Tokens hentet fra BKK nettfører, så komponentene kan flyttes rett over. */
 :root {
   --color-light-200: hsl(202, 44%, 100%);
   --color-light-400: hsl(202, 44%, 95%);
@@ -29,7 +29,7 @@
   --color-accent-yellow-200: hsl(48, 100%, 78%);
   --color-accent-yellow-50: hsl(48, 100%, 98%);
 
-  /* Ny for tørt (finnes ikke i nettføreren), stemt mot BKK-aksentene */
+  /* Grønn for tørt (finnes ikke i nettføreren), stemt mot BKK-aksentene */
   --color-accent-green-400: hsl(150, 70%, 40%);
   --color-accent-green-50: hsl(150, 70%, 93%);
 }
@@ -157,7 +157,7 @@
   color: var(--color-text-subtle);
 }
 
-/* Komponentstil fra nettføreren: flate kort uten runde hjørner (Card.tsx), knapper som StyledButton.tsx */
+/* Komponentstil fra nettføreren: flate kort uten runde hjørner */
 @utility kort {
   @apply border border-border-subtle bg-surface-default;
 }

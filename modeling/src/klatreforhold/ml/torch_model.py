@@ -1,5 +1,5 @@
 """PyTorch-modell: en liten GRU som ser de siste `window` timene med vær + fysikktilstand
-og gir sannsynlighet for at veggen er våt. Bruker CUDA (f.eks. RTX 5070) automatisk hvis tilgjengelig.
+og gir sannsynlighet for at veggen er våt. Bruker CUDA automatisk hvis tilgjengelig.
 
 Trenes på etiketter fra brukere (data/labels/*_observasjoner.csv). Med få etiketter er det
 fysikkfeaturene som gjør jobben; GRU-en lærer korreksjoner.

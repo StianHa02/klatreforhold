@@ -7,7 +7,7 @@ automatisk (timesjobben plukker dem opp når de er pushet).
   python scripts/calibrate.py --config config/ekstraveggen.yaml --weather data/raw/<vær>.csv --labels supabase
   python scripts/calibrate.py ... --write
 
-V2 krever minst 50 observasjoner og 10 uavhengige regnepisoder før tilpasningen kan vurderes.
+Krever minst 50 observasjoner og 10 uavhengige regnepisoder før tilpasningen kan vurderes.
 Se docs/MODELL_V2.md for krav til kontroll på andre episoder.
 """
 import argparse

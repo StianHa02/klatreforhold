@@ -2,7 +2,7 @@
 
 Oppskrift for agenter (og folk) som skal legge et nytt felt inn i varselet. Ett felt = én YAML-fil i
 `modeling/config/`. Timesjobben, API-et og nettsiden finner feltet selv; det trengs ingen kodeendring.
-Gjeldende kodeoversikt står i [overleveringen](OVERLEVERING.md); eldre oppskrifter der er historikk.
+Gjeldende kodeoversikt står i [overleveringen](OVERLEVERING.md).
 
 Alle Python-kommandoer kjøres fra `modeling/`.
 
