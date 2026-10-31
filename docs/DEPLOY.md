@@ -5,14 +5,17 @@ Ingen egen API-server i produksjon: Actions → Python-modell → Supabase → N
 ## Database og timesjobb
 
 Prosjektets Supabase-URL er `https://nmiydpcmfxkhtztzgzfx.supabase.co`.
-Kontroller anvendte migrasjoner mot de seks filene i `supabase/migrations/` før en ny installasjon.
+Kontroller anvendte migrasjoner mot de sju filene i `supabase/migrations/` før en ny installasjon.
 V2 krever `20261030090000_modell_v2.sql`, som legger til `modelltilstand` og arkivmetadata.
 Ikke kjør gamle migrasjoner blindt på nytt.
 `20261030180000_vaer_og_rydding.sql` legger til `vaer`, `lagre_vaer()`, `rydd_arkiv()` og cron-jobben
 `rydd-arkiv`. Kjør den før koden som skriver `vaer` deployes; uten den får timesjobben `vaer_feil` per felt,
 men varselet publiseres likevel. Prøv nye migrasjoner lokalt først (README, «Lokal Supabase»).
+`20261031210000_bones_maling.sql` legger til `bones_maling` for målingene fra Bønes værstasjon
+([vurderingen](BONES_STASJON.md)). Uten den får timesjobben en advarsel i `_bones`, og varselet publiseres som før.
 
-Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer`.
+Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer`,
+`bones_maling`.
 RPC-er: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)` og `rydd_arkiv(integer)`.
 RLS begrenser tilgangen til service role.
 

@@ -25,7 +25,8 @@ Latest payloads contain 120 hours ahead plus now and 168 hours behind; archive l
 - `supabase/valgfritt/`: optional Actions trigger SQL, not automatically applied.
 
 Supabase project: `nmiydpcmfxkhtztzgzfx`. Tables: `varsel_siste`, `varsel`, `observasjoner`,
-`stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer` (model weather input per crag and past hour).
+`stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer` (model weather input per crag and past hour),
+`bones_maling` (one reading per hourly run from the private Bønes station, `data/bones.py`).
 RPCs: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)`, `rydd_arkiv(integer)` (weekly pg_cron).
 All access is server-side with service role; no public RLS policies. Grant `service_role` explicitly on new
 tables: newer Supabase (including the local CLI) no longer grants it by default.

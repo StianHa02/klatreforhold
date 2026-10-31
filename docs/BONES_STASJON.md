@@ -176,24 +176,33 @@ eller terrenget. Vindstyrken fra stasjonen kan ikke erstatte modellens: `wind_ex
   eller ikke kjører. Nedbør per time må regnes som differansen i `nedbor_i_dag_mm` mellom to kjøringer, og gjelder
   bare når de ligger omtrent en time fra hverandre.
 
-## Hva en integrasjon vil kreve
+## Bønes-regn i modellen
 
-Først en test uten live data: kjør modellen for Ekstraveggen med Bønes-regn og med MET Nordic-regn, og
-sammenlign begge mot observasjonene fra klatrerne. Per 31.10.2026 finnes bare 6 observasjoner fra Ekstraveggen
-(28.–31.10, alle våte), og kravet for kalibrering er minst 50 og ti regnepisoder. Når det er nok, be eieren om en ny
-kopi av databasen (fremgangsmåten står i databasedokumentasjonen) og kjør `evaluer_bones.py` på nytt med
-observasjonene. Live innhenting trengs ikke for testen. Blir treffet ikke bedre, er resten ikke verdt å bygge.
-Blir det bedre:
+Det er lavsesong, og det kommer neppe 50 observasjoner fra Ekstraveggen før neste år. Regnmåleren er likevel
+det beste vi har for når regnet starter og slutter ved veggen, så den er bygd inn, men står av til den er prøvd.
 
-1. **Lagring av siste måling** i timesjobben, fra `/api/naa.php`: tidspunkt, temperatur og `nedbor_i_dag_mm`
-   med `nedbor_dato`. API-et ber om at man ikke henter oftere enn hvert 5. minutt; én gang i timen er godt innenfor.
-2. **`data/bones.py`** ved siden av `frost.py`, som gir samme kolonner som Frost-hentingen. Ta med
-   `air_temperature` og `precipitation`. Utelat `relative_humidity` til sensoren er sjekket, og vinden fordi den er skjermet.
-3. **Konfig**: felt kan i dag bare ha en Frost-stasjon. En egen kilde for kontroll trenger et nytt felt i
-   konfigen og i `verify.collect()`, og det samme gjelder tabellene `stasjon_varsel`/`stasjon_maling`.
-4. **Kontroll først.** `erstatt` bare for nedbør, og bare hvis en kjøring av modellen for Ekstraveggen med Bønes-regn
-   treffer observasjonene bedre enn med MET Nordic. `with_observations()` erstatter i dag alle felles kolonner,
-   så nedbør alene krever en endring der.
+- **Innsamling.** Timesjobben henter siste måling fra `/api/naa.php` og lagrer den i `bones_maling`
+  (`publish.collect_bones()`), når minst ett felt har `regnmaler: bones`. Bare ferske målinger lagres. Feil gir en
+  advarsel i `_bones` og stopper aldri varselet. Én henting i timen er godt innenfor API-ets ønske om høyst hvert 5. minutt.
+- **Timeverdier** (`data/bones.py`). Nedbør per time er differansen i `nedbor_i_dag_mm` mellom to målinger 45–75
+  minutter fra hverandre i samme døgn. Timen over midnatt, timer etter en kjøring som falt ut, og en teller som går
+  ned blir ukjent, ikke null.
+- **Bytte av regn.** Med `regnmaler_bruk: erstatt` bytter `with_rain()` modellens nedbør i passerte timer der
+  Bønes har målt og det er over +2 °C (ellers kan det være snø). Varseltimene, temperatur, fuktighet, vind og
+  stråling kommer fortsatt fra MET Nordic. Byttede timer får `precipitation_source = "bones"` i `vaer`, og
+  `kilde` i varselet krediterer stasjonen.
+- **Signatur.** Regnmåleren tas med i `config_hash` bare med `erstatt`. Å slå på innsamling endrer ikke lagret
+  modelltilstand. Å slå på `erstatt` starter Ekstraveggen på nytt med 30 døgns innkjøring én gang.
+
+Ekstraveggen har `regnmaler: bones` og `regnmaler_bruk: av`. Før `erstatt` slås på:
+
+1. Kjør migrasjonen `20261031210000_bones_maling.sql` i produksjon.
+2. La innsamlingen gå gjennom vinteren, og sammenlign Bønes-regnet med `vaer` (radar og MET Nordic) for samme timer.
+3. Legg til Bønes værstasjon (CC BY 4.0) i kildene på nettsiden (`web/app/layout.tsx` og om-siden).
+4. Sett `regnmaler_bruk: erstatt` i `config/ekstraveggen.yaml`.
+
+Når det finnes nok observasjoner, er testen fortsatt den samme: kjør modellen med begge regnkildene mot
+observasjonene, med en ny kopi av databasen fra eieren.
 
 ## Kjøre på nytt
 

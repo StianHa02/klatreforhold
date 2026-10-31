@@ -9,8 +9,9 @@
   bratthetskategorier er fortsatt anslag. Se felttabellen i modellguiden.
 - Timesjobben lager 120 timer fremover og sju døgn bakover; arkivet beholder ledetider til 48 timer.
   Direkte MET Nordic foretrekkes over Open-Meteo, med fersk Nowcast-nedbør. Open-Meteo gir også innkjøring.
-- Databaseskjemaet har seks migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
-  Den siste, `vaer_og_rydding`, legger til værinput til trening (`vaer`) og ukentlig arkivrydding.
+- Databaseskjemaet har sju migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
+  `vaer_og_rydding` legger til værinput til trening (`vaer`) og ukentlig arkivrydding. Den siste,
+  `bones_maling`, lagrer målinger fra Bønes værstasjon.
   Se [deployguiden](DEPLOY.md).
 - MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. Verdien arkiveres ikke
   i `varsel` og vises ikke som prosent på nettsiden.
@@ -28,7 +29,9 @@
 4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
 5. Kjør `vaer_og_rydding`-migrasjonen i produksjon og følg med på databasestørrelsen.
    Lagringstiden (120 dager, ledetid 0/3/6/12/24/48) står i [deployguiden](DEPLOY.md).
-6. Vurder resterende forskningsforslag fra [RESEARCH_2](RESEARCH_2.md): delvis pooling, ordinal modell,
+6. Kjør `bones_maling`-migrasjonen i produksjon, så timesjobben samler inn regn fra Bønes værstasjon gjennom vinteren.
+   Vurder `regnmaler_bruk: erstatt` for Ekstraveggen før sesongen, se [Bønes værstasjon](BONES_STASJON.md).
+7. Vurder resterende forskningsforslag fra [RESEARCH_2](RESEARCH_2.md): delvis pooling, ordinal modell,
    pålitelighetsdiagrammer og faste feltobservasjoner.
 
 Integrasjon med nettføreren er fortsatt separat, fremtidig arbeid. Ikke endre dens database eller repo.
