@@ -21,31 +21,11 @@ export default function Historikk({ timer, naMs, tidligere, obs }: {
     .map((d) => lagUkeRad(d, { iDag, naMs, varslet, meldinger: obs }))
     .reverse() // i dag øverst, så går det bakover
 
-  const meldinger = rader.flatMap((r) => r.meldinger)
-  const telle = (felt: 'etter' | 'for') => {
-    const vurdert = meldinger.filter((m) => m[felt] !== null)
-    return { ok: vurdert.filter((m) => m[felt]).length, n: vurdert.length }
-  }
-  const e = telle('etter')
-  const f = telle('for')
-  const treff = meldinger.length
-    ? {
-        etter: `Stemte med ${e.ok} av ${e.n} tilbakemeldinger.`,
-        for: f.n
-          ? `Stemte med ${f.ok} av ${f.n} tilbakemeldinger${meldinger.length > f.n ? ` (${meldinger.length - f.n} uten lagret varsel)` : ''}.`
-          : 'Ingen lagrede varsler for disse tilbakemeldingene.',
-      }
-    : undefined
-
   return (
     <section className="kort p-sm sm:p-md">
       <h2 className="seksjon">Siste 7 døgn</h2>
       <div className="mt-sm">
-        <Ukerutenett
-          rader={rader}
-          bryter={tidligere.length > 0}
-          treff={treff}
-        />
+        <Ukerutenett rader={rader} bryter={tidligere.length > 0} />
       </div>
     </section>
   )

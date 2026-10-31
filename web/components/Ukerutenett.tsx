@@ -21,10 +21,9 @@ const REGN_H = 12
 const pst = (h: number) => `${(h / 24) * 100}%`
 const MORK = 'text-[color:var(--color-dark-900)]' // mørk tekst har nok kontrast på alle statusfargene
 
-export default function Ukerutenett({ rader, bryter = false, treff }: {
+export default function Ukerutenett({ rader, bryter = false }: {
   rader: UkeRad[]
   bryter?: boolean // vis «Slik det ble | Slik det ble varslet»
-  treff?: { etter: string; for: string }
 }) {
   const [vis, setVis] = useState<'etter' | 'for'>('etter')
   const visFor = bryter && vis === 'for'
@@ -36,7 +35,6 @@ export default function Ukerutenett({ rader, bryter = false, treff }: {
           <Fane valgt={visFor} onClick={() => setVis('for')}>Slik det ble varslet</Fane>
         </div>
       )}
-      {treff && <p className="text-sm">{visFor ? treff.for : treff.etter}</p>}
 
       <div className={`${RAD} mt-sm px-xs text-xs text-text-subtle`} aria-hidden>
         <span className="max-sm:hidden" />
@@ -311,8 +309,7 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
             <Treff ok />
           </span>
           <span>
-            En klatrer meldte hvordan det var (T tørt, F fuktig, V vått). ✓ betyr at fargen på stripen stemte med det klatreren
-            meldte, ✗ at den bommet.
+            Tilbakemelding fra klatrer (T tørt, F fuktig, V vått). ✓ stemte, ✗ bommet.
           </span>
         </p>
       )}

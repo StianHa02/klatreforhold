@@ -6,7 +6,7 @@ import HourStrip from '@/components/HourStrip'
 import NesteDogn from '@/components/NesteDogn'
 import StatusHero from '@/components/StatusHero'
 import { dag, klokke } from '@/lib/api'
-import { STATUS_TEKST, dagBokser, statusPerTime } from '@/lib/dager'
+import { dagBokser, statusPerTime } from '@/lib/dager'
 import { hentObservasjoner, hentTidligereVarsel, hentVarsel, tolkTid } from '@/lib/kilde'
 
 export const dynamic = 'force-dynamic'
@@ -22,9 +22,8 @@ export default async function FeltSide({
   const { na } = await searchParams // ?na=2026-10-03T15:00 for å se på en gammel dag (testing)
   const naTid = na ? tolkTid(na) : new Date() // tid uten tidssone er norsk tid
   const uke = new Date(naTid.getTime() - 7 * 24 * 3600e3) // historikken: siste 7 døgn
-  const [varsel, obs, obsUke, tidligere] = await Promise.all([
+  const [varsel, obsUke, tidligere] = await Promise.all([
     hentVarsel(slug, na),
-    hentObservasjoner(slug),
     hentObservasjoner(slug, uke),
     hentTidligereVarsel(slug, uke),
   ])
@@ -39,7 +38,7 @@ export default async function FeltSide({
   const framover = varsel.framover ?? varsel.timer
 
   // Øverst status nå og skjemaet for å si hvordan det var, så time for time, grafene og dagene framover.
-  // Siste 7 døgn og listen over tilbakemeldinger står nederst.
+  // Siste 7 døgn står nederst, med tilbakemeldingene som prikker.
   return (
     <div className="flex flex-col gap-md">
       <div>
@@ -62,29 +61,6 @@ export default async function FeltSide({
         tidligere={tidligere}
         obs={(obsUke?.observasjoner ?? []).filter((o) => Date.parse(o.time) <= naTid.getTime())}
       />
-      <section className="kort p-sm text-sm sm:p-md">
-        <h2 className="seksjon">Tilbakemeldinger</h2>
-        {obs && obs.antall > 0 ? (
-          <>
-            <p className="mt-xs text-text-subtle">
-              {obs.antall} tilbakemeldinger
-              {obs.andel_riktig !== null && `, varselet stemte ${Math.round(obs.andel_riktig * 100)} % av gangene`}.
-            </p>
-            <ul className="mt-sm flex flex-col gap-xs">
-              {obs.observasjoner.map((o) => (
-                <li key={`${o.time}-${o.status}-${o.kommentar}`} className="flex flex-wrap gap-x-sm">
-                  <span className="text-text-subtle">{dag(o.time)} {klokke(o.time)}</span>
-                  <span>{STATUS_TEKST[o.status]}</span>
-                  {o.riktig !== '' && <span>{Number(o.riktig) === 1 ? '✓' : '✗'}</span>}
-                  {o.kommentar && <span className="text-text-subtle">«{o.kommentar}»</span>}
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <p className="mt-xs text-text-subtle">Ingen tilbakemeldinger ennå. Har du vært der, si fra over.</p>
-        )}
-      </section>
     </div>
   )
 }

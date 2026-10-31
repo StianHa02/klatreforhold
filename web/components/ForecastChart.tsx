@@ -137,15 +137,14 @@ export default function ForecastChart({ timer, naIndeks = 0 }: { timer: Time[]; 
       <h2 className="seksjon mb-sm">Vann på veggen</h2>
       <Responsiv timer={timer} Graf={VannGraf} na={naIndeks} />
       <p className="mt-xs text-xs text-text-subtle">
-        Feltet er vannet modellen mener ligger på veggen (mm), søylene er regn som treffer veggen (mm per time). Søyler over 1 mm er kappet, med tallet over.
+        Felt: vann på veggen (mm). Søyler: regn mot veggen (mm/t), kappet ved 1 mm.
       </p>
 
       <h2 className="seksjon mb-sm mt-lg">Bergtemperatur og duggpunkt</h2>
       <Responsiv timer={timer} Graf={TempGraf} na={naIndeks} />
       <p className="mt-xs text-xs text-text-subtle">
-        <span className="text-[color:var(--color-accent-red-400)]">━</span> bergtemperatur (modell){' '}
-        <span className="text-[color:var(--color-accent-blue-400)]">┅</span> duggpunkt. Grønt: berget er varmere enn duggpunktet og kan
-        tørke. Blått: berget er kaldere, og det kondenserer vann på det selv uten regn.
+        <span className="text-[color:var(--color-accent-red-400)]">━</span> berg{' '}
+        <span className="text-[color:var(--color-accent-blue-400)]">┅</span> duggpunkt. Grønt: berget kan tørke. Blått: det kondenserer.
       </p>
     </section>
   )
