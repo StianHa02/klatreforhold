@@ -77,6 +77,12 @@ class CsvStorage:
     def save_weather(self, rows: list[dict]) -> int:
         return 0  # værinput lagres bare i Supabase
 
+    def save_bones(self, rows: list[dict]) -> int:
+        return 0  # målingene fra Bønes lagres bare i Supabase
+
+    def bones_readings(self, since) -> pd.DataFrame:
+        return pd.DataFrame()
+
 
 class SupabaseStorage:
     navn = "supabase"
@@ -185,6 +191,13 @@ class SupabaseStorage:
         r = self.s.post(f"{self.base}/rpc/lagre_vaer", json={"rader": rows}, timeout=60)
         r.raise_for_status()
         return int(r.json())
+
+    def save_bones(self, rows: list[dict]) -> int:
+        return self._upsert("bones_maling", rows, "tid")
+
+    def bones_readings(self, since) -> pd.DataFrame:
+        since = pd.Timestamp(since).tz_convert("UTC").isoformat()
+        return _paged(self, "bones_maling", {"tid": f"gte.{since}", "select": "*", "order": "tid.asc"})
 
     def weather(self, felt: str) -> pd.DataFrame:
         """Værinputen timesjobben har lagret for feltet, som værtabell (UTC-indeks, samme kolonner som get_weather)."""

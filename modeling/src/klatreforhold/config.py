@@ -47,6 +47,10 @@ class Crag:
     # "kontroll": stasjonen brukes bare til å sjekke varselet (standard). "erstatt": målingene erstatter
     # historikken modellen kjører på. Bruk "erstatt" bare hvis stasjonen står nær feltet (1-2 km).
     frost_bruk: str = "kontroll"
+    # Privat regnmåler nær feltet (i dag bare "bones", se data/bones.py). "av": timesjobben samler bare inn
+    # målingene. "erstatt": målt regn erstatter modellens i passerte timer over +2 °C.
+    regnmaler: str | None = None
+    regnmaler_bruk: str = "av"
     geology: str = "ukjent"
     geometry_source: str = ""
     geometry_checked: str = ""
@@ -98,11 +102,15 @@ def load_config(path: str | Path, apply_calibration: bool = True) -> tuple[Crag,
         rain_sheltered=bool(c.get("rain_sheltered", False)),
         frost_station=c.get("frost_station"),
         frost_bruk=str(c.get("frost_bruk", "kontroll")),
+        regnmaler=c.get("regnmaler"),
+        regnmaler_bruk=str(c.get("regnmaler_bruk", "av")),
         geology=c.get("geology", "ukjent"),
         geometry_source=c.get("geometry_source", ""),
         geometry_checked=str(c.get("geometry_checked", "")),
         steepness_id=c.get("steepness_id"),
     )
+    if crag.regnmaler not in (None, "bones") or crag.regnmaler_bruk not in ("av", "erstatt"):
+        raise ValueError("regnmaler må være bones eller tom, regnmaler_bruk av eller erstatt")
     if not 0 <= crag.face_tilt_deg <= 180 or not 0 <= crag.face_azimuth_deg < 360:
         raise ValueError("Helning må være 0–180°, asimut 0–359.999° fra sann nord")
     params = {k: _num(v) for k, v in cfg.get("model", {}).items()}

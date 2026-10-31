@@ -18,6 +18,7 @@ from .physics.wetness import hours_until_dry, run_model
 from .physics.forcing import prepare_weather
 from .physics.balance import state_at
 from .version import MODEL_VERSION, config_hash
+from .data.bones import KILDE as BONES_KILDE, with_rain
 
 CONFIG_DIR = ROOT / "config"
 MODEL_DIR = Path(os.environ.get("KLATREFORHOLD_MODEL_DIR", ROOT / "models"))
@@ -243,7 +244,9 @@ def _kilde(source: str, w: pd.DataFrame) -> str:
 def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source: str = "auto",
             weather: pd.DataFrame | None = None, history_hours: int = 12,
             checkpoint: dict | None = None, include_checkpoints: bool = False,
-            ensemble: pd.DataFrame | None = None, include_weather: bool = False) -> dict:
+            ensemble: pd.DataFrame | None = None, include_weather: bool = False,
+            bones_malinger: pd.DataFrame | None = None) -> dict:
+    """bones_malinger: lagrede målinger fra Bønes (bones_maling). Brukes bare når feltet har regnmaler_bruk: erstatt."""
     crag, params = load_crag(slug)
     issued = pd.Timestamp.now(tz="UTC")
     weather_now = now or issued
@@ -254,6 +257,10 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
         checkpoint = None
     start = pd.Timestamp(checkpoint["tid"]) + pd.Timedelta(hours=1) if checkpoint else None
     w = weather if weather is not None else get_weather(crag, source, start, weather_now, history_hours)
+    bones_timer = 0
+    if bones_malinger is not None and crag.regnmaler == "bones" and crag.regnmaler_bruk == "erstatt":
+        w = with_rain(w, bones_malinger, now=weather_now)
+        bones_timer = w.attrs.get("bones_timer", 0)
     w = w.loc[:now + pd.Timedelta(hours=hours)]
     # Ensemblet hentes bare for direkte MET-vær; gitt vær (tester, offline) bruker det som sendes inn.
     if (ensemble is None and weather is None and source in ("auto", "metnordic")
@@ -305,7 +312,7 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
         "initialisering_usikker": checkpoint is None,
         "reservekilder": w.attrs.get("fallback_sources", []),
         "na": now.tz_convert(crag.timezone).isoformat(),
-        "kilde": _kilde(source, w),
+        "kilde": _kilde(source, w) + (f" + regn målt av {BONES_KILDE}" if bones_timer else ""),
         "ml_modell": p_ml is not None,
         "ensemble": None if p_tort is None else {
             "medlemmer": int(ensemble.reindex(p_tort.index).notna().any().sum()),
