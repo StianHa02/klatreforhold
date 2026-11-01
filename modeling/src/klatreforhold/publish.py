@@ -19,8 +19,9 @@ HISTORIKK_TIMER = 7 * 24  # historikken på feltsiden
 FRAM_TIMER = 5 * 24  # rekker alltid ut dag +4 i norsk tid (folk planlegger fire dager fram)
 ARKIV_MAKS_LEDETID = 48  # lengre ledetider arkiveres ikke, så arkivet ikke vokser 2.5 ganger
 VAER_TIMER = 72  # passerte timer som skrives til vaer hver kjøring; dekker hull i timesjobben opptil 3 døgn
-# Målinger fra Bønes som hentes til modellen: hele visningshistorikken pluss oppvarming fra lagret tilstand
-BONES_TIMER = HISTORIKK_TIMER + 48
+# Målinger fra Bønes som hentes til modellen: API-et gir høyst 168 timer, som dekker visningshistorikken.
+# Timene før det (oppvarming fra lagret tilstand) bruker modellens regn.
+BONES_TIMER = 168
 VAER_KOLONNER = ["air_temperature", "relative_humidity", "dew_point_2m", "precipitation", "cloud_cover", "ghi",
                  "dni", "dhi", "longwave_down", "wind_speed", "wind_direction", "snow_probability", "snow_water_mm",
                  "weather_source", "weather_kind", "weather_issued", "precipitation_source"]
@@ -58,29 +59,38 @@ def weather_rows(slug: str, weather: pd.DataFrame, generert) -> list[dict]:
 
 
 def collect_bones(storage, now: pd.Timestamp | None = None) -> tuple[dict, pd.DataFrame | None]:
-    """Lagrer siste måling fra Bønes og henter målingene modellen trenger (bare hvis et felt bruker dem).
+    """Henter siste 168 timer fra Bønes i ett kall, lagrer siste måling som reserve, og gir timeverdier til modellen.
 
-    Feil her stopper aldri varselet: uten målinger bruker feltene modellens regn som før.
+    Timeverdier returneres bare hvis et felt har regnmaler_bruk: erstatt. Svarer ikke historikk-API-et, brukes
+    snapshot-tabellen bones_maling. Feil her stopper aldri varselet: uten målinger brukes modellens regn som før.
     """
     crags = [load_crag(c["slug"])[0] for c in list_crags()]
     if not any(c.regnmaler == "bones" for c in crags) or not hasattr(storage, "save_bones"):
         return {}, None
-    from .data.bones import fetch_latest
+    from .data import bones
+    erstatt = any(c.regnmaler == "bones" and c.regnmaler_bruk == "erstatt" for c in crags)
+    now = now or pd.Timestamp.now(tz="UTC")
     status = {}
     try:
-        rad = fetch_latest()
+        raw = bones.fetch_raw(BONES_TIMER)
+        rad = bones.latest_row(raw, now)
         status["lagret"] = storage.save_bones([rad]) if rad else 0
         if rad is None:
             status["advarsel"] = "målingen er ikke fersk"
+        if not erstatt:
+            return status, None
+        timer = bones.hourly_from_raw(raw)
+        status["timer"] = int(timer["precipitation"].notna().sum()) if "precipitation" in timer else 0
+        return status, timer
     except Exception as err:
         status["advarsel"] = f"{type(err).__name__}: {err}"
-    if not any(c.regnmaler == "bones" and c.regnmaler_bruk == "erstatt" for c in crags):
+    if not erstatt:
         return status, None
     try:
-        since = (now or pd.Timestamp.now(tz="UTC")) - pd.Timedelta(hours=BONES_TIMER)
-        malinger = storage.bones_readings(since)
-        status["malinger"] = len(malinger)
-        return status, malinger
+        malinger = storage.bones_readings(now - pd.Timedelta(hours=BONES_TIMER))
+        timer = bones.hourly(malinger)
+        status["timer_fra_lager"] = int(timer["precipitation"].notna().sum())
+        return status, timer
     except Exception as err:
         status["advarsel_lesing"] = f"{type(err).__name__}: {err}"
         return status, None
@@ -88,9 +98,9 @@ def collect_bones(storage, now: pd.Timestamp | None = None) -> tuple[dict, pd.Da
 
 def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False) -> dict:
     result = {}
-    bones_malinger = None
+    bones_regn = None
     if not dry_run:
-        result["_bones"], bones_malinger = collect_bones(storage, now)
+        result["_bones"], bones_regn = collect_bones(storage, now)
         if not result["_bones"]:
             del result["_bones"]
     for c in list_crags():
@@ -102,7 +112,7 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False)
                 before = (now or pd.Timestamp.now(tz="UTC")) - pd.Timedelta(hours=HISTORIKK_TIMER + 24)
                 checkpoint = storage.load_checkpoint(slug, before, config_hash(crag, params))
             v = predict(slug, now=now, hours=FRAM_TIMER, history_hours=HISTORIKK_TIMER, checkpoint=checkpoint,
-                        include_checkpoints=not dry_run, include_weather=not dry_run, bones_malinger=bones_malinger)
+                        include_checkpoints=not dry_run, include_weather=not dry_run, bones_regn=bones_regn)
             checkpoints = v.pop("_checkpoints", [])
             weather = v.pop("_vaer", None)
             rows = archive_rows(slug, v)

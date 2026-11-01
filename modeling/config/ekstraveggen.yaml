@@ -13,7 +13,7 @@ crag:
   frost_station: SN50540  # Bergen - Florida (krever FROST_CLIENT_ID)
   frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
   regnmaler: bones         # Bønes værstasjon, 1,3 km unna (docs/BONES_STASJON.md)
-  regnmaler_bruk: av       # "av": timesjobben samler bare inn; "erstatt": målt regn i passerte timer
+  regnmaler_bruk: erstatt  # målt regn i passerte timer (over +2 °C); "av" samler bare inn. Slått på 1.11.2026
   face_azimuth_deg: 322   # nettfører, støttet av DTM; hovedveggen
   face_tilt_deg: 90       # vertikalt (bratthet_id 2)
   steepness_id: 2        # BKK: vertikalt; eksplisitt helning overstyrer kategorianslaget

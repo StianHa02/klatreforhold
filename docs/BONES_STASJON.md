@@ -7,7 +7,7 @@ Tallene kommer fra `modeling/scripts/evaluer_bones.py` (se [Kjøre på nytt](#kj
 
 Bønes værstasjon (Davis Vantage Pro2 Plus, [weather.kippenbroeck.no](https://weather.kippenbroeck.no/))
 er en privat stasjon som vi ikke drifter. Vi har bare det som er offentlig: API-et med siste måling
-(`/api/naa.php`), [databasedokumentasjonen](https://weather.kippenbroeck.no/database.md) og en kopi av databasen
+(`/api/naa.php`, og fra 1.11.2026 `/api/siste-dogn.php?timer=168`), [databasedokumentasjonen](https://weather.kippenbroeck.no/database.md) og en kopi av databasen
 fra 31.10.2026. Vi kan ikke endre stasjonen, sensorene eller nettsiden. Stasjonen står 1,3 km fra Ekstraveggen og 5,1 km fra Loddefjord. Florida (SN50540), som Ekstraveggen kontrolleres mot i dag,
 står 5,6 km unna. Stasjonen har målt hver femte minutt siden 2013 og hadde data i 99,9 % av timene
 2023–2026.
@@ -44,7 +44,8 @@ Data i 99,9 % av timene. Ett lengre avbrudd: 05.03.2025 23:00 – 06.03.2025 20:
 én time hver høst når klokka stilles tilbake (f.eks. 25.10.2026 02:00–03:00): Davis-loggeren lagrer på lokal tid
 og hopper over den doble timen. Det er ufarlig, men må ikke fylles med null nedbør.
 
-API-et (`/api/naa.php`) svarte med en måling som var 104–126 sekunder gammel. Det gir bare siste måling, ikke historikk.
+API-et (`/api/naa.php`) svarte med en måling som var 104–126 sekunder gammel. Da vurderingen ble gjort ga det bare siste måling;
+historikk-endepunktet kom 1.11.2026.
 
 ### Hele perioden, time for time
 
@@ -171,38 +172,33 @@ eller terrenget. Vindstyrken fra stasjonen kan ikke erstatte modellens: `wind_ex
 - Ett målepunkt, ikke på veggen. Stasjonens plassering og høyde over havet er ikke kjent i dette arbeidet.
 - Vippekarmåleren fanger for lite i vind og snø, og snø kan bli registrert først når den smelter.
 - Fuktighetssensoren på Bønes viser for høyt i tørr luft (se over). Florida er referansen.
-- API-et har bare siste måling, og vi kan ikke legge til et historikk-endepunkt. Live bruk krever at timesjobben
-  lagrer hver måling selv. Da blir det ingen historikk før den starter, og hull når Actions-jobben kommer sent
-  eller ikke kjører. Nedbør per time må regnes som differansen i `nedbor_i_dag_mm` mellom to kjøringer, og gjelder
-  bare når de ligger omtrent en time fra hverandre.
+- API-et ga opprinnelig bare siste måling. Fra 1.11.2026 gir `siste-dogn.php?timer=168` femminuttsmålinger for
+  inntil sju døgn bakover (eieren la til parameteren på forespørsel). Det dekker visningshistorikken; timene før det
+  (oppvarming fra lagret tilstand) bruker modellens regn.
 
 ## Bønes-regn i modellen
 
 Det er lavsesong, og det kommer neppe 50 observasjoner fra Ekstraveggen før neste år. Regnmåleren er likevel
-det beste vi har for når regnet starter og slutter ved veggen, så den er bygd inn, men står av til den er prøvd.
+det beste vi har for når regnet starter og slutter ved veggen, og er slått på for Ekstraveggen fra 1.11.2026.
 
-- **Innsamling.** Timesjobben henter siste måling fra `/api/naa.php` og lagrer den i `bones_maling`
-  (`publish.collect_bones()`), når minst ett felt har `regnmaler: bones`. Bare ferske målinger lagres. Feil gir en
-  advarsel i `_bones` og stopper aldri varselet. Én henting i timen er godt innenfor API-ets ønske om høyst hvert 5. minutt.
-- **Timeverdier** (`data/bones.py`). Nedbør per time er differansen i `nedbor_i_dag_mm` mellom to målinger 45–75
-  minutter fra hverandre i samme døgn. Timen over midnatt, timer etter en kjøring som falt ut, og en teller som går
-  ned blir ukjent, ikke null.
+- **Innsamling.** Timesjobben henter de siste 168 timene fra `/api/siste-dogn.php?timer=168&format=csv` i ett kall
+  (`publish.collect_bones()`), når minst ett felt har `regnmaler: bones`. Siste måling lagres fortsatt i
+  `bones_maling` som reserve: svarer ikke historikk-endepunktet, regnes timeverdier fra snapshot-tabellen i stedet
+  (`bones.hourly()`). Feil gir en advarsel i `_bones` og stopper aldri varselet. Én henting i timen er godt innenfor
+  API-ets ønske om høyst hvert 5. minutt.
+- **Timeverdier** (`bones.hourly_from_raw()`). Nedbør summeres og temperatur midles over femminuttsradene i timen
+  som slutter ved tidsstempelet. Timer med færre enn 10 av 12 rader (hull, klokkestilling) får ukjent nedbør, ikke null.
+  Samme funksjon brukes av `scripts/import_bones.py` på databasekopien, så historikk og live er regnet likt.
 - **Bytte av regn.** Med `regnmaler_bruk: erstatt` bytter `with_rain()` modellens nedbør i passerte timer der
   Bønes har målt og det er over +2 °C (ellers kan det være snø). Varseltimene, temperatur, fuktighet, vind og
   stråling kommer fortsatt fra MET Nordic. Byttede timer får `precipitation_source = "bones"` i `vaer`, og
   `kilde` i varselet krediterer stasjonen.
-- **Signatur.** Regnmåleren tas med i `config_hash` bare med `erstatt`. Å slå på innsamling endrer ikke lagret
-  modelltilstand. Å slå på `erstatt` starter Ekstraveggen på nytt med 30 døgns innkjøring én gang.
+- **Signatur.** Regnmåleren tas med i `config_hash` bare med `erstatt`. Å slå på `erstatt` startet Ekstraveggen på
+  nytt med 30 døgns innkjøring én gang.
 
-Ekstraveggen har `regnmaler: bones` og `regnmaler_bruk: av`. Før `erstatt` slås på:
-
-1. Kjør migrasjonen `20261031210000_bones_maling.sql` i produksjon.
-2. La innsamlingen gå gjennom vinteren, og sammenlign Bønes-regnet med `vaer` (radar og MET Nordic) for samme timer.
-3. Legg til Bønes værstasjon (CC BY 4.0) i kildene på nettsiden (`web/app/layout.tsx` og om-siden).
-4. Sett `regnmaler_bruk: erstatt` i `config/ekstraveggen.yaml`.
-
-Når det finnes nok observasjoner, er testen fortsatt den samme: kjør modellen med begge regnkildene mot
-observasjonene, med en ny kopi av databasen fra eieren.
+Ekstraveggen har `regnmaler: bones` og `regnmaler_bruk: erstatt`. Migrasjonen `20261031210000_bones_maling.sql`
+må være kjørt i produksjon for at reserven skal virke; uten den går historikk-API-et likevel.
+Til våren: kjør modellen med begge regnkildene (`vaer` har `precipitation_source`) mot observasjonene.
 
 ## Kjøre på nytt
 

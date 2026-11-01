@@ -265,7 +265,8 @@ export default async function OmModellen() {
           <li>Koordinatene for feltene er kartpunkter, ikke nøyaktig foten av veggen. Det kan forskyve når sola beregnes å treffe.</li>
         </ul>
         <p className="byline">
-          Værdata: MET Nordic direkte fra MET Norway, med Open-Meteo som reserve og for historikk (CC BY 4.0). Historikkgrafene bruker arkiverte modellvarsler,
+          Værdata: MET Nordic direkte fra MET Norway, med Open-Meteo som reserve og for historikk (CC BY 4.0). For Ekstraveggen brukes målt regn
+          fra <a href="https://weather.kippenbroeck.no/">Bønes værstasjon</a> (privat, 1,3 km unna, CC BY 4.0) i de siste sju døgnene. Historikkgrafene bruker arkiverte modellvarsler,
           ikke målt bergfuktighet. Terreng: Kartverket DOM/DTM (CC BY 4.0).
           Modell {statistikk.modellversjon}, beregnet {statistikk.generert}; de første {statistikk.oppvarming_dogn} døgnene er utelatt som oppvarming.
         </p>
