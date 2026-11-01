@@ -17,8 +17,9 @@ crag:
   steepness_id: 3  # BKK-kategori; styrer også foreløpig regnskjerming
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
   # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
-  # 145–205° justert etter observasjon 30.10.2026: første sol kl. 12 (asimut ~174°, høyde 15,6°),
-  # effektiv sol gjennom trær ca. kl. 13. DOM1 ga 0° her. 145–170° er en nedre grense; >205° er uverifisert.
+  # 115–200°: stort tre nær veggen (sentrert ca. 135°, nærmere enn DOM-beregningens 10 m) skygger for sola fram til
+  # kl. 12 (observert 30.10.2026; sola da på asimut ~174°, høyde 15,6°). Trekronens høyde er anslag; verifiser på
+  # en sommerdag når sola står høyere i SØ. Terrenget bak er lavt (DOM1: 0°). >200° er uverifisert.
   horizon:
     - [0, 50.87]
     - [5, 53.41]
@@ -43,25 +44,25 @@ crag:
     - [100, 44.88]
     - [105, 44.16]
     - [110, 28.63]
-    - [115, 15.66]
-    - [120, 6.04]
-    - [125, 5.57]
-    - [130, 5.92]
-    - [135, 3.18]
-    - [140, 2.16]
-    - [145, 16.0]
-    - [150, 16.0]
-    - [155, 16.0]
-    - [160, 16.0]
-    - [165, 16.0]
-    - [170, 16.0]
-    - [175, 15.5]
-    - [180, 15.5]
-    - [185, 15.5]
-    - [190, 13.0]
-    - [195, 10.0]
-    - [200, 6.0]
-    - [205, 3.0]
+    - [115, 20.0]
+    - [120, 28.0]
+    - [125, 34.0]
+    - [130, 38.0]
+    - [135, 40.0]
+    - [140, 38.0]
+    - [145, 34.0]
+    - [150, 30.0]
+    - [155, 26.0]
+    - [160, 23.0]
+    - [165, 20.0]
+    - [170, 17.5]
+    - [175, 15.3]
+    - [180, 12.0]
+    - [185, 8.0]
+    - [190, 4.0]
+    - [195, 2.0]
+    - [200, 0.00]
+    - [205, 0.00]
     - [210, 0.00]
     - [215, 0.00]
     - [220, 0.00]
@@ -115,7 +116,7 @@ model:
   seep_enabled: true
   seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
   seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
-  seep_threshold_mm: 0.5        # reservoar over dette gir siging på veggen
+  seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
   # Energibalanse for bergoverflaten
   albedo: 0.30                  # gneis/granitt ~0.2-0.35
   emissivity: 0.92              # stein 0.86-0.95
