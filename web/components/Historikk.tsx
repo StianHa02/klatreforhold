@@ -1,3 +1,4 @@
+import Info from '@/components/Info'
 import Ukerutenett from '@/components/Ukerutenett'
 import type { Observasjoner, Status, TidligereVarsel, Time } from '@/lib/api'
 import { delIDager, lagUkeRad, oslo, plussDager } from '@/lib/dager'
@@ -23,7 +24,14 @@ export default function Historikk({ timer, naMs, tidligere, obs }: {
 
   return (
     <section className="kort p-sm sm:p-md">
-      <h2 className="seksjon">Siste 7 døgn</h2>
+      <div className="flex items-center gap-xs">
+        <h2 className="seksjon">Siste 7 døgn</h2>
+        <Info>
+          {tidligere.length > 0
+            ? '«Slik det ble» er modellen kjørt i etterkant på været som faktisk kom. «Slik det ble varslet» er det varselet sa dagen før.'
+            : 'Modellen kjørt i etterkant på været som faktisk kom.'}
+        </Info>
+      </div>
       <div className="mt-sm">
         <Ukerutenett rader={rader} bryter={tidligere.length > 0} />
       </div>
