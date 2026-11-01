@@ -29,10 +29,23 @@
 4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
 5. Kjør `vaer_og_rydding`-migrasjonen i produksjon og følg med på databasestørrelsen.
    Lagringstiden (120 dager, ledetid 0/3/6/12/24/48) står i [deployguiden](DEPLOY.md).
-6. Kjør `bones_maling`-migrasjonen i produksjon, så timesjobben samler inn regn fra Bønes værstasjon gjennom vinteren.
-   Vurder `regnmaler_bruk: erstatt` for Ekstraveggen før sesongen, se [Bønes værstasjon](BONES_STASJON.md).
+6. Kjør `bones_maling`-migrasjonen i produksjon (reserve for Bønes-regnet). `regnmaler_bruk: erstatt` er på for
+   Ekstraveggen fra 1.11.2026; følg med på `_bones` i timesjobben og evaluer mot observasjoner til våren,
+   se [Bønes værstasjon](BONES_STASJON.md).
 7. Vurder resterende forskningsforslag fra [RESEARCH_2](RESEARCH_2.md): delvis pooling, ordinal modell,
    pålitelighetsdiagrammer og faste feltobservasjoner.
+8. **Før utvidelse fra 9 til ~135 felt** (nettføreren, 1.11.2026). Erfaringene fra oktober 2026 (hyllelager,
+   horisont på Bymuren, sig på Ekstraveggen, Bønes-stasjonen) peker på tre ting som bør på plass først:
+   - *Modellparametre per felttype, ikke per felt.* YAML-ene bør bare ha geometri (koordinater, asimut,
+     helning, horisont, regnsikkert); parametrene arves fra en profil etter bratthet × regnsikkert × kyst/innland.
+     Da justeres fem–seks profiler, ikke 135 filer. Sva (≈35 av feltene) trenger trolig større hyllelager enn de
+     0,3 mm som nå er standard, og kystfeltene i Øygarden/Sotra/Askøy (≈60) høyere `wind_exposure` enn 0,4–0,5.
+   - *Én kontrollstasjon per feltklynge.* MET Nordic er verifisert bare mot Florida og Bønes. Nedbøren varierer
+     mye mellom Øygarden, Bergen og innlandet; finn Frost-/private stasjoner nær klyngene og kjør samme analyse som
+     `evaluer_bones.py`. Sig-nedslagsfeltet over veggen kan trolig estimeres fra DTM i stedet for å settes for hånd.
+   - *Nære trær mangler i DOM-horisonten* (beregningen starter 10 m ut). Be om «første sol på veggen»-observasjoner
+     i tilbakemeldingsskjemaet; `scripts/plot_horizon.py` viser hva som må rettes.
+   Observasjoner blir flaskehalsen; de fleste av 135 felt blir aldri kalibrert hver for seg.
 
 Integrasjon med nettføreren er fortsatt separat, fremtidig arbeid. Ikke endre dens database eller repo.
 

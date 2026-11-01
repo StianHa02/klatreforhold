@@ -67,6 +67,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <p className="flex flex-col gap-[2px] opacity-80 sm:text-right">
               <span>Værdata: MET Norway, direkte og via Open-Meteo (CC BY 4.0)</span>
+              <span>
+                Regn ved Ekstraveggen:{' '}
+                <a href="https://weather.kippenbroeck.no/" className="underline">Bønes værstasjon</a> (CC BY 4.0)
+              </span>
               <span>Høydedata: © Kartverket</span>
             </p>
           </div>

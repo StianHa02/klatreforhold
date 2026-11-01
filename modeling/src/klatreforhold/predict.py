@@ -245,8 +245,8 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
             weather: pd.DataFrame | None = None, history_hours: int = 12,
             checkpoint: dict | None = None, include_checkpoints: bool = False,
             ensemble: pd.DataFrame | None = None, include_weather: bool = False,
-            bones_malinger: pd.DataFrame | None = None) -> dict:
-    """bones_malinger: lagrede målinger fra Bønes (bones_maling). Brukes bare når feltet har regnmaler_bruk: erstatt."""
+            bones_regn: pd.DataFrame | None = None) -> dict:
+    """bones_regn: timeverdier fra Bønes (data/bones.py). Brukes bare når feltet har regnmaler_bruk: erstatt."""
     crag, params = load_crag(slug)
     issued = pd.Timestamp.now(tz="UTC")
     weather_now = now or issued
@@ -258,8 +258,8 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
     start = pd.Timestamp(checkpoint["tid"]) + pd.Timedelta(hours=1) if checkpoint else None
     w = weather if weather is not None else get_weather(crag, source, start, weather_now, history_hours)
     bones_timer = 0
-    if bones_malinger is not None and crag.regnmaler == "bones" and crag.regnmaler_bruk == "erstatt":
-        w = with_rain(w, bones_malinger, now=weather_now)
+    if bones_regn is not None and crag.regnmaler == "bones" and crag.regnmaler_bruk == "erstatt":
+        w = with_rain(w, bones_regn, now=weather_now)
         bones_timer = w.attrs.get("bones_timer", 0)
     w = w.loc[:now + pd.Timedelta(hours=hours)]
     # Ensemblet hentes bare for direkte MET-vær; gitt vær (tester, offline) bruker det som sendes inn.
