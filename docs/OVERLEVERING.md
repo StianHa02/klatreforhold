@@ -39,7 +39,10 @@
    - *Modellparametre per felttype, ikke per felt.* YAML-ene bør bare ha geometri (koordinater, asimut,
      helning, horisont, regnsikkert); parametrene arves fra en profil etter bratthet × regnsikkert × kyst/innland.
      Da justeres fem–seks profiler, ikke 135 filer. Sva (≈35 av feltene) trenger trolig større hyllelager enn de
-     0,3 mm som nå er standard, og kystfeltene i Øygarden/Sotra/Askøy (≈60) høyere `wind_exposure` enn 0,4–0,5.
+     0,3 mm som nå er standard, og det samme gjør skyggefulle vegger med overheng: Ekstraveggen var 2.11.2026
+     fuktig hele dagen uten regn, også under overhenget, og bruker 0,6 mm / 0,5 i stedet for større sig
+     (en jevn film, ikke striper fra sprekker, og et reservoar på toppen når ikke ned over 35 m vegg).
+     Kystfeltene i Øygarden/Sotra/Askøy (≈60) trenger trolig høyere `wind_exposure` enn 0,4–0,5.
    - *Én kontrollstasjon per feltklynge.* MET Nordic er verifisert bare mot Florida og Bønes. Nedbøren varierer
      mye mellom Øygarden, Bergen og innlandet; finn Frost-/private stasjoner nær klyngene og kjør samme analyse som
      `evaluer_bones.py`. Sig-nedslagsfeltet over veggen kan trolig estimeres fra DTM i stedet for å settes for hånd.

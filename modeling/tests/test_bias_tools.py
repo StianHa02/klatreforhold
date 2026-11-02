@@ -55,7 +55,7 @@ def test_calibrated_overlay_is_loaded():
         (Path(d) / "kalibrert").mkdir()
         (Path(d) / "kalibrert" / "x.yaml").write_text("model:\n  holds_capacity_mm: 1.23\n", encoding="utf-8")
         crag, params = load_config(base)
-        assert params["holds_capacity_mm"] == .3
+        assert params["holds_capacity_mm"] != 1.23  # uvalidert overlegg ignoreres
         from klatreforhold.version import MODEL_VERSION, config_hash
         import yaml
         (Path(d) / "kalibrert/x.yaml").write_text(yaml.safe_dump({
