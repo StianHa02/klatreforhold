@@ -13,6 +13,7 @@ export default function DagBokser({ bokser, paFarge = false, skjulNaMobil = fals
 }) {
   const liten = skjulNaMobil ? 'text-xs sm:text-[11px]' : 'text-[11px]'
   const minst = skjulNaMobil ? 'text-[11px] sm:text-[10px]' : 'text-[10px]'
+  const stor = skjulNaMobil ? 'text-xl' : 'text-lg sm:text-xl'
   return (
     <ol className={`grid gap-xs ${skjulNaMobil ? 'grid-cols-4 sm:grid-cols-5' : 'grid-cols-5'}`} aria-label="Varsel dag for dag">
       {bokser.map((b, i) => (
@@ -22,7 +23,7 @@ export default function DagBokser({ bokser, paFarge = false, skjulNaMobil = fals
         >
           <span aria-hidden className={`h-[4px] shrink-0 ${b.status ? statusFarge[b.status] : 'bg-surface-tinted'}`} />
           <span className={`truncate px-[2px] pt-[4px] leading-tight text-text-subtle ${liten}`}>{b.navn}</span>
-          <span className="text-sm font-medium leading-snug">{b.status ? STATUS_TEKST[b.status] : '–'}</span>
+          <span className={`font-medium leading-snug ${stor}`}>{b.status ? STATUS_TEKST[b.status] : '–'}</span>
           <span className={`px-[2px] pb-[6px] leading-tight text-text-tinted ${minst}`}>
             {b.status ? b.tekst : 'ingen data'}
             {b.usikker && <span className="block text-text-subtle">usikkert</span>}
