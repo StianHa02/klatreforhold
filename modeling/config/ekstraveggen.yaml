@@ -113,6 +113,12 @@ model:
   holds_capacity_mm: 0.6        # vann i sprekker/tak/hyller (tørker saktere)
   film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
   holds_drying_factor: 0.5      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Fordampningen beregnes fra regionalt vær (RH, vind), men under overhenget og inntil den skyggefulle veggen står
+  # lufta nær metning. Med 1.0 tørket modellen veggen natt til 3.11.2026 mens den var fuktig hele 2.11; første
+  # publiserte varsel med 0.6/0.5 sa også tørt fra kl. 02. Erfaring fra feltet: over fem døgn oppholdsvær etter
+  # skikkelig høstregn. 0.4 gir 5–6 døgn etter 13–15 mm og treffer 9 av 9 egne observasjoner tørt/ikke-tørt.
+  # Ikke kalibrert; en validert kalibrering (config/kalibrert/) overstyrer denne verdien.
+  evaporation_efficiency: 0.4
   # Siging (sakte reservoar matet av nedbør over feltet)
   seep_enabled: true
   # Satt opp til 0.05 (31.10) og 0.10 (2.11) for å forklare flerdøgns tørketid, men tilbake til felles 0.02 samme dag:
