@@ -198,9 +198,16 @@ export function biter<T>(verdier: (T | null)[]): { v: T | null; fra: number; til
   return ut
 }
 
-/** Stemmer det klatreren meldte med statusen som vises (tørt mot ikke tørt)? Null uten status. */
+/** Stemmer det klatreren meldte med statusen som vises (tørt mot ikke tørt)? Null uten status.
+ *  Samme regel som serveren bruker for `riktig` i databasen og i treffsikkerheten. */
 export const riktig = (meldt: Status, vist: Status | null | undefined) =>
   vist ? (meldt === 'tort') === (vist === 'tort') : null
+
+/** Treff i ukerutenettet: «ja» lik status, «delvis» fuktig mot vått (ikke tørt, men feil grad), «nei» tørt mot
+ *  ikke tørt. Fuktig og vått skilles her, fordi forskjellen er det kalibreringen av tørketiden trenger. */
+export type Treff = 'ja' | 'delvis' | 'nei'
+export const treff = (meldt: Status, vist: Status | null | undefined): Treff | null =>
+  !vist ? null : meldt === vist ? 'ja' : riktig(meldt, vist) ? 'delvis' : 'nei'
 
 /** Modellens status per time, nøkkel «YYYY-MM-DDTHH» (starttid i norsk tid), til tilbakemeldingsskjemaet. */
 export function statusPerTime(timer: Time[]): Record<string, Status> {
@@ -216,7 +223,7 @@ export function statusPerTime(timer: Time[]): Record<string, Status> {
 
 // sol: direkte sol på veggen i varselet. solMulig: sola står foran veggen og over horisonten (ville truffet ved klar himmel)
 export type UkeCelle = { s: Status | null; v: Status | null; regn: number; sol: boolean; solMulig: boolean; tittel: string }
-export type UkeMelding = { pos: number; status: Status; etter: boolean | null; for: boolean | null; tekst: string }
+export type UkeMelding = { pos: number; status: Status; etter: Treff | null; for: Treff | null; tekst: string }
 // Én time i tabellen under en dag. Tekstene lages her, så klientkomponenten ikke formaterer selv.
 export type UkeTabellRad = {
   h: number // klokketime (starttid, norsk tid)
@@ -276,8 +283,8 @@ export function lagUkeRad(dag: Dag, o: { iDag: string; naMs: number; varslet?: M
     return [{
       pos: p.time + p.minutt / 60,
       status: m.status,
-      etter: riktig(m.status, c?.s),
-      for: riktig(m.status, c?.v),
+      etter: treff(m.status, c?.s),
+      for: treff(m.status, c?.v),
       tekst: `kl ${pad(p.time)}:${pad(p.minutt)} meldte en klatrer ${STATUS_TEKST[m.status].toLowerCase()}${m.kommentar ? `: «${m.kommentar}»` : ''}`,
     }]
   })

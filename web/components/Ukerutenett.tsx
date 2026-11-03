@@ -2,7 +2,7 @@
 
 import { type ButtonHTMLAttributes, type CSSProperties, type ReactNode, useState } from 'react'
 import { type Status, statusFarge } from '@/lib/api'
-import { BOKSTAV, SKALA_MM, STATUS_TEKST, type UkeRad, biter, pad } from '@/lib/dager'
+import { BOKSTAV, SKALA_MM, STATUS_TEKST, type Treff as TreffVerdi, type UkeRad, biter, pad } from '@/lib/dager'
 
 // Ukerutenett: én rad per døgn med 24 timer, uten sideveis rulling. Øverst i hver rad en strek når sola
 // står på veggen, så status per time og regn som søyler under. Klatrernes meldinger er prikker.
@@ -321,10 +321,13 @@ function Forklaring({ visFor, harMeldinger }: { visFor: boolean; harMeldinger: b
         <p className="flex items-center gap-sm">
           <span aria-hidden className={`relative mr-[8px] inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-2 ring-white ${MORK} ${statusFarge.tort}`}>
             {BOKSTAV.tort}
-            <Treff ok />
+            <Treff ok="ja" />
           </span>
           <span>
-            Tilbakemelding fra klatrer (T tørt, F fuktig, V vått). ✓ stemte, ✗ bommet.
+            Tilbakemelding fra klatrer (T tørt, F fuktig, V vått). ✓ stemte, ~ fuktig og vått byttet om, ✗ bommet på
+            tørt. {visFor
+              ? 'Sammenlignet med varselet dagen før.'
+              : 'Sammenlignet med modellen kjørt i ettertid med målt vær og dagens innstillinger, ikke med det som ble varslet.'}
           </span>
         </p>
       )}
@@ -362,15 +365,20 @@ function Sol({ sol, mulig }: { sol: boolean; mulig: boolean }) {
   )
 }
 
-// ✓/✗ ved en klatrers melding: stemte stripen med det klatreren meldte?
-function Treff({ ok }: { ok: boolean }) {
+// ✓/~/✗ ved en klatrers melding: stemte stripen med det klatreren meldte?
+const TREFF: Record<TreffVerdi, { tegn: string; klasse: string; tekst: string }> = {
+  ja: { tegn: '✓', klasse: 'bg-white text-forhold-tort', tekst: 'stemte' },
+  delvis: { tegn: '~', klasse: 'bg-forhold-fuktig text-text-default', tekst: 'ikke tørt, men fuktig og vått byttet om' },
+  nei: { tegn: '✗', klasse: 'bg-white text-state-error', tekst: 'bommet' },
+}
+function Treff({ ok }: { ok: TreffVerdi }) {
+  const t = TREFF[ok]
   return (
     <span
-      className={`absolute -right-[11px] -top-[9px] flex h-[15px] w-[15px] items-center justify-center rounded-full bg-white text-[11px] font-bold leading-none shadow-sm ${
-        ok ? 'text-forhold-tort' : 'text-state-error'
-      }`}
+      title={t.tekst}
+      className={`absolute -right-[11px] -top-[9px] flex h-[15px] w-[15px] items-center justify-center rounded-full text-[11px] font-bold leading-none shadow-sm ${t.klasse}`}
     >
-      {ok ? '✓' : '✗'}
+      {t.tegn}
     </span>
   )
 }
