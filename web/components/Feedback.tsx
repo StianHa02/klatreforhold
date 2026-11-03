@@ -79,10 +79,15 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
       })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
-      const riktig = data.lagret.riktig
+      const { riktig, predikert_status: predikert } = data.lagret
+      // Serveren lagrer tørt mot ikke tørt; her sier vi også fra når fuktig og vått er byttet om.
+      const delvis = riktig === 1 && predikert && predikert !== status && (predikert === 'fuktig' || predikert === 'vatt')
       setSvar({
         ok: true,
-        tekst: riktig === 1 ? 'Takk! Varselet stemte.' : riktig === 0 ? 'Takk! Varselet bommet, så dette hjelper oss å forbedre det.' : 'Takk!',
+        tekst: delvis
+          ? `Takk! Varselet sa ${predikert === 'vatt' ? 'vått' : 'fuktig'}, så det traff at det ikke var tørt.`
+          : riktig === 1 ? 'Takk! Varselet stemte.'
+          : riktig === 0 ? 'Takk! Varselet bommet, så dette hjelper oss å forbedre det.' : 'Takk!',
       })
       setKommentar('')
       router.refresh()
