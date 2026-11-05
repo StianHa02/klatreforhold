@@ -1,7 +1,8 @@
 name: Oppdater varsel
 
-# Reserve: timesjobben kjører på en Raspberry Pi (drift/raspberrypi/). Denne workflowen startes bare for hånd,
-# f.eks. når Pi-en er nede. Ikke legg tilbake `schedule` mens Pi-en går, ellers publiseres hver time to ganger.
+# Reserve: timesjobben kjører på en Raspberry Pi (drift/raspberrypi/). Supabase Cron starter denne workflowen
+# bare når varselet er over 90 minutter gammelt (supabase/valgfritt/). Ikke legg tilbake `schedule`, ellers
+# publiseres hver time to ganger.
 # Secrets (Settings → Secrets and variables → Actions):
 #   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, KLATREFORHOLD_CONTACT, FROST_CLIENT_ID (valgfri: målt historikk)
 on:

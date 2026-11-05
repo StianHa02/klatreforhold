@@ -9,16 +9,17 @@
   bratthetskategorier er fortsatt anslag. Se felttabellen i modellguiden.
 - Timesjobben lager 120 timer fremover og sju døgn bakover; arkivet beholder ledetider til 48 timer.
   Direkte MET Nordic foretrekkes over Open-Meteo, med fersk Nowcast-nedbør. Open-Meteo gir også innkjøring.
-- Databaseskjemaet har sju migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
+- Databaseskjemaet har åtte migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
   `vaer_og_rydding` legger til værinput til trening (`vaer`) og ukentlig arkivrydding. Den siste,
-  `bones_maling`, lagrer målinger fra Bønes værstasjon.
+  `bones_maling`, lagrer målinger fra Bønes værstasjon. `parquet_arkiv` gjør at ryddingen bare sletter
+  døgn som er eksportert til Parquet ([Parquet-arkivet](ARKIV.md)).
   Se [deployguiden](DEPLOY.md).
 - MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. Verdien arkiveres ikke
   i `varsel` og vises ikke som prosent på nettsiden.
 - Nettsiden viser tørt/fuktig/vått og omgjør modellens is/snø til vått. Skjemaet har tre valg.
 - Kalibrering tilpasser én fordampningsparameter, med minst 50 observasjoner og ti regnepisoder.
   ML-kandidater fra `train.py --save` må valideres separat før de kan aktiveres.
-- FastAPI og Docker støtter lokal utvikling; produksjonen bruker Raspberry Pi (systemd-timer) → Supabase → Vercel. Actions er manuell reserve.
+- FastAPI og Docker støtter lokal utvikling; produksjonen bruker Raspberry Pi (systemd-timer) → Supabase → Vercel. Actions er reserve via Supabase Cron.
   `KLATREFORHOLD_DATAKILDE=api` velger lokalt API også når Supabase-nøkler finnes.
 
 ## Gjenstående arbeid
@@ -55,8 +56,11 @@ Integrasjon med nettføreren er fortsatt separat, fremtidig arbeid. Ikke endre d
 ## Fallgruver
 
 - **GitHub startet ikke alltid planlagte kjøringer.** Derfor kjører timesjobben nå på en Raspberry Pi
-  ([`drift/raspberrypi/`](../drift/raspberrypi/README.md)). Workflowen startes bare for hånd. Legg ikke tilbake
-  `schedule` mens Pi-en går, ellers publiseres hver time to ganger.
+  ([`drift/raspberrypi/`](../drift/raspberrypi/README.md)). Supabase Cron (`start-varsel-jobb`) starter
+  workflowen bare når varselet er over 90 minutter gammelt. Legg ikke tilbake `schedule`, ellers publiseres hver time to ganger.
+- **Ryddingen sletter bare eksporterte døgn.** Stopper den nattlige eksporten på Pi-en, slettes ingenting og
+  databasen vokser med ca. 2 MB/døgn. Sjekk `journalctl -u klatreforhold-arkiv` og spørringene i [ARKIV](ARKIV.md).
+  Skriv aldri en kvittering i `arkiv_eksport` for hånd.
 - **PostgREST gir maks 1000 rader per kall.** `limit=5000` hjelper ikke. Spør etter færre rader (f.eks.
   `ledetid_timer=in.(22,23,24,25,26)`) eller bla med `Range`.
 - **Tilbakemeldinger før og etter 2026-10-29 må vurderes hver for seg.** Fra da viser skjemaet modellens

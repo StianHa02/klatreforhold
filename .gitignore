@@ -16,6 +16,7 @@ modeling/outputs/*
 .idea/
 .vercel/
 modeling/data/cache/
+modeling/data/arkiv/
 
 # Lokale agent-, nettleser- og byggefiler
 .codex/

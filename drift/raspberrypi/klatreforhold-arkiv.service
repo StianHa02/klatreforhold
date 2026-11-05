@@ -1,0 +1,14 @@
+# Mal: installer.sh setter inn @BRUKER@ og @REPO@ og kopierer fila til /etc/systemd/system/.
+[Unit]
+Description=Klatreforhold: eksporter varselarkivet til Parquet og Supabase Storage
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=@BRUKER@
+WorkingDirectory=@REPO@
+ExecStart=/usr/bin/bash @REPO@/drift/raspberrypi/kjor_arkiv.sh
+# Første kjøring tar med alle døgn som mangler, senere bare gårsdagen
+TimeoutStartSec=60min
+Nice=15

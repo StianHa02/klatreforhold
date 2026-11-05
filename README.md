@@ -14,6 +14,7 @@ Varselet går 120 timer frem og 168 timer tilbake. Parametrene er foreløpige og
 - [Modell, datakilder og valideringskrav](docs/MODELL_V2.md)
 - [Overlevering: kode, gjenstående arbeid og fallgruver](docs/OVERLEVERING.md)
 - [Deploy og drift](docs/DEPLOY.md)
+- [Parquet-arkivet: varselarkivet til analyse](docs/ARKIV.md)
 - [Legge til et felt](docs/LEGG_TIL_FELT.md)
 - [Bønes værstasjon som datakilde](docs/BONES_STASJON.md)
 - Bakgrunn: [research](docs/RESEARCH.md), [oppfølging](docs/RESEARCH_2.md)

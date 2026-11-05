@@ -18,17 +18,22 @@ Latest payloads contain 120 hours ahead plus now and 168 hours behind; archive l
 - `modeling/src/klatreforhold/physics/`: energy/water balance, winter stores, solar geometry and drying events.
 - `data/`: weather sources and pipeline. `predict.py`: forecasts; `publish.py`: hourly publishing.
 - `storage.py`: CSV/Supabase; `verify.py`: Frost control; `ml/`: calibration and optional learned models.
+- `arkiv.py`: nightly Parquet export of `varsel`/`stasjon_varsel` per UTC day to Storage bucket `arkiv` and
+  `modeling/data/arkiv/` (Pi timer `klatreforhold-arkiv`, [docs/ARKIV.md](docs/ARKIV.md)).
 - `modeling/scripts/`: CLI tools; `config/stasjoner/`: humidity correction; `config/kalibrert/`: validated fits.
 - `web/`: Next.js 16, React 19, Tailwind 4. Read `web/AGENTS.md` before code changes.
 - `web/lib/kilde.ts`: Supabase when keys exist, unless `KLATREFORHOLD_DATAKILDE=api`.
 - `supabase/migrations/`: schema files, including v2 `modelltilstand`. Files alone do not prove remote application.
-- `supabase/valgfritt/`: optional Actions trigger SQL, not automatically applied.
+- `supabase/valgfritt/`: Actions fallback trigger (applied in production as pg_cron `start-varsel-jobb`; dispatches only when
+  `varsel_siste` is older than `p_maks_alder`, default 90 min; currently `0 minutes`, i.e. hourly, until the Pi runs).
+  Not a migration.
 
 Supabase project: `nmiydpcmfxkhtztzgzfx`. Tables: `varsel_siste`, `varsel`, `observasjoner`,
 `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer` (model weather input per crag and past hour),
-`bones_maling` (one reading per hourly run from the private Bønes station, reserve for `data/bones.py`, which
+`arkiv_eksport` (one receipt per table and UTC day exported to Parquet), `bones_maling` (one reading per hourly run from the private Bønes station, reserve for `data/bones.py`, which
 normally fetches 168 h of 5-minute data from the station API; Ekstraveggen uses its rain with `regnmaler_bruk: erstatt`).
 RPCs: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)`, `rydd_arkiv(integer)` (weekly pg_cron).
+Private Storage bucket `arkiv` holds the Parquet archive.
 All access is server-side with service role; no public RLS policies. Grant `service_role` explicitly on new
 tables: newer Supabase (including the local CLI) no longer grants it by default.
 Test migrations on the local stack first (`supabase start` from repo root, ports 553xx; see README).
@@ -44,6 +49,7 @@ python scripts/check_model_v2.py
 python scripts/check_model_v2.py --live --forecast
 python scripts/publish_forecast.py --dry-run
 python scripts/verify_forecast.py
+python scripts/eksporter_arkiv.py --dry-run   # Parquet archive, local files only
 ```
 
 `--live` fetches public weather; dry-run does not publish but may populate local caches.
@@ -73,6 +79,8 @@ From repo root: `docker compose up --build`. Build needs network for Google font
 - Forecasts must tolerate missing Frost, ensemble, calibration and ML. Default `frost_bruk: kontroll`;
   station replacement is only appropriate within 1–2 km. Do not hide missing rain by filling with zero.
 - `rydd_arkiv()` must keep lead times 0/3/6/12/24/48 and every row near a real observation; those are training data.
+  It may only delete `varsel`/`stasjon_varsel` rows whose UTC day has a receipt in `arkiv_eksport`, i.e. a verified
+  Parquet copy in Storage. Never write a receipt without uploading and re-checking the file.
 - Fit humidity correction on all hours, never on a subset selected by predicted humidity.
   The current fitted correction applies to Open-Meteo, not automatically to direct MET.
 - `.env` loader reads modeling then root and preserves existing environment. Put comments on separate lines.

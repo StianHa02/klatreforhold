@@ -1,0 +1,12 @@
+[Unit]
+Description=Klatreforhold: Parquet-eksport av varselarkivet hver natt
+
+[Timer]
+# 03:37 lokal tid: gårsdagen (UTC) er ferdig, og :37 kolliderer ikke med timesjobben ved :07
+OnCalendar=*-*-* 03:37:00
+AccuracySec=1min
+Persistent=true
+Unit=klatreforhold-arkiv.service
+
+[Install]
+WantedBy=timers.target

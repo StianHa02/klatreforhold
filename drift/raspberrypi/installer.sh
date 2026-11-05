@@ -39,6 +39,8 @@ KLATREFORHOLD_CONTACT=
 FROST_CLIENT_ID=
 # Valgfri: helsesjekk som varsler når jobben stopper, f.eks. https://hc-ping.com/<uuid>
 KLATREFORHOLD_HEALTHCHECK_URL=
+# Valgfri: egen helsesjekk for den nattlige Parquet-eksporten (daglig periode)
+KLATREFORHOLD_ARKIV_HEALTHCHECK_URL=
 EOF
     chmod 600 "$REPO/.env"
     echo "Laget $REPO/.env. Fyll inn verdiene (nano .env) og kjør dette skriptet på nytt."
@@ -60,23 +62,36 @@ if (cd "$REPO/modeling" && "$VENV/bin/python" scripts/publish_forecast.py --dry-
 else
     echo "Prøvekjøringen feilet. Se /tmp/klatreforhold-prove.json og meldingene over."; exit 1
 fi
+echo "== Prøvekjøring av Parquet-arkivet (--dry-run, skriver bare filer i modeling/data/arkiv/)"
+if ! (cd "$REPO/modeling" && "$VENV/bin/python" scripts/eksporter_arkiv.py --dry-run); then
+    echo "Prøvekjøringen av arkivet feilet. Er migrasjonen 20261105150000_parquet_arkiv.sql kjørt i Supabase?"; exit 1
+fi
 
 echo "== Begrens loggstørrelsen (sparer SD-kortet)"
 sudo mkdir -p /etc/systemd/journald.conf.d
 printf '[Journal]\nSystemMaxUse=50M\n' | sudo tee /etc/systemd/journald.conf.d/klatreforhold.conf > /dev/null
 sudo systemctl restart systemd-journald
 
-echo "== systemd-timer"
-sed -e "s|@BRUKER@|$BRUKER|g" -e "s|@REPO@|$REPO|g" "$HER/klatreforhold-varsel.service" \
-    | sudo tee /etc/systemd/system/klatreforhold-varsel.service > /dev/null
-sudo cp "$HER/klatreforhold-varsel.timer" /etc/systemd/system/
+echo "== systemd-timere (timesjobben og nattlig arkiv)"
+for jobb in varsel arkiv; do
+    sed -e "s|@BRUKER@|$BRUKER|g" -e "s|@REPO@|$REPO|g" "$HER/klatreforhold-$jobb.service" \
+        | sudo tee "/etc/systemd/system/klatreforhold-$jobb.service" > /dev/null
+    sudo cp "$HER/klatreforhold-$jobb.timer" /etc/systemd/system/
+done
 sudo systemctl daemon-reload
-sudo systemctl enable --now klatreforhold-varsel.timer
+sudo systemctl enable --now klatreforhold-varsel.timer klatreforhold-arkiv.timer
 
 cat <<EOF
 
 Ferdig. Timesjobben kjører hver time ved :07.
   Kjør nå:        sudo systemctl start klatreforhold-varsel.service
   Se loggen:      journalctl -u klatreforhold-varsel -n 100 --no-pager
-  Neste kjøring:  systemctl list-timers klatreforhold-varsel.timer
+  Neste kjøring:  systemctl list-timers 'klatreforhold-*'
+Parquet-arkivet eksporteres hver natt ved 03:37.
+  Kjør nå:        sudo systemctl start klatreforhold-arkiv.service
+  Se loggen:      journalctl -u klatreforhold-arkiv -n 100 --no-pager
+
+Når Pi-en har publisert et par timer på rad: sett Supabase-reserven i reservemodus, ellers kjører Actions
+også hver time (se «Bytt til reservemodus» i drift/raspberrypi/README.md):
+  select cron.schedule('start-varsel-jobb', '5 * * * *', 'select public.start_varsel_jobb()');
 EOF
