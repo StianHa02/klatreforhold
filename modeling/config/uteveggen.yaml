@@ -1,0 +1,129 @@
+# Uteveggen (felt_id 7), Øygarden
+# Kilde: BKK nettfører (felt-tabellen, eksport 2026-11-05): orientering 270, bratthet 2 (vertikalt),
+# regnsikkert = false.
+crag:
+  name: Uteveggen
+  felt_id: 7
+  lat: 60.553764
+  lon: 4.86558
+  elevation_m: 0.1     # Kartverket DTM i nettførerpunktet (veggfoten ved sjøen; 15 m sprang rett bak), kontrollert 2026-11-05
+  geology: ukjent        # ikke kontrollert mot NGU ennå
+  geometry_source: https://ute.bergenklatreklubb.no/felt/uteveggen
+  geometry_checked: '2026-11-05'
+  timezone: Europe/Oslo
+  frost_station: SN52475  # Blomvåg - Sele, 2.9 km (MET; krever FROST_CLIENT_ID)
+  frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
+  face_azimuth_deg: 270   # nettfører
+  face_tilt_deg: 90      # vertikalt (bratthet_id 2)
+  steepness_id: 2        # BKK-kategori; styrer også foreløpig regnskjerming
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
+  horizon:
+    - [0, 33.01]
+    - [5, 36.06]
+    - [10, 40.02]
+    - [15, 43.13]
+    - [20, 44.43]
+    - [25, 47.39]
+    - [30, 48.81]
+    - [35, 50.88]
+    - [40, 53.46]
+    - [45, 53.10]
+    - [50, 54.10]
+    - [55, 55.09]
+    - [60, 56.31]
+    - [65, 56.31]
+    - [70, 55.51]
+    - [75, 56.75]
+    - [80, 56.45]
+    - [85, 56.79]
+    - [90, 54.47]
+    - [95, 53.45]
+    - [100, 52.89]
+    - [105, 49.81]
+    - [110, 49.34]
+    - [115, 49.51]
+    - [120, 48.89]
+    - [125, 47.26]
+    - [130, 44.82]
+    - [135, 39.23]
+    - [140, 34.48]
+    - [145, 27.89]
+    - [150, 16.77]
+    - [155, 10.59]
+    - [160, 12.63]
+    - [165, 16.44]
+    - [170, 21.06]
+    - [175, 23.49]
+    - [180, 24.72]
+    - [185, 26.07]
+    - [190, 26.56]
+    - [195, 27.92]
+    - [200, 29.26]
+    - [205, 30.38]
+    - [210, 31.54]
+    - [215, 32.47]
+    - [220, 32.60]
+    - [225, 32.75]
+    - [230, 31.28]
+    - [235, 29.81]
+    - [240, 29.58]
+    - [245, 26.54]
+    - [250, 24.80]
+    - [255, 22.49]
+    - [260, 21.58]
+    - [265, 19.05]
+    - [270, 17.26]
+    - [275, 14.35]
+    - [280, 12.57]
+    - [285, 9.76]
+    - [290, 7.44]
+    - [295, 5.59]
+    - [300, 4.89]
+    - [305, 4.90]
+    - [310, 5.08]
+    - [315, 3.22]
+    - [320, 2.18]
+    - [325, 1.86]
+    - [330, 2.58]
+    - [335, 3.37]
+    - [340, 12.77]
+    - [345, 14.82]
+    - [350, 21.16]
+    - [355, 26.55]
+    - [360, 33.01]
+  rain_sheltered: false   # regnsikkert = false
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.9  # foreløpig lokalt anslag (ytterkysten, åpent mot havet), ikke kalibrert
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  # Klatrefelt har generelt få hyller/sprekker som samler vann: standard 0.3 / 1.0 fra 31.10.2026 (var 0.6 / 0.5),
+  # etter fem tørt-observasjoner på Bymuren og følsomhetsanalyse (scripts/sensitivity.py). Ikke kalibrert mot våt-observasjoner.
+  holds_capacity_mm: 0.3        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 1.0      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.3185  # kontrollverdi; beregnes fra horisont og helning
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01

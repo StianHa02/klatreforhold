@@ -1,0 +1,129 @@
+# Elvefeltet (felt_id 116), Øst for Bergen
+# Kilde: BKK nettfører (felt-tabellen, eksport 2026-11-05): orientering 180, bratthet 3 (overhengende),
+# regnsikkert = false.
+crag:
+  name: Elvefeltet
+  felt_id: 116
+  lat: 60.647812
+  lon: 5.998098
+  elevation_m: 36.1     # veggfot: Kartverket DTM 6 m foran nettførerpunktet (punktet ligger i veggen, 56 m), kontrollert 2026-11-05. Horisont med --offset-m=6
+  geology: ukjent        # ikke kontrollert mot NGU ennå
+  geometry_source: https://ute.bergenklatreklubb.no/felt/elvefeltet
+  geometry_checked: '2026-11-05'
+  timezone: Europe/Oslo
+  frost_station: SN51440  # Evanger, 6 km (Bane NOR; krever FROST_CLIENT_ID)
+  frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
+  face_azimuth_deg: 180   # nettfører
+  face_tilt_deg: 100      # overhengende (bratthet_id 3): anslått helning, juster ved behov
+  steepness_id: 3        # BKK-kategori; styrer også foreløpig regnskjerming
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 6 m ut (veggfoten), avstander 10–3000 m. Himmelfaktor 0.15: overheng i trang dalside.
+  horizon:
+    - [0, 78.33]
+    - [5, 78.45]
+    - [10, 78.83]
+    - [15, 78.62]
+    - [20, 78.35]
+    - [25, 78.44]
+    - [30, 78.73]
+    - [35, 78.73]
+    - [40, 75.92]
+    - [45, 74.46]
+    - [50, 72.50]
+    - [55, 59.19]
+    - [60, 42.21]
+    - [65, 34.93]
+    - [70, 25.93]
+    - [75, 17.45]
+    - [80, 18.97]
+    - [85, 14.79]
+    - [90, 9.86]
+    - [95, 18.71]
+    - [100, 22.16]
+    - [105, 19.61]
+    - [110, 17.08]
+    - [115, 20.75]
+    - [120, 19.07]
+    - [125, 25.85]
+    - [130, 24.76]
+    - [135, 24.69]
+    - [140, 28.37]
+    - [145, 28.56]
+    - [150, 28.01]
+    - [155, 31.13]
+    - [160, 33.69]
+    - [165, 28.53]
+    - [170, 30.48]
+    - [175, 35.36]
+    - [180, 42.04]
+    - [185, 33.33]
+    - [190, 33.38]
+    - [195, 33.93]
+    - [200, 29.52]
+    - [205, 29.48]
+    - [210, 32.88]
+    - [215, 32.07]
+    - [220, 27.41]
+    - [225, 27.41]
+    - [230, 23.31]
+    - [235, 18.78]
+    - [240, 17.49]
+    - [245, 15.63]
+    - [250, 22.87]
+    - [255, 18.78]
+    - [260, 18.62]
+    - [265, 25.70]
+    - [270, 44.41]
+    - [275, 58.36]
+    - [280, 67.47]
+    - [285, 74.81]
+    - [290, 76.76]
+    - [295, 77.47]
+    - [300, 77.50]
+    - [305, 77.58]
+    - [310, 78.22]
+    - [315, 78.62]
+    - [320, 78.62]
+    - [325, 77.67]
+    - [330, 78.67]
+    - [335, 78.06]
+    - [340, 78.18]
+    - [345, 78.18]
+    - [350, 78.63]
+    - [355, 78.41]
+    - [360, 78.33]
+  rain_sheltered: false   # regnsikkert = false
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.4  # foreløpig lokalt anslag (innlandsdal, skogkledd), ikke kalibrert
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  # Klatrefelt har generelt få hyller/sprekker som samler vann: standard 0.3 / 1.0 fra 31.10.2026 (var 0.6 / 0.5),
+  # etter fem tørt-observasjoner på Bymuren og følsomhetsanalyse (scripts/sensitivity.py). Ikke kalibrert mot våt-observasjoner.
+  holds_capacity_mm: 0.3        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 1.0      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.1450  # kontrollverdi; beregnes fra horisont og helning
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01

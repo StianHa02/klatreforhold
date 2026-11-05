@@ -1,0 +1,129 @@
+# Hjernemasseveggen (felt_id 68), Øst for Bergen
+# Kilde: BKK nettfører (felt-tabellen, eksport 2026-11-05): orientering 315, bratthet 4 (bratt overheng/tak),
+# regnsikkert = true. Retning korrigert av eier til 340 etter soltidskontroll.
+crag:
+  name: Hjernemasseveggen
+  felt_id: 68
+  lat: 60.621727
+  lon: 5.593798
+  elevation_m: 46.48     # veggfot: Kartverket DTM 6 m foran nettførerpunktet (punktet ligger i veggen, 78 m), kontrollert 2026-11-05. Horisont med --offset-m=6
+  geology: ukjent        # ikke kontrollert mot NGU ennå
+  geometry_source: https://ute.bergenklatreklubb.no/felt/hjernemasseveggen
+  geometry_checked: '2026-11-05'
+  timezone: Europe/Oslo
+  frost_station: SN52390  # E39 Ostereidet, 6.6 km (Statens vegvesen; krever FROST_CLIENT_ID); Eikanger - Myr (MET) er 12 km
+  frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
+  face_azimuth_deg: 340   # eier 2026-11-05 (nettføreren sa 315). DTM: vegg 96→50 m rett bak punktet
+  face_tilt_deg: 110      # bratt overheng/tak (bratthet_id 4): anslått helning, juster ved behov
+  steepness_id: 4        # BKK-kategori; styrer også foreløpig regnskjerming
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 6 m ut (veggfoten), avstander 10–3000 m. Himmelfaktor 0.17 er lav, men veggen er et tak i en skogkledd li.
+  horizon:
+    - [0, 57.06]
+    - [5, 63.40]
+    - [10, 63.40]
+    - [15, 60.83]
+    - [20, 60.95]
+    - [25, 63.96]
+    - [30, 58.98]
+    - [35, 57.52]
+    - [40, 56.81]
+    - [45, 58.74]
+    - [50, 66.77]
+    - [55, 68.09]
+    - [60, 68.61]
+    - [65, 65.25]
+    - [70, 59.26]
+    - [75, 59.26]
+    - [80, 67.60]
+    - [85, 76.54]
+    - [90, 77.10]
+    - [95, 77.24]
+    - [100, 76.28]
+    - [105, 76.18]
+    - [110, 76.18]
+    - [115, 76.04]
+    - [120, 77.53]
+    - [125, 77.53]
+    - [130, 77.16]
+    - [135, 77.54]
+    - [140, 77.54]
+    - [145, 77.94]
+    - [150, 78.11]
+    - [155, 78.48]
+    - [160, 78.81]
+    - [165, 78.62]
+    - [170, 78.62]
+    - [175, 78.52]
+    - [180, 78.02]
+    - [185, 77.00]
+    - [190, 77.12]
+    - [195, 76.02]
+    - [200, 76.40]
+    - [205, 76.76]
+    - [210, 74.61]
+    - [215, 70.13]
+    - [220, 68.42]
+    - [225, 67.42]
+    - [230, 60.30]
+    - [235, 47.89]
+    - [240, 52.80]
+    - [245, 49.27]
+    - [250, 42.93]
+    - [255, 19.98]
+    - [260, 2.38]
+    - [265, 0.00]
+    - [270, 0.00]
+    - [275, 0.00]
+    - [280, 0.13]
+    - [285, 1.43]
+    - [290, 2.66]
+    - [295, 2.31]
+    - [300, 0.57]
+    - [305, 0.84]
+    - [310, 1.82]
+    - [315, 19.82]
+    - [320, 35.62]
+    - [325, 39.84]
+    - [330, 41.28]
+    - [335, 43.91]
+    - [340, 41.49]
+    - [345, 33.94]
+    - [350, 40.48]
+    - [355, 49.54]
+    - [360, 57.06]
+  rain_sheltered: true   # regnsikkert = true
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.4  # foreløpig lokalt anslag (skogkledd li), ikke kalibrert
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  # Klatrefelt har generelt få hyller/sprekker som samler vann: standard 0.3 / 1.0 fra 31.10.2026 (var 0.6 / 0.5),
+  # etter fem tørt-observasjoner på Bymuren og følsomhetsanalyse (scripts/sensitivity.py). Ikke kalibrert mot våt-observasjoner.
+  holds_capacity_mm: 0.3        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 1.0      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.1014  # kontrollverdi; beregnes fra horisont og helning
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01

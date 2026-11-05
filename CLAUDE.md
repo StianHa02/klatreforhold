@@ -7,7 +7,7 @@ The research papers preserve older findings and proposals, not current tasks.
 ## Architecture and layout
 
 Standalone Bergen Klatreklubb project. Do not modify the nettfører repository or database.
-Nine crags are defined by YAML files directly in `modeling/config/`; other YAML belongs in subfolders.
+Twenty-four crags are defined by YAML files directly in `modeling/config/`; other YAML belongs in subfolders.
 
 A Raspberry Pi systemd timer (`drift/raspberrypi/`) runs hourly at :07 → `modeling/scripts/publish_forecast.py` → Supabase → Vercel Next.js (`web/`).
 Production has no dedicated FastAPI server. Local API/Docker remain supported.

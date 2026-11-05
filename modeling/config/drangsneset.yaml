@@ -1,0 +1,131 @@
+# Drangsneset (felt_id 112), Fanafjorden, Bergen sør
+# Kilde: BKK nettfører (felt-tabellen, eksport 2026-11-05): orientering 270, bratthet 2 (vertikalt),
+# regnsikkert = false. Retning korrigert av eier til 45 (uverifisert) etter soltidskontroll.
+crag:
+  name: Drangsneset
+  felt_id: 112
+  lat: 60.207115
+  lon: 5.352097
+  elevation_m: 6.4     # Kartverket DTM i nettførerpunktet, kontrollert 2026-11-05. NB: DTM viser ingen vegg langs 270°; terrenget stiger svakt mot vest. Geometri bør sjekkes i felt
+  geology: ukjent        # ikke kontrollert mot NGU ennå
+  geometry_source: https://ute.bergenklatreklubb.no/felt/drangsneset
+  geometry_checked: '2026-11-05'
+  timezone: Europe/Oslo
+  frost_station: SN50450  # Fana - Stend, 7.4 km (krever FROST_CLIENT_ID)
+  frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
+  face_azimuth_deg: 45    # eier 2026-11-05, ikke verifisert (nettføreren sa 270). DTM langs 45°: jevn stigning 16 m over 40 m bak punktet, ingen tydelig vegg
+  face_tilt_deg: 90      # vertikalt (bratthet_id 2)
+  steepness_id: 2        # BKK-kategori; styrer også foreløpig regnskjerming
+  # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
+  # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
+  # NB: 40–60° i alle retninger ved 10 m (trær), også i veggretningen; himmelfaktor 0.11 (0.20 med 30 m, 0.28 med 60 m).
+  # Sammen med manglende vegg i DTM tyder det på at punkt eller retning er feil. Sjekk i felt før kalibrering.
+  horizon:
+    - [0, 50.08]
+    - [5, 48.69]
+    - [10, 40.26]
+    - [15, 36.78]
+    - [20, 32.02]
+    - [25, 30.17]
+    - [30, 31.36]
+    - [35, 31.89]
+    - [40, 36.74]
+    - [45, 36.06]
+    - [50, 26.56]
+    - [55, 19.95]
+    - [60, 36.09]
+    - [65, 42.41]
+    - [70, 41.94]
+    - [75, 38.95]
+    - [80, 36.30]
+    - [85, 39.21]
+    - [90, 34.52]
+    - [95, 37.73]
+    - [100, 38.93]
+    - [105, 40.78]
+    - [110, 42.03]
+    - [115, 46.60]
+    - [120, 49.08]
+    - [125, 51.33]
+    - [130, 51.33]
+    - [135, 45.31]
+    - [140, 49.21]
+    - [145, 46.50]
+    - [150, 48.55]
+    - [155, 60.06]
+    - [160, 63.22]
+    - [165, 61.59]
+    - [170, 61.08]
+    - [175, 57.33]
+    - [180, 52.00]
+    - [185, 42.56]
+    - [190, 43.28]
+    - [195, 49.97]
+    - [200, 55.36]
+    - [205, 57.16]
+    - [210, 53.23]
+    - [215, 49.85]
+    - [220, 39.40]
+    - [225, 41.82]
+    - [230, 41.73]
+    - [235, 43.59]
+    - [240, 38.37]
+    - [245, 38.15]
+    - [250, 43.83]
+    - [255, 40.90]
+    - [260, 37.65]
+    - [265, 40.27]
+    - [270, 34.84]
+    - [275, 31.41]
+    - [280, 38.75]
+    - [285, 41.35]
+    - [290, 32.27]
+    - [295, 24.90]
+    - [300, 38.20]
+    - [305, 38.80]
+    - [310, 36.94]
+    - [315, 31.46]
+    - [320, 26.66]
+    - [325, 9.67]
+    - [330, 14.52]
+    - [335, 10.75]
+    - [340, 24.82]
+    - [345, 35.67]
+    - [350, 42.03]
+    - [355, 50.08]
+    - [360, 50.08]
+  rain_sheltered: false   # regnsikkert = false
+
+# Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
+# skal kalibreres når vi har ekte tørt/vått-observasjoner.
+model:
+  # Regn som treffer veggen
+  wdr_coefficient: 0.12         # slagregn på vegg. 0.188 er målt i fritt felt i Bergen (øvre referanse); vegger 0.02-0.26. Kalibreres først
+  wdr_exponent: 0.88            # R_vegg = alfa * U * R_h^0.88 * cos(D - theta) (Blocken & Carmeliet 2004)
+  wind_exposure: 0.5  # foreløpig lokalt anslag (skog), ikke kalibrert
+  direct_rain_fraction: 0.10    # andel av horisontal nedbør som treffer tak/hyller uansett vind
+  runoff_from_above: 0.05       # vann som renner ned fra toppen (andel av horisontal nedbør)
+  # Vannlagre (mm)
+  film_capacity_mm: 0.1         # vertikal flate holder ~0.08 mm før det renner av
+  # Klatrefelt har generelt få hyller/sprekker som samler vann: standard 0.3 / 1.0 fra 31.10.2026 (var 0.6 / 0.5),
+  # etter fem tørt-observasjoner på Bymuren og følsomhetsanalyse (scripts/sensitivity.py). Ikke kalibrert mot våt-observasjoner.
+  holds_capacity_mm: 0.3        # vann i sprekker/tak/hyller (tørker saktere). Gneis/granitt: porøsitet ~0.5 %, så nesten alt vann ligger på overflaten og i sprekker
+  film_to_holds_rate: 0.3       # andel av filmen som renner inn i tak/sprekker per time
+  holds_drying_factor: 1.0      # tak/sprekker tørker med denne andelen av potensiell fordampning
+  # Siging (sakte reservoar matet av nedbør over feltet)
+  seep_enabled: true
+  seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
+  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
+  # Energibalanse for bergoverflaten
+  albedo: 0.30                  # gneis/granitt ~0.2-0.35
+  emissivity: 0.92              # stein 0.86-0.95
+  surface_layer_m: 0.05         # tykkelse på "aktivt" berglag
+  rock_heat_capacity: 2.2e6     # J/m3/K
+  rock_conductivity: 2.5        # W/m/K
+  conduction_depth_m: 0.25      # avstand til "dyp" bergnode
+  deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
+  sky_view_factor: 0.1532  # kontrollverdi; beregnes fra horisont og helning
+  # Terskler for status
+  wet_threshold_mm: 0.05        # film eller tak over dette = vått
+  damp_threshold_mm: 0.01

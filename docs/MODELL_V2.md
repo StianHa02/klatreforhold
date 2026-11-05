@@ -34,9 +34,30 @@ trær og bygninger i horisonten. Kartdata representerer ikke nødvendigvis dagen
 | Loddefjord | 266° | 110° | meget overhengende |
 | Bymuren | 218° | 100° | overheng |
 | Fabrikkveggen | 193° | 90° | vertikalt |
+| Broveggen | 270° | 100° | overheng |
+| Syltøy | 270° | 100° | overheng |
+| Gjøkeredet | 270° | 90° | vertikalt |
+| Hjallaveggen | 240° | 90° | vertikalt |
+| Hjernemasseveggen | 340° | 110° | meget overhengende |
+| Perleveggen | 135° | 100° | overheng |
+| Uteveggen | 270° | 90° | vertikalt |
+| Løvåsen | 270° | 90° | vertikalt |
+| Marikoven | 225° | 90° | vertikalt |
+| Rævuri | 270° | 100° | overheng |
+| Morvik | 170° | 70° | sva |
+| Fergeveggen | 68° | 90° | vertikalt |
+| Drangsneset | 45° | 90° | vertikalt |
+| Elvefeltet | 180° | 100° | overheng |
+| Straumberget | 225° | 90° | vertikalt |
 
 70°, 100° og 110° er foreløpige kategorianslag, ikke oppmålte helninger. Sandviken har også vestvendte
-sektorer. Ett representativt plan kan ikke beskrive alle rutene på et felt.
+sektorer. Ett representativt plan kan ikke beskrive alle rutene på et felt. De 15 feltene lagt til
+5.11.2026 har geometri fra nettførerens felt-tabell (CSV-eksport), veggfot kontrollert mot Kartverkets
+DTM, og bergart ennå ikke kontrollert mot NGU. Nettførerens «sol på feltet»-klokkeslett ble brukt som kontroll av
+geometrien (`outputs/_sjekk_soltid.py`): modellens første soltid i klarvær skal ikke være vesentlig senere enn
+oppgitt. Det avslørte at 270° i nettføreren ofte er en grov standardverdi; Hjallaveggen, Straumberget, Morvik,
+Hjernemasseveggen og Drangsneset fikk korrigert retning fra eieren. Drangsneset (45°, sol oppgitt 13:00) er
+fortsatt inkonsistent og uverifisert: en nordøstvegg kan ikke få sol kl. 13.
 
 Ekstraveggens retning er korrigert fra 300° til 322°, Helleneset fra 270° til 274° og Sandviken fra
 270° til 195°. Horisontberegningen bruker nå geodetiske stråler, ikke kartgridets nord som sann nord.

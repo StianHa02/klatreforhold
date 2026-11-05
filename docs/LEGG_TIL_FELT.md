@@ -8,8 +8,14 @@ Alle Python-kommandoer kjøres fra `modeling/`.
 
 ## 1. Hent feltdata fra nettføreren
 
-Nettføreren (`https://ute.bergenklatreklubb.no/felt/<slug>`) viser bare kompassretning i teksten, men
-sidekilden har tallene. Ikke rør nettfører-repoet eller databasen; les bare den offentlige siden:
+Enklest er en CSV-eksport av felt-tabellen fra nettførerens database (eieren har tilgang), med kolonnene
+`felt_id, navn, regnsikkert, bratthet_id, slug, orientering, lat, lon`. Legg den utenfor Git
+(f.eks. `modeling/models/`). Det var slik de 15 feltene 5.11.2026 ble lagt til.
+
+Nettføreren (`https://ute.bergenklatreklubb.no/felt/<slug>`) viser bare kompassretning i teksten. Fram til
+høsten 2026 lå tallene i sidekilden, men 5.11.2026 hadde sidekilden bare feltlista (id, navn, slug), ikke
+koordinater eller orientering. Metoden under kan derfor gi tomt resultat. Ikke rør nettfører-repoet eller
+databasen; les bare den offentlige siden:
 
 ```bash
 curl -s https://ute.bergenklatreklubb.no/felt/<slug> -o felt.html
