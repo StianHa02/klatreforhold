@@ -18,7 +18,7 @@
 - Nettsiden viser tørt/fuktig/vått og omgjør modellens is/snø til vått. Skjemaet har tre valg.
 - Kalibrering tilpasser én fordampningsparameter, med minst 50 observasjoner og ti regnepisoder.
   ML-kandidater fra `train.py --save` må valideres separat før de kan aktiveres.
-- FastAPI og Docker støtter lokal utvikling; produksjonen bruker Actions → Supabase → Vercel.
+- FastAPI og Docker støtter lokal utvikling; produksjonen bruker Raspberry Pi (systemd-timer) → Supabase → Vercel. Actions er manuell reserve.
   `KLATREFORHOLD_DATAKILDE=api` velger lokalt API også når Supabase-nøkler finnes.
 
 ## Gjenstående arbeid
@@ -54,9 +54,9 @@ Integrasjon med nettføreren er fortsatt separat, fremtidig arbeid. Ikke endre d
 
 ## Fallgruver
 
-- **GitHub starter ikke alltid planlagte kjøringer.** Sjekk Actions-fanen. Alternativet er
-  `supabase/valgfritt/cron_starter_github_jobb.sql` (Supabase Cron kaller `workflow_dispatch` med et
-  GitHub-token i Vault som `github_dispatch_token`).
+- **GitHub startet ikke alltid planlagte kjøringer.** Derfor kjører timesjobben nå på en Raspberry Pi
+  ([`drift/raspberrypi/`](../drift/raspberrypi/README.md)). Workflowen startes bare for hånd. Legg ikke tilbake
+  `schedule` mens Pi-en går, ellers publiseres hver time to ganger.
 - **PostgREST gir maks 1000 rader per kall.** `limit=5000` hjelper ikke. Spør etter færre rader (f.eks.
   `ledetid_timer=in.(22,23,24,25,26)`) eller bla med `Range`.
 - **Tilbakemeldinger før og etter 2026-10-29 må vurderes hver for seg.** Fra da viser skjemaet modellens

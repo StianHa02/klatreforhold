@@ -1,0 +1,14 @@
+# Mal: installer.sh setter inn @BRUKER@ og @REPO@ og kopierer fila til /etc/systemd/system/.
+[Unit]
+Description=Klatreforhold: kjør modellen og publiser varsel til Supabase
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=@BRUKER@
+WorkingDirectory=@REPO@
+ExecStart=/usr/bin/bash @REPO@/drift/raspberrypi/kjor_varsel.sh
+# Samme tidsgrense som Actions-jobben hadde
+TimeoutStartSec=15min
+Nice=10

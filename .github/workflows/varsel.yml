@@ -1,12 +1,11 @@
 name: Oppdater varsel
 
-# Kjører modellen hver time og skriver resultatet til Supabase.
+# Reserve: timesjobben kjører på en Raspberry Pi (drift/raspberrypi/). Denne workflowen startes bare for hånd,
+# f.eks. når Pi-en er nede. Ikke legg tilbake `schedule` mens Pi-en går, ellers publiseres hver time to ganger.
 # Secrets (Settings → Secrets and variables → Actions):
 #   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, KLATREFORHOLD_CONTACT, FROST_CLIENT_ID (valgfri: målt historikk)
 on:
-  schedule:
-    - cron: '7 * * * *'   # hvert time, 7 min over (GitHub kan forsinke eller hoppe over kjøringer)
-  workflow_dispatch: {}   # også startbar for hånd, eller fra Supabase Cron (supabase/valgfritt/)
+  workflow_dispatch: {}   # startbar for hånd, eller fra Supabase Cron (supabase/valgfritt/)
 
 concurrency:
   group: varsel

@@ -6,7 +6,7 @@ Timevarsel for tørt, fuktig eller vått på klatrefelt rundt Bergen, beregnet f
 Modell **2.0.0**, ni felt: Ekstraveggen, Sandviken, Helleneset, Neseveggen, Bolstadøyri, Trollkona,
 Loddefjord, Bymuren og Fabrikkveggen. Ett felt er én YAML-fil i `modeling/config/`.
 
-GitHub Actions kjører hver time ved :07 og skriver til Supabase; Next.js på Vercel leser databasen.
+En Raspberry Pi kjører modellen hver time ved :07 ([oppsett](drift/raspberrypi/README.md)) og skriver til Supabase; Next.js på Vercel leser databasen.
 Varselet går 120 timer frem og 168 timer tilbake. Parametrene er foreløpige og ikke målt mot veggene.
 
 ## Dokumentasjon

@@ -9,7 +9,7 @@ The research papers preserve older findings and proposals, not current tasks.
 Standalone Bergen Klatreklubb project. Do not modify the nettfører repository or database.
 Nine crags are defined by YAML files directly in `modeling/config/`; other YAML belongs in subfolders.
 
-Actions runs hourly at :07 → `modeling/scripts/publish_forecast.py` → Supabase → Vercel Next.js (`web/`).
+A Raspberry Pi systemd timer (`drift/raspberrypi/`) runs hourly at :07 → `modeling/scripts/publish_forecast.py` → Supabase → Vercel Next.js (`web/`).
 Production has no dedicated FastAPI server. Local API/Docker remain supported.
 Direct MET Nordic is preferred, Open-Meteo supplies fallback/history, Nowcast overlays recent radar,
 and optional MEPS supplies uncalibrated precipitation-only uncertainty. Model version is 2.0.0.

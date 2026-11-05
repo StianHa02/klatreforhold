@@ -1,6 +1,7 @@
-# Deploy: Vercel + Supabase + GitHub Actions
+# Deploy: Vercel + Supabase + Raspberry Pi
 
-Ingen egen API-server i produksjon: Actions → Python-modell → Supabase → Next.js på Vercel (`web/`).
+Ingen egen API-server i produksjon: timesjobb på Raspberry Pi → Python-modell → Supabase → Next.js på Vercel (`web/`).
+Oppsettet av Pi-en står i [`drift/raspberrypi/README.md`](../drift/raspberrypi/README.md). GitHub Actions er manuell reserve.
 
 ## Database og timesjobb
 
@@ -19,7 +20,7 @@ Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_
 RPC-er: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)` og `rydd_arkiv(integer)`.
 RLS begrenser tilgangen til service role.
 
-Sett GitHub Actions-secrets:
+Timesjobben trenger disse verdiene, i `.env` på Pi-en og som GitHub Actions-secrets for reserven:
 
 | Navn | Bruk |
 |---|---|
@@ -28,16 +29,16 @@ Sett GitHub Actions-secrets:
 | `KLATREFORHOLD_CONTACT` | Kontaktadresse/nettside i MET User-Agent |
 | `FROST_CLIENT_ID` | Valgfri innsamling for stasjonskontroll |
 
-Workflowen «Oppdater varsel» kjører `python scripts/publish_forecast.py` fra `modeling/`, med
-Python 3.12 og `requirements.txt`. Den har cron `7 * * * *`, manuell start, vær-cache og 15 minutters
-tidsgrense. MET Nordic foretrekkes, Open-Meteo gir reserve/historikk, Nowcast gir nærnedbør, og MEPS
+Pi-en kjører `python scripts/publish_forecast.py` fra `modeling/` med en systemd-timer ved :07 hver time,
+henter siste kode fra `main` før hver kjøring og har 15 minutters tidsgrense. Reserven, workflowen
+«Oppdater varsel», gjør det samme med Python 3.12, men startes bare for hånd. MET Nordic foretrekkes, Open-Meteo gir reserve/historikk, Nowcast gir nærnedbør, og MEPS
 gir valgfri usikkerhet. Manglende ensemble skal ikke stoppe hovedvarselet.
 
-Start én jobb manuelt etter publisering og kontroller deretter en ordinær planlagt kjøring.
-[GitHub kan forsinke planlagte kjøringer](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows).
-I offentlige repo kan planen [deaktiveres etter 60 dager uten aktivitet](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows).
-`supabase/valgfritt/cron_starter_github_jobb.sql` er et alternativ som utløser Actions; det er ikke
-en migrasjon eller en bekreftelse på at alternativet er satt opp.
+Start én jobb manuelt (`sudo systemctl start klatreforhold-varsel.service`) og kontroller deretter en
+ordinær planlagt kjøring. Planlagte kjøringer i Actions ble flyttet til Pi-en fordi
+[GitHub kan forsinke dem](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows).
+`supabase/valgfritt/cron_starter_github_jobb.sql` utløser Actions og trengs ikke lenger; er den satt opp,
+slå den av så jobben ikke kjører to ganger.
 
 ## Vercel
 
@@ -59,7 +60,7 @@ select * from public.observasjoner order by registrert desc limit 10;
 Forvent ni sistevarsler, modellversjon `2.0.0`, og ferske tidsstempler. Sistevarselet inneholder
 121 prognosetidspunkt og 168 historikktimer; arkivet begrenses til ledetider ≤48 timer.
 Se datakilder og reserver i payloaden og loggene. Et gammelt-varsel-banner betyr at dataene er
-over tre timer gamle; kontroller Actions og lagring før årsaken konkluderes.
+over tre timer gamle; kontroller Pi-en (`journalctl -u klatreforhold-varsel`) og lagring før årsaken konkluderes.
 
 ## Modeller og kapasitet
 
