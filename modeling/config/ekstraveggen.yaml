@@ -124,8 +124,12 @@ model:
   seep_enabled: true
   # Satt opp til 0.05 (31.10) og 0.10 (2.11) for å forklare flerdøgns tørketid, men tilbake til felles 0.02 samme dag:
   # fuktigheten er en jevn film, ikke striper fra sprekker, og et sig fra toppen når ikke ned over en 35 m vegg.
+  # 6.11.2026 (5,5 døgn etter 6 mm, 9 døgn etter ~50 mm): eier ser sig fra toppen, vann ut av riss, våte partier
+  # der sig har tørket inn, og fuktig under små overheng uten sig. Reservoaret med 120 t var da tømt (0.20 < terskel),
+  # så modellen sa tørt. 240 t holder siget i gang (0.76 mm) og treffer 13 av 13 egne observasjoner; tørt ~9.11 uten regn.
+  # Fortsatt ingen tørt-observasjon fra feltet, så tømmetiden er bare nedad begrenset.
   seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
-  seep_timescale_h: 120         # tømmetid for reservoaret (forsinket nedbørsindeks, 4-8 døgn)
+  seep_timescale_h: 240         # tømmetid for reservoaret; felles standard er 120 (4-8 døgn)
   seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
   # Energibalanse for bergoverflaten
   albedo: 0.30                  # gneis/granitt ~0.2-0.35
