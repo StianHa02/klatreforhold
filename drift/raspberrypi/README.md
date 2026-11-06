@@ -43,6 +43,34 @@ Prøvekjøringen av arkivet skriver bare Parquet-filer i `modeling/data/arkiv/` 
 | `KLATREFORHOLD_HEALTHCHECK_URL` | Valgfri: f.eks. `https://hc-ping.com/<uuid>` fra healthchecks.io (gratis). Gir e-post når jobben feiler eller uteblir |
 | `KLATREFORHOLD_ARKIV_HEALTHCHECK_URL` | Valgfri: egen sjekk med daglig periode for den nattlige Parquet-eksporten |
 
+## Testmodus (før full overgang)
+
+Mens Pi-en prøves ut, publiserer Actions alle felt som før (Supabase Cron i overgangsmodus, hver time ved :05).
+Pi-en publiserer i tillegg noen få felt til Supabase ved :15. Parquet-eksporten er av.
+Slik ser du at Pi-en henter kode og vær, kjører modellen og skriver til Supabase, før den tar over alt.
+
+For testfeltene skrives hver time to ganger. Det er ufarlig: alle skrivinger er upsert, `varsel_siste` viser
+den kjøringen som ble ferdig sist (Actions tar 10–15 minutter, så rekkefølgen varierer), og `varsel` får én
+ekstra kjøring per time for de feltene.
+
+Legg inn feltene i `.env` på Pi-en (slug = filnavnet i `modeling/config/` uten `.yaml`, kommaseparert)
+og kjør installer på nytt:
+
+```sh
+echo 'KLATREFORHOLD_PI_TESTFELT=uteveggen,ekstraveggen' >> .env
+bash drift/raspberrypi/installer.sh
+systemctl list-timers 'klatreforhold-*'                 # varsel ved :15, ingen arkiv-timer
+journalctl -u klatreforhold-varsel --since today --no-pager | grep -E "Testmodus|Ferdig|Advarsel|feil|Killed"
+```
+
+Hver kjøring logger varighet, og systemd skriver CPU-tid og minnetopp etter hver kjøring
+(`journalctl -u klatreforhold-varsel | grep -E "Consumed|memory peak"`). Noen få felt sier lite om minnet med
+alle felt: før full overgang, kjør gjerne alle én gang for hånd (`cd modeling && ../.venv/bin/python
+scripts/publish_forecast.py --dry-run`) og se at det ikke går tom for minne og bruker godt under en time.
+
+**Full overgang:** fjern linja `KLATREFORHOLD_PI_TESTFELT` fra `.env`, kjør `installer.sh` på nytt (timesjobben
+går tilbake til :07 for alle felt og Parquet-eksporten slås på), og bytt Supabase-reserven til reservemodus (under).
+
 ## 3. Reserve i GitHub Actions
 
 Workflowen har ikke `schedule`. Supabase Cron-jobben `start-varsel-jobb`
@@ -80,7 +108,8 @@ sudo systemctl start klatreforhold-arkiv.service        # eksporter nå
 journalctl -u klatreforhold-arkiv -n 100 --no-pager     # én linje per eksportert døgn
 ```
 
-Kontroller i Supabase at `select felt, generert from public.varsel_siste;` er fersk.
+Kontroller i Supabase at `select felt, generert from public.varsel_siste;` er fersk. I testmodus ser du
+Pi-ens kjøringer i `varsel` som en egen `generert` rundt :15 for testfeltene.
 Banneret om gammelt varsel på nettsiden (over 3 timer) er også et tegn på at Pi-en har stoppet.
 
 - **Strømbrudd:** `Persistent=true` kjører en tapt kjøring rett etter oppstart.

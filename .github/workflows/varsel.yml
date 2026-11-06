@@ -15,7 +15,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 24 felt tar 10–15 minutter; 15 ga avbrutte kjøringer
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: modeling

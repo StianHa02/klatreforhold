@@ -41,6 +41,9 @@ FROST_CLIENT_ID=
 KLATREFORHOLD_HEALTHCHECK_URL=
 # Valgfri: egen helsesjekk for den nattlige Parquet-eksporten (daglig periode)
 KLATREFORHOLD_ARKIV_HEALTHCHECK_URL=
+# Testmodus: publiser bare disse feltene (kommaseparert) ved :15, uten Parquet-eksporten. Actions publiserer alle.
+# Tøm eller fjern linja og kjør installer.sh på nytt for full drift.
+KLATREFORHOLD_PI_TESTFELT=
 EOF
     chmod 600 "$REPO/.env"
     echo "Laget $REPO/.env. Fyll inn verdiene (nano .env) og kjør dette skriptet på nytt."
@@ -52,19 +55,29 @@ for nokkel in SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY KLATREFORHOLD_CONTACT; do
         echo "$nokkel mangler i .env. Fyll inn og kjør på nytt."; exit 1
     fi
 done
+TESTFELT="$(grep -E '^KLATREFORHOLD_PI_TESTFELT=' "$REPO/.env" | tail -n1 | cut -d= -f2- | tr -d '"'"'"' ' | tr ',' ' ')"
+for felt in $TESTFELT; do
+    if [ ! -f "$REPO/modeling/config/$felt.yaml" ]; then
+        echo "KLATREFORHOLD_PI_TESTFELT: $felt finnes ikke i modeling/config/. Rett opp og kjør på nytt."; exit 1
+    fi
+done
 if grep -qE '^KLATREFORHOLD_KILDE=dev' "$REPO/.env"; then
     echo "Advarsel: .env har KLATREFORHOLD_KILDE=dev (utviklingsoppsett). Det trengs ikke på Pi-en."
 fi
 
 echo "== Prøvekjøring (--dry-run, skriver ingenting til Supabase)"
-if (cd "$REPO/modeling" && "$VENV/bin/python" scripts/publish_forecast.py --dry-run > /tmp/klatreforhold-prove.json); then
+PROVE=(--dry-run)
+for felt in $TESTFELT; do PROVE+=(--felt "$felt"); done
+if (cd "$REPO/modeling" && "$VENV/bin/python" scripts/publish_forecast.py "${PROVE[@]}" > /tmp/klatreforhold-prove.json); then
     echo "OK"
 else
     echo "Prøvekjøringen feilet. Se /tmp/klatreforhold-prove.json og meldingene over."; exit 1
 fi
-echo "== Prøvekjøring av Parquet-arkivet (--dry-run, skriver bare filer i modeling/data/arkiv/)"
-if ! (cd "$REPO/modeling" && "$VENV/bin/python" scripts/eksporter_arkiv.py --dry-run); then
-    echo "Prøvekjøringen av arkivet feilet. Er migrasjonen 20261105150000_parquet_arkiv.sql kjørt i Supabase?"; exit 1
+if [ -z "$TESTFELT" ]; then
+    echo "== Prøvekjøring av Parquet-arkivet (--dry-run, skriver bare filer i modeling/data/arkiv/)"
+    if ! (cd "$REPO/modeling" && "$VENV/bin/python" scripts/eksporter_arkiv.py --dry-run); then
+        echo "Prøvekjøringen av arkivet feilet. Er migrasjonen 20261105150000_parquet_arkiv.sql kjørt i Supabase?"; exit 1
+    fi
 fi
 
 echo "== Begrens loggstørrelsen (sparer SD-kortet)"
@@ -78,8 +91,33 @@ for jobb in varsel arkiv; do
         | sudo tee "/etc/systemd/system/klatreforhold-$jobb.service" > /dev/null
     sudo cp "$HER/klatreforhold-$jobb.timer" /etc/systemd/system/
 done
+# Testmodus flytter timesjobben til :15, ti minutter etter at Supabase Cron starter Actions.
+DROPIN=/etc/systemd/system/klatreforhold-varsel.timer.d
+if [ -n "$TESTFELT" ]; then
+    sudo mkdir -p "$DROPIN"
+    printf '[Timer]\nOnCalendar=\nOnCalendar=*-*-* *:15:00\n' | sudo tee "$DROPIN/testmodus.conf" > /dev/null
+else
+    sudo rm -f "$DROPIN/testmodus.conf"
+fi
 sudo systemctl daemon-reload
-sudo systemctl enable --now klatreforhold-varsel.timer klatreforhold-arkiv.timer
+
+if [ -n "$TESTFELT" ]; then
+    sudo systemctl enable klatreforhold-varsel.timer
+    sudo systemctl restart klatreforhold-varsel.timer
+    sudo systemctl disable --now klatreforhold-arkiv.timer 2>/dev/null || true
+    cat <<EOF
+
+Ferdig, i TESTMODUS: Pi-en publiserer bare $TESTFELT til Supabase hver time ved :15.
+Parquet-eksporten er av. Actions publiserer alle felt som før.
+  Kjør nå:        sudo systemctl start klatreforhold-varsel.service
+  Se loggen:      journalctl -u klatreforhold-varsel -n 100 --no-pager
+  Neste kjøring:  systemctl list-timers 'klatreforhold-*'
+Full drift: fjern KLATREFORHOLD_PI_TESTFELT fra .env og kjør installer.sh på nytt.
+EOF
+    exit 0
+fi
+sudo systemctl enable klatreforhold-varsel.timer klatreforhold-arkiv.timer
+sudo systemctl restart klatreforhold-varsel.timer klatreforhold-arkiv.timer
 
 cat <<EOF
 

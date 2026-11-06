@@ -58,13 +58,14 @@ def weather_rows(slug: str, weather: pd.DataFrame, generert) -> list[dict]:
     return rows
 
 
-def collect_bones(storage, now: pd.Timestamp | None = None) -> tuple[dict, pd.DataFrame | None]:
+def collect_bones(storage, now: pd.Timestamp | None = None,
+                  slugger: list[str] | None = None) -> tuple[dict, pd.DataFrame | None]:
     """Henter siste 168 timer fra Bønes i ett kall, lagrer siste måling som reserve, og gir timeverdier til modellen.
 
     Timeverdier returneres bare hvis et felt har regnmaler_bruk: erstatt. Svarer ikke historikk-API-et, brukes
     snapshot-tabellen bones_maling. Feil her stopper aldri varselet: uten målinger brukes modellens regn som før.
     """
-    crags = [load_crag(c["slug"])[0] for c in list_crags()]
+    crags = [load_crag(s)[0] for s in (slugger or [c["slug"] for c in list_crags()])]
     if not any(c.regnmaler == "bones" for c in crags) or not hasattr(storage, "save_bones"):
         return {}, None
     from .data import bones
@@ -96,15 +97,21 @@ def collect_bones(storage, now: pd.Timestamp | None = None) -> tuple[dict, pd.Da
         return status, None
 
 
-def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False) -> dict:
+def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False,
+                felter: list[str] | None = None) -> dict:
+    """Kjører alle felt, eller bare `felter` (slugger) når den er gitt."""
+    alle = [c["slug"] for c in list_crags()]
+    ukjente = sorted(set(felter or []) - set(alle))
+    if ukjente:
+        raise KeyError(f"ukjente felt: {', '.join(ukjente)}")
+    slugger = [s for s in alle if felter is None or s in felter]
     result = {}
     bones_regn = None
     if not dry_run:
-        result["_bones"], bones_regn = collect_bones(storage, now)
+        result["_bones"], bones_regn = collect_bones(storage, now, slugger)
         if not result["_bones"]:
             del result["_bones"]
-    for c in list_crags():
-        slug = c["slug"]
+    for slug in slugger:
         try:
             checkpoint = None
             if not dry_run and hasattr(storage, "load_checkpoint"):
@@ -132,7 +139,7 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False)
         except Exception as err:  # ett felt som feiler skal ikke stoppe resten
             result[slug] = {"feil": str(err)}
     # Kontroll av værvarselet mot målestasjoner (bare med FROST_CLIENT_ID). Feil her stopper ikke jobben.
-    stations = [load_crag(c["slug"])[0].frost_station for c in list_crags()]
+    stations = [load_crag(s)[0].frost_station for s in slugger]
     stations = [s for s in stations if s]
     if stations and os.environ.get("FROST_CLIENT_ID") and not dry_run:
         from .verify import collect
