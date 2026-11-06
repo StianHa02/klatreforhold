@@ -38,7 +38,7 @@ export type Varsel = {
   konfigurasjon?: string
   initialisering_usikker?: boolean
   reservekilder?: string[]
-  felt: { slug: string; navn: string; felt_id: number | null; lat: number; lon: number; orientering: number }
+  felt: { slug: string; navn: string; felt_id: number | null; lat: number; lon: number; orientering: number; omraade?: string | null }
   generert: string
   na: string
   kilde: string
@@ -65,7 +65,7 @@ export type Varsel = {
 /** Varselet for en time slik det så ut noen timer før (fra arkivet). */
 export type TidligereVarsel = { tid: string; status: Status; ledetid_timer: number }
 
-export type Felt = { slug: string; navn: string; felt_id: number | null; lat: number; lon: number; orientering: number }
+export type Felt = { slug: string; navn: string; felt_id: number | null; lat: number; lon: number; orientering: number; omraade?: string | null }
 
 export type Observasjoner = {
   antall: number

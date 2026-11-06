@@ -6,7 +6,7 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "test": "node --experimental-strip-types --no-warnings tests/kilde.test.mts && node --experimental-strip-types --no-warnings tests/dager.test.mts",
+    "test": "node --experimental-strip-types --no-warnings tests/kilde.test.mts && node --experimental-strip-types --no-warnings tests/dager.test.mts && node --experimental-strip-types --no-warnings tests/omraader.test.mts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
