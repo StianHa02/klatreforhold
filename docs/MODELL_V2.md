@@ -49,7 +49,7 @@ trær og bygninger i horisonten. Kartdata representerer ikke nødvendigvis dagen
 | Drangsneset | 135° | 90° | vertikalt |
 | Elvefeltet | 180° | 100° | overheng |
 | Straumberget | 225° | 90° | vertikalt |
-| Laberget | 180° | 100° | overheng |
+| Laberget | 210° | 100° | overheng |
 
 70°, 100° og 110° er foreløpige kategorianslag, ikke oppmålte helninger. Sandviken har også vestvendte
 sektorer. Ett representativt plan kan ikke beskrive alle rutene på et felt. De 15 feltene lagt til
