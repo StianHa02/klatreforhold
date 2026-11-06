@@ -4,6 +4,7 @@
 crag:
   name: Uteveggen
   felt_id: 7
+  omraade: Øygarden nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.553764
   lon: 4.86558
   elevation_m: 0.1     # Kartverket DTM i nettførerpunktet (veggfoten ved sjøen; 15 m sprang rett bak), kontrollert 2026-11-05

@@ -4,6 +4,7 @@
 crag:
   name: Straumberget
   felt_id: 73
+  omraade: Askøy/Lillesotra   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.395164
   lon: 5.164371
   elevation_m: 19.92     # Kartverket DTM i nettførerpunktet (veggfoten; 22 m sprang rett bak), kontrollert 2026-11-05

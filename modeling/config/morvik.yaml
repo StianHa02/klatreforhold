@@ -4,6 +4,7 @@
 crag:
   name: Morvik
   felt_id: 36
+  omraade: Bergen nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.473946
   lon: 5.279594
   elevation_m: 172.14     # Kartverket DTM i nettførerpunktet; hele lia er svaet (jevnt 50–60° fall 20 m bak til 20 m foran), kontrollert 2026-11-05

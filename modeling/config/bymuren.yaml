@@ -3,6 +3,7 @@
 crag:
   name: Bymuren
   felt_id: 1
+  omraade: Bergen nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.429134
   lon: 5.295053
   elevation_m: 99.09     # Kartverket DTM1 (høydedata-API), kontrollert 2026-10-29

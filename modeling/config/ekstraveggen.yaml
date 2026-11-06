@@ -3,6 +3,7 @@
 crag:
   name: Ekstraveggen
   felt_id: 137
+  omraade: Bergen sør   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.334582   # full presisjon internt; avrundes i MET-kall
   lon: 5.312171
   elevation_m: 65.53     # Kartverket DTM, kontrollert 2026-10-29

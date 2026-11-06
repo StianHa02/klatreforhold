@@ -4,6 +4,7 @@
 crag:
   name: Gjøkeredet
   felt_id: 14
+  omraade: Øygarden nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.429089
   lon: 4.97948
   elevation_m: 24.4     # veggfot ved vannet: nettførerpunktet ligger på toppen (DTM 43.5 m), veggen faller 19 m til vannet 8–15 m vest, kontrollert 2026-11-05. Horisont med --offset-m=17

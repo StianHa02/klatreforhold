@@ -3,6 +3,7 @@
 crag:
   name: Fabrikkveggen
   felt_id: 77
+  omraade: Askøy/Lillesotra   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.397949
   lon: 5.200333
   elevation_m: 11.70     # veggfot: Kartverket DTM1 3-10 m foran nettførerpunktet (punktet ligger i veggen, 21 m), kontrollert 2026-10-29

@@ -4,6 +4,7 @@
 crag:
   name: Sandviken
   felt_id: 33
+  omraade: Bergen nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.416611
   lon: 5.319018
   elevation_m: 78.97     # Kartverket DTM, kontrollert 2026-10-29

@@ -4,6 +4,7 @@
 crag:
   name: Broveggen
   felt_id: 111
+  omraade: Bergen vest   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.372803
   lon: 5.170732
   elevation_m: 6.96     # Kartverket DTM i nettførerpunktet, kontrollert 2026-11-05; veggen bak, sjøen 10 m foran

@@ -4,6 +4,7 @@
 crag:
   name: Syltøy
   felt_id: 3
+  omraade: Øygarden vest   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.333668
   lon: 4.977402
   elevation_m: 1.0     # fjæra ved veggfoten (anslag): nettførerpunktet ligger i sjøen, foten ~6 m bak punktet (DTM 1.45 m), kontrollert 2026-11-05. Horisont med --offset-m=-3

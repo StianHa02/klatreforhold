@@ -30,7 +30,7 @@ def list_crags() -> list[dict]:
     for p in sorted(CONFIG_DIR.glob("*.yaml")):
         crag, _ = load_config(p)
         out.append({"slug": p.stem, "navn": crag.name, "felt_id": crag.felt_id, "lat": crag.lat, "lon": crag.lon,
-                    "orientering": crag.face_azimuth_deg})
+                    "orientering": crag.face_azimuth_deg, "omraade": crag.omraade})
     return out
 
 
@@ -305,7 +305,8 @@ def predict(slug: str, now: pd.Timestamp | None = None, hours: int = 24, source:
     }
     result = {
         "felt": {"slug": slug, "navn": crag.name, "felt_id": crag.felt_id, "lat": crag.lat, "lon": crag.lon,
-                 "orientering": crag.face_azimuth_deg, "helning": crag.face_tilt_deg, "bratthet_id": crag.steepness_id},
+                 "orientering": crag.face_azimuth_deg, "helning": crag.face_tilt_deg, "bratthet_id": crag.steepness_id,
+                 "omraade": crag.omraade},
         "generert": issued.tz_convert(crag.timezone).isoformat(),
         "modellversjon": MODEL_VERSION,
         "konfigurasjon": signature,

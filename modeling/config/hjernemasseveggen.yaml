@@ -4,6 +4,7 @@
 crag:
   name: Hjernemasseveggen
   felt_id: 68
+  omraade: Øst for Bergen   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.621727
   lon: 5.593798
   elevation_m: 46.48     # veggfot: Kartverket DTM 6 m foran nettførerpunktet (punktet ligger i veggen, 78 m), kontrollert 2026-11-05. Horisont med --offset-m=6

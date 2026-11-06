@@ -3,6 +3,7 @@
 crag:
   name: Neseveggen
   felt_id: 11
+  omraade: Øygarden vest   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.304146
   lon: 5.022521
   elevation_m: 22.76     # Kartverket DTM1 (høydedata-API), kontrollert 2026-10-29

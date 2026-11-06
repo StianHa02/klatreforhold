@@ -3,6 +3,7 @@
 crag:
   name: Bolstadøyri
   felt_id: 64
+  omraade: Øst for Bergen   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.6525
   lon: 5.999699
   elevation_m: 169.00     # veggfot: Kartverket DTM1 6 m foran nettførerpunktet (punktet ligger midt i veggen, 203 m), kontrollert 2026-10-29

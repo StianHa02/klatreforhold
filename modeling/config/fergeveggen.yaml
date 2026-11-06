@@ -4,6 +4,7 @@
 crag:
   name: Fergeveggen
   felt_id: 90
+  omraade: Bergen sør   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.222
   lon: 5.291001
   elevation_m: 3.6     # DTM 10 m bak nettførerpunktet (punktet 1.9 m ligger ~13 m ut mot sjøen; veggen stiger 18 m mellom 30 og 12 m bak), kontrollert 2026-11-05. Horisont med --offset-m=-10

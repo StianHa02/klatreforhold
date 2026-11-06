@@ -4,6 +4,7 @@
 crag:
   name: Hjallaveggen
   felt_id: 32
+  omraade: Øygarden nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.462315
   lon: 4.955931
   elevation_m: 15.01     # Kartverket DTM i nettførerpunktet (veggfoten; 14 m sprang rett bak), kontrollert 2026-11-05

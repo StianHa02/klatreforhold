@@ -4,6 +4,7 @@
 crag:
   name: Marikoven
   felt_id: 80
+  omraade: Askøy/Lillesotra   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.399265
   lon: 5.167891
   elevation_m: 6.1     # DTM 15 m bak nettførerpunktet (punktet 3.7 m ligger på flaten foran; terrenget stiger først 15–30 m bak), kontrollert 2026-11-05. Horisont med --offset-m=-15

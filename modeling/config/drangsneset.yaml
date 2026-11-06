@@ -1,99 +1,99 @@
 # Drangsneset (felt_id 112), Fanafjorden, Bergen sør
-# Kilde: BKK nettfører (felt-tabellen, eksport 2026-11-05): orientering 270, bratthet 2 (vertikalt),
-# regnsikkert = false. Retning korrigert av eier til 45 (uverifisert) etter soltidskontroll.
+# Kilde: BKK nettfører (felt-tabellen, eksport 2026-11-06): orientering 135, bratthet 2 (vertikalt),
+# regnsikkert = false. Punkt og retning rettet av eier 6.11.2026 (eksporten 5.11 hadde 60.207115, 5.352097 og 270,
+# som ikke stemte med DTM eller oppgitt soltid).
 crag:
   name: Drangsneset
   felt_id: 112
-  lat: 60.207115
-  lon: 5.352097
-  elevation_m: 6.4     # Kartverket DTM i nettførerpunktet, kontrollert 2026-11-05. NB: DTM viser ingen vegg langs 270°; terrenget stiger svakt mot vest. Geometri bør sjekkes i felt
+  omraade: Bergen sør   # nettførerens område, brukes til gruppering på nettsiden
+  lat: 60.2065924
+  lon: 5.3499309
+  elevation_m: 23.4     # Kartverket DTM i nettførerpunktet, kontrollert 2026-11-06. Terrenget stiger 16 m rett nord (vegg) og 15 m mot øst/nordøst; flatt mot sørøst
   geology: ukjent        # ikke kontrollert mot NGU ennå
   geometry_source: https://ute.bergenklatreklubb.no/felt/drangsneset
-  geometry_checked: '2026-11-05'
+  geometry_checked: '2026-11-06'
   timezone: Europe/Oslo
   frost_station: SN50450  # Fana - Stend, 7.4 km (krever FROST_CLIENT_ID)
   frost_bruk: kontroll     # brukes til å sjekke varselet; "erstatt" bare for stasjoner 1-2 km unna
-  face_azimuth_deg: 45    # eier 2026-11-05, ikke verifisert (nettføreren sa 270). DTM langs 45°: jevn stigning 16 m over 40 m bak punktet, ingen tydelig vegg
+  face_azimuth_deg: 135   # nettfører (rettet 6.11.2026). DTM viser at veggen bak punktet vender mot sør–sørvest; 135 kan være en skrå sektor
   face_tilt_deg: 90      # vertikalt (bratthet_id 2)
   steepness_id: 2        # BKK-kategori; styrer også foreløpig regnskjerming
   # Horisont sett fra veggfoten (asimut, høyde i grader), beregnet fra Kartverket DOM1 (med trær)
   # Sann nord, alle retninger. DTM-bakke + 1.5 m, 3 m ut, avstander 10–3000 m.
-  # NB: 40–60° i alle retninger ved 10 m (trær), også i veggretningen; himmelfaktor 0.11 (0.20 med 30 m, 0.28 med 60 m).
-  # Sammen med manglende vegg i DTM tyder det på at punkt eller retning er feil. Sjekk i felt før kalibrering.
   horizon:
-    - [0, 50.08]
-    - [5, 48.69]
-    - [10, 40.26]
-    - [15, 36.78]
-    - [20, 32.02]
-    - [25, 30.17]
-    - [30, 31.36]
-    - [35, 31.89]
-    - [40, 36.74]
-    - [45, 36.06]
-    - [50, 26.56]
-    - [55, 19.95]
-    - [60, 36.09]
-    - [65, 42.41]
-    - [70, 41.94]
-    - [75, 38.95]
-    - [80, 36.30]
-    - [85, 39.21]
-    - [90, 34.52]
-    - [95, 37.73]
-    - [100, 38.93]
-    - [105, 40.78]
-    - [110, 42.03]
-    - [115, 46.60]
-    - [120, 49.08]
-    - [125, 51.33]
-    - [130, 51.33]
-    - [135, 45.31]
-    - [140, 49.21]
-    - [145, 46.50]
-    - [150, 48.55]
-    - [155, 60.06]
-    - [160, 63.22]
-    - [165, 61.59]
-    - [170, 61.08]
-    - [175, 57.33]
-    - [180, 52.00]
-    - [185, 42.56]
-    - [190, 43.28]
-    - [195, 49.97]
-    - [200, 55.36]
-    - [205, 57.16]
-    - [210, 53.23]
-    - [215, 49.85]
-    - [220, 39.40]
-    - [225, 41.82]
-    - [230, 41.73]
-    - [235, 43.59]
-    - [240, 38.37]
-    - [245, 38.15]
-    - [250, 43.83]
-    - [255, 40.90]
-    - [260, 37.65]
-    - [265, 40.27]
-    - [270, 34.84]
-    - [275, 31.41]
-    - [280, 38.75]
-    - [285, 41.35]
-    - [290, 32.27]
-    - [295, 24.90]
-    - [300, 38.20]
-    - [305, 38.80]
-    - [310, 36.94]
-    - [315, 31.46]
-    - [320, 26.66]
-    - [325, 9.67]
-    - [330, 14.52]
-    - [335, 10.75]
-    - [340, 24.82]
-    - [345, 35.67]
-    - [350, 42.03]
-    - [355, 50.08]
-    - [360, 50.08]
+    - [0, 44.82]
+    - [5, 46.30]
+    - [10, 47.04]
+    - [15, 51.12]
+    - [20, 51.12]
+    - [25, 49.25]
+    - [30, 50.04]
+    - [35, 51.29]
+    - [40, 52.27]
+    - [45, 50.23]
+    - [50, 49.86]
+    - [55, 46.73]
+    - [60, 46.73]
+    - [65, 37.22]
+    - [70, 34.75]
+    - [75, 34.42]
+    - [80, 31.33]
+    - [85, 30.42]
+    - [90, 29.73]
+    - [95, 26.69]
+    - [100, 24.29]
+    - [105, 21.13]
+    - [110, 21.23]
+    - [115, 19.69]
+    - [120, 18.69]
+    - [125, 14.20]
+    - [130, 5.68]
+    - [135, 9.60]
+    - [140, 8.44]
+    - [145, 10.84]
+    - [150, 3.95]
+    - [155, 12.78]
+    - [160, 13.84]
+    - [165, 18.36]
+    - [170, 23.99]
+    - [175, 20.11]
+    - [180, 20.89]
+    - [185, 17.16]
+    - [190, 12.14]
+    - [195, 24.09]
+    - [200, 14.60]
+    - [205, 22.07]
+    - [210, 20.43]
+    - [215, 16.69]
+    - [220, 15.52]
+    - [225, 15.64]
+    - [230, 12.33]
+    - [235, 22.55]
+    - [240, 23.35]
+    - [245, 20.85]
+    - [250, 18.44]
+    - [255, 27.66]
+    - [260, 33.16]
+    - [265, 37.56]
+    - [270, 37.40]
+    - [275, 38.46]
+    - [280, 25.18]
+    - [285, 19.32]
+    - [290, 13.91]
+    - [295, 5.64]
+    - [300, 16.63]
+    - [305, 26.34]
+    - [310, 21.22]
+    - [315, 27.17]
+    - [320, 29.72]
+    - [325, 21.09]
+    - [330, 28.57]
+    - [335, 32.17]
+    - [340, 34.62]
+    - [345, 36.95]
+    - [350, 40.25]
+    - [355, 43.83]
+    - [360, 44.82]
   rain_sheltered: false   # regnsikkert = false
 
 # Parametre i den fysiske modellen. Startverdier fra litteraturen (se docs/RESEARCH.md),
@@ -125,7 +125,7 @@ model:
   rock_conductivity: 2.5        # W/m/K
   conduction_depth_m: 0.25      # avstand til "dyp" bergnode
   deep_temp_timescale_h: 120    # dyp bergtemperatur = eksponentielt glidende snitt av lufttemp
-  sky_view_factor: 0.1532  # kontrollverdi; beregnes fra horisont og helning
+  sky_view_factor: 0.3002  # kontrollverdi; beregnes fra horisont og helning
   # Terskler for status
   wet_threshold_mm: 0.05        # film eller tak over dette = vått
   damp_threshold_mm: 0.01

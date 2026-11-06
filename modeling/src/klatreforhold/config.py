@@ -55,6 +55,7 @@ class Crag:
     geometry_source: str = ""
     geometry_checked: str = ""
     steepness_id: int | None = None
+    omraade: str | None = None  # nettførerens område (gruppering på nettsiden); ikke med i config_hash
 
 
 def _num(v):
@@ -108,6 +109,7 @@ def load_config(path: str | Path, apply_calibration: bool = True) -> tuple[Crag,
         geometry_source=c.get("geometry_source", ""),
         geometry_checked=str(c.get("geometry_checked", "")),
         steepness_id=c.get("steepness_id"),
+        omraade=c.get("omraade"),
     )
     if crag.regnmaler not in (None, "bones") or crag.regnmaler_bruk not in ("av", "erstatt"):
         raise ValueError("regnmaler må være bones eller tom, regnmaler_bruk av eller erstatt")

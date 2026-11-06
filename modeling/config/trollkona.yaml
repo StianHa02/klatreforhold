@@ -3,6 +3,7 @@
 crag:
   name: Trollkona
   felt_id: 114
+  omraade: Øst for Bergen   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.627308
   lon: 5.878867
   elevation_m: 137.00     # veggfot: Kartverket DTM1 10 m bak nettførerpunktet (punktet ligger 13 m ut i skogen, 133 m), kontrollert 2026-10-29

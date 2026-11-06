@@ -4,6 +4,7 @@
 crag:
   name: Rævuri
   felt_id: 22
+  omraade: Askøy/Lillesotra   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.472454
   lon: 5.140553
   elevation_m: 23.54     # Kartverket DTM i nettførerpunktet (veggfoten; 30 m sprang rett bak), kontrollert 2026-11-05

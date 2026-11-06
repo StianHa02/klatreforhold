@@ -4,6 +4,7 @@
 crag:
   name: Perleveggen
   felt_id: 13
+  omraade: Nord for Bergen   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.5816
   lon: 5.063409
   elevation_m: 91.7     # DTM 12 m bak nettførerpunktet (punktet 81.9 m ligger ~15 m ut i skråningen; veggen faller 56 m mellom 30 og 15 m bak), kontrollert 2026-11-05. Horisont med --offset-m=-12

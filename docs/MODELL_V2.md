@@ -46,7 +46,7 @@ trær og bygninger i horisonten. Kartdata representerer ikke nødvendigvis dagen
 | Rævuri | 270° | 100° | overheng |
 | Morvik | 170° | 70° | sva |
 | Fergeveggen | 68° | 90° | vertikalt |
-| Drangsneset | 45° | 90° | vertikalt |
+| Drangsneset | 135° | 90° | vertikalt |
 | Elvefeltet | 180° | 100° | overheng |
 | Straumberget | 225° | 90° | vertikalt |
 
@@ -56,8 +56,8 @@ sektorer. Ett representativt plan kan ikke beskrive alle rutene på et felt. De 
 DTM, og bergart ennå ikke kontrollert mot NGU. Nettførerens «sol på feltet»-klokkeslett ble brukt som kontroll av
 geometrien (`outputs/_sjekk_soltid.py`): modellens første soltid i klarvær skal ikke være vesentlig senere enn
 oppgitt. Det avslørte at 270° i nettføreren ofte er en grov standardverdi; Hjallaveggen, Straumberget, Morvik,
-Hjernemasseveggen og Drangsneset fikk korrigert retning fra eieren. Drangsneset (45°, sol oppgitt 13:00) er
-fortsatt inkonsistent og uverifisert: en nordøstvegg kan ikke få sol kl. 13.
+Hjernemasseveggen og Drangsneset fikk korrigert retning fra eieren. Drangsneset fikk 6.11.2026 også nytt punkt
+(130 m lenger sørvest) og retning 135° i nettføreren; DTM viser nå en 16 m vegg rett bak punktet.
 
 Ekstraveggens retning er korrigert fra 300° til 322°, Helleneset fra 270° til 274° og Sandviken fra
 270° til 195°. Horisontberegningen bruker nå geodetiske stråler, ikke kartgridets nord som sann nord.

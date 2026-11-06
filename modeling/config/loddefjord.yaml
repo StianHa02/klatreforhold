@@ -3,6 +3,7 @@
 crag:
   name: Loddefjord
   felt_id: 2
+  omraade: Bergen vest   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.362831
   lon: 5.238142
   elevation_m: 58.00     # veggfot: Kartverket DTM1 12 m bak nettførerpunktet (punktet ligger 15 m ut fra veggen, 56 m), kontrollert 2026-10-29

@@ -4,6 +4,7 @@
 crag:
   name: Helleneset
   felt_id: 5
+  omraade: Bergen nord   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.434326
   lon: 5.280634
   elevation_m: 4.11     # Kartverket DTM, kontrollert 2026-10-29

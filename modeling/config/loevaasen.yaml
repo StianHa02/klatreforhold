@@ -4,6 +4,7 @@
 crag:
   name: Løvåsen
   felt_id: 124
+  omraade: Bergen vest   # nettførerens område, brukes til gruppering på nettsiden
   lat: 60.358459
   lon: 5.273773
   elevation_m: 148.4     # DTM 8 m bak nettførerpunktet (punktet 145.4 m ligger ~10 m ut; veggen stiger 30 m mellom 30 og 10 m bak), kontrollert 2026-11-05. Horisont med --offset-m=-8
