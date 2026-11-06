@@ -3,10 +3,10 @@
 Timevarsel for tørt, fuktig eller vått på klatrefelt rundt Bergen, beregnet fra offentlige værdata
 (modellert is/snø vises som vått).
 
-Modell **2.0.0**, 24 felt: Ekstraveggen, Sandviken, Helleneset, Neseveggen, Bolstadøyri, Trollkona,
+Modell **2.0.0**, 25 felt: Ekstraveggen, Sandviken, Helleneset, Neseveggen, Bolstadøyri, Trollkona,
 Loddefjord, Bymuren, Fabrikkveggen, Broveggen, Syltøy, Gjøkeredet, Hjallaveggen, Hjernemasseveggen,
-Perleveggen, Uteveggen, Løvåsen, Marikoven, Rævuri, Morvik, Fergeveggen, Drangsneset, Elvefeltet og
-Straumberget. Ett felt er én YAML-fil i `modeling/config/`.
+Perleveggen, Uteveggen, Løvåsen, Marikoven, Rævuri, Morvik, Fergeveggen, Drangsneset, Elvefeltet,
+Straumberget og Laberget. Ett felt er én YAML-fil i `modeling/config/`.
 
 En Raspberry Pi kjører modellen hver time ved :07 ([oppsett](drift/raspberrypi/README.md)) og skriver til Supabase; Next.js på Vercel leser databasen.
 Varselet går 120 timer frem og 168 timer tilbake. Parametrene er foreløpige og ikke målt mot veggene.
