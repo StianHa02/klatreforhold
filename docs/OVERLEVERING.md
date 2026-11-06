@@ -12,7 +12,8 @@
 - Databaseskjemaet har åtte migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
   `vaer_og_rydding` legger til værinput til trening (`vaer`) og ukentlig arkivrydding. Den siste,
   `bones_maling`, lagrer målinger fra Bønes værstasjon. `parquet_arkiv` gjør at ryddingen bare sletter
-  døgn som er eksportert til Parquet ([Parquet-arkivet](ARKIV.md)).
+  døgn som er eksportert til Parquet ([Parquet-arkivet](ARKIV.md)), og ryddingen tynner etter 30 dager.
+  Kjørt i produksjon 6.11.2026; Pi-en eksporterer hver natt også i testmodus.
   Se [deployguiden](DEPLOY.md).
 - MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. Verdien arkiveres ikke
   i `varsel` og vises ikke som prosent på nettsiden.
@@ -29,7 +30,7 @@
 3. Kalibrer ved tilstrekkelig grunnlag; hold dev/test-data og syntetiske etiketter utenfor aktivering.
 4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
 5. Kjør `vaer_og_rydding`-migrasjonen i produksjon og følg med på databasestørrelsen.
-   Lagringstiden (120 dager, ledetid 0/3/6/12/24/48) står i [deployguiden](DEPLOY.md).
+   Lagringstiden (30 dager, deretter ledetid 0/3/6/12/24/48) står i [deployguiden](DEPLOY.md).
 6. Kjør `bones_maling`-migrasjonen i produksjon (reserve for Bønes-regnet). `regnmaler_bruk: erstatt` er på for
    Ekstraveggen fra 1.11.2026; følg med på `_bones` i timesjobben og evaluer mot observasjoner til våren,
    se [Bønes værstasjon](BONES_STASJON.md).

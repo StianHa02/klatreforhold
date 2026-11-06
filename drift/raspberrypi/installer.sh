@@ -41,7 +41,7 @@ FROST_CLIENT_ID=
 KLATREFORHOLD_HEALTHCHECK_URL=
 # Valgfri: egen helsesjekk for den nattlige Parquet-eksporten (daglig periode)
 KLATREFORHOLD_ARKIV_HEALTHCHECK_URL=
-# Testmodus: publiser bare disse feltene (kommaseparert) ved :15, uten Parquet-eksporten. Actions publiserer alle.
+# Testmodus: publiser bare disse feltene (kommaseparert) ved :15. Actions publiserer alle. Parquet-eksporten går som vanlig.
 # Tøm eller fjern linja og kjør installer.sh på nytt for full drift.
 KLATREFORHOLD_PI_TESTFELT=
 EOF
@@ -73,11 +73,9 @@ if (cd "$REPO/modeling" && "$VENV/bin/python" scripts/publish_forecast.py "${PRO
 else
     echo "Prøvekjøringen feilet. Se /tmp/klatreforhold-prove.json og meldingene over."; exit 1
 fi
-if [ -z "$TESTFELT" ]; then
-    echo "== Prøvekjøring av Parquet-arkivet (--dry-run, skriver bare filer i modeling/data/arkiv/)"
-    if ! (cd "$REPO/modeling" && "$VENV/bin/python" scripts/eksporter_arkiv.py --dry-run); then
-        echo "Prøvekjøringen av arkivet feilet. Er migrasjonen 20261105150000_parquet_arkiv.sql kjørt i Supabase?"; exit 1
-    fi
+echo "== Prøvekjøring av Parquet-arkivet (--dry-run, skriver bare filer i modeling/data/arkiv/)"
+if ! (cd "$REPO/modeling" && "$VENV/bin/python" scripts/eksporter_arkiv.py --dry-run); then
+    echo "Prøvekjøringen av arkivet feilet. Er migrasjonen 20261105150000_parquet_arkiv.sql kjørt i Supabase?"; exit 1
 fi
 
 echo "== Begrens loggstørrelsen (sparer SD-kortet)"
@@ -102,16 +100,17 @@ fi
 sudo systemctl daemon-reload
 
 if [ -n "$TESTFELT" ]; then
-    sudo systemctl enable klatreforhold-varsel.timer
-    sudo systemctl restart klatreforhold-varsel.timer
-    sudo systemctl disable --now klatreforhold-arkiv.timer 2>/dev/null || true
+    # Parquet-eksporten går også i testmodus: Actions eksporterer aldri, så ingenting kjøres dobbelt.
+    sudo systemctl enable klatreforhold-varsel.timer klatreforhold-arkiv.timer
+    sudo systemctl restart klatreforhold-varsel.timer klatreforhold-arkiv.timer
     cat <<EOF
 
 Ferdig, i TESTMODUS: Pi-en publiserer bare $TESTFELT til Supabase hver time ved :15.
-Parquet-eksporten er av. Actions publiserer alle felt som før.
+Actions publiserer alle felt som før. Parquet-arkivet eksporteres hver natt ved 03:37.
   Kjør nå:        sudo systemctl start klatreforhold-varsel.service
   Se loggen:      journalctl -u klatreforhold-varsel -n 100 --no-pager
   Neste kjøring:  systemctl list-timers 'klatreforhold-*'
+  Eksporter nå:   sudo systemctl start klatreforhold-arkiv.service
 Full drift: fjern KLATREFORHOLD_PI_TESTFELT fra .env og kjør installer.sh på nytt.
 EOF
     exit 0

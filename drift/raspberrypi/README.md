@@ -46,7 +46,8 @@ Prøvekjøringen av arkivet skriver bare Parquet-filer i `modeling/data/arkiv/` 
 ## Testmodus (før full overgang)
 
 Mens Pi-en prøves ut, publiserer Actions alle felt som før (Supabase Cron i overgangsmodus, hver time ved :05).
-Pi-en publiserer i tillegg noen få felt til Supabase ved :15. Parquet-eksporten er av.
+Pi-en publiserer i tillegg noen få felt til Supabase ved :15. Den nattlige Parquet-eksporten går som vanlig,
+siden Actions aldri eksporterer.
 Slik ser du at Pi-en henter kode og vær, kjører modellen og skriver til Supabase, før den tar over alt.
 
 For testfeltene skrives hver time to ganger. Det er ufarlig: alle skrivinger er upsert, `varsel_siste` viser
@@ -59,7 +60,7 @@ og kjør installer på nytt:
 ```sh
 echo 'KLATREFORHOLD_PI_TESTFELT=uteveggen,ekstraveggen' >> .env
 bash drift/raspberrypi/installer.sh
-systemctl list-timers 'klatreforhold-*'                 # varsel ved :15, ingen arkiv-timer
+systemctl list-timers 'klatreforhold-*'                 # varsel ved :15, arkiv ved 03:37
 journalctl -u klatreforhold-varsel --since today --no-pager | grep -E "Testmodus|Ferdig|Advarsel|feil|Killed"
 ```
 
@@ -69,7 +70,7 @@ alle felt: før full overgang, kjør gjerne alle én gang for hånd (`cd modelin
 scripts/publish_forecast.py --dry-run`) og se at det ikke går tom for minne og bruker godt under en time.
 
 **Full overgang:** fjern linja `KLATREFORHOLD_PI_TESTFELT` fra `.env`, kjør `installer.sh` på nytt (timesjobben
-går tilbake til :07 for alle felt og Parquet-eksporten slås på), og bytt Supabase-reserven til reservemodus (under).
+går tilbake til :07 for alle felt), og bytt Supabase-reserven til reservemodus (under).
 
 ## 3. Reserve i GitHub Actions
 

@@ -7,7 +7,7 @@ Databasen kan da ryddes for å holde seg innenfor gratisnivået uten at data til
 
 `varsel` vokser med om lag 10 000 rader (ca. 2,2 MB) per døgn: ni felt × 24 kjøringer × 49 ledetider.
 Det er ca. 800 MB i året, mot 500 MB på Supabases gratisnivå. `rydd_arkiv()` tynner derfor ut rader
-eldre enn 120 dager til ledetid 0, 3, 6, 12, 24 og 48 (pluss alle ledetider ±3 t rundt ekte observasjoner).
+eldre enn 30 dager til ledetid 0, 3, 6, 12, 24 og 48 (pluss alle ledetider ±3 t rundt ekte observasjoner).
 
 Uten arkiv ville de mellomliggende ledetidene vært borte for godt. Varslene kan ikke regnes ut på nytt:
 `vaer` lagrer været som faktisk kom, ikke prognosene MET ga da varselet ble laget. Med Parquet-arkivet
@@ -98,7 +98,7 @@ select ledetid_timer, count(*) from 'data/arkiv/varsel/*/*.parquet' group by 1 o
 
 Arkivet dekker alle ferdige døgn til og med i går. Dagens rader finnes bare i databasen
 (`storage.forecast_archive(felt)` eller PostgREST). Bruk ikke både arkivet og databasen for samme døgn
-uten å fjerne duplikater: de siste 120 dagene finnes begge steder.
+uten å fjerne duplikater: de siste 30 dagene finnes begge steder.
 
 ## Drift
 
@@ -119,7 +119,7 @@ python scripts/eksporter_arkiv.py --tabell varsel      # bare én tabell
   healthchecks.io med daglig periode) for e-post når eksporten feiler eller uteblir.
 - **Eksportere et døgn på nytt:** slett kvitteringen (`delete from public.arkiv_eksport where tabell = 'varsel'
   and dato = '2026-11-04';`). Neste kjøring lager fila på nytt og overskriver den i bøtta. Gjør det bare for
-  døgn som ikke er ryddet ennå (yngre enn 120 dager), ellers blir den nye fila tynnere enn den gamle.
+  døgn som ikke er ryddet ennå (yngre enn 30 dager), ellers blir den nye fila tynnere enn den gamle.
 - **Første kjøring** tar med alle døgn siden arkivet startet (27.10.2026).
 - **Ny maskin eller nytt SD-kort:** den lokale kopien kan hentes tilbake med `--hent`; bøtta er fasiten.
 

@@ -78,7 +78,7 @@ Gratisnivå er ikke en garanti for kapasitet. Se gjeldende [Vercel-grenser](http
 Kallmengde og kjøretid avhenger av reservekilder, innkjøring, ensemble og cache.
 Med ni felt og opptil 49 arkivrader per time per felt blir det opptil 10 584 rader/døgn, i tillegg til
 modelltilstander og stasjonsdata (målt ca. 2.2 MB/døgn, ca. 810 MB/år uten rydding, mot 500 MB gratis).
-`rydd_arkiv()` kjører søndager 04:00 UTC: etter 120 dager beholdes ledetid 0, 3, 6, 12, 24 og 48 i `varsel`
+`rydd_arkiv()` kjører søndager 04:00 UTC: etter 30 dager beholdes ledetid 0, 3, 6, 12, 24 og 48 i `varsel`
 og `stasjon_varsel`, pluss alle ledetider ±3 t rundt ekte observasjoner. Den sletter bare døgn som Pi-en har
 eksportert til Parquet og kontrollert (`arkiv_eksport`), så alle rader finnes fortsatt i
 [Parquet-arkivet](ARKIV.md). Storage-gratisnivået (1 GB) er en egen kvote ved siden av databasen. `modelltilstand` beholder

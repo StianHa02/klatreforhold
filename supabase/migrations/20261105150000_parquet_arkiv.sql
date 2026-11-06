@@ -25,9 +25,9 @@ insert into storage.buckets (id, name, public)
 values ('arkiv', 'arkiv', false)
 on conflict (id) do nothing;
 
--- Som før: etter p_dager beholdes bare ledetidene 0, 3, 6, 12, 24 og 48 og rader rundt en ekte observasjon.
+-- Etter p_dager (30, ned fra 120: med Parquet-arkivet trengs ikke alle ledetider lenge i databasen) beholdes bare ledetidene 0, 3, 6, 12, 24 og 48 og rader rundt en ekte observasjon.
 -- Nytt: en rad slettes bare hvis døgnet dens finnes i arkiv_eksport (og dermed i Parquet med alle ledetider).
-create or replace function public.rydd_arkiv(p_dager integer default 120)
+create or replace function public.rydd_arkiv(p_dager integer default 30)
 returns jsonb
 language plpgsql
 security definer

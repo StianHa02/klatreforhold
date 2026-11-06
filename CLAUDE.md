@@ -11,7 +11,7 @@ Twenty-four crags are defined by YAML files directly in `modeling/config/`; othe
 
 A Raspberry Pi systemd timer (`drift/raspberrypi/`) runs hourly at :07 → `modeling/scripts/publish_forecast.py` → Supabase → Vercel Next.js (`web/`).
 Until full migration the Pi is in test mode (`KLATREFORHOLD_PI_TESTFELT` in its `.env`: publishes only those crags
-at :15, no Parquet export) and GitHub Actions, dispatched hourly at :05 by Supabase Cron, publishes all crags.
+at :15; the nightly Parquet export runs as normal) and GitHub Actions, dispatched hourly at :05 by Supabase Cron, publishes all crags.
 Production has no dedicated FastAPI server. Local API/Docker remain supported.
 Direct MET Nordic is preferred, Open-Meteo supplies fallback/history, Nowcast overlays recent radar,
 and optional MEPS supplies uncalibrated precipitation-only uncertainty. Model version is 2.0.0.
