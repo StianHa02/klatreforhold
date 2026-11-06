@@ -143,7 +143,8 @@ begin; select public.rydd_arkiv(); rollback;
 
 ## Kapasitet
 
-Storage på Supabases gratisnivå er 1 GB (se gjeldende [priser](https://supabase.com/pricing)). Hvor mye et
-døgn tar i Parquet er ikke målt på ekte data ennå; syntetiske data ga ca. 10 byte per rad, og ekte tall
-komprimeres dårligere. Et anslag på 20–40 byte per rad gir 0,2–0,4 MB per døgn, eller 70–150 MB i året.
-Mål etter første kjøring med spørringen over. Den lokale kopien på Pi-en tar like mye på SD-kortet.
+Storage på Supabases gratisnivå er 1 GB (se gjeldende [priser](https://supabase.com/pricing)). Første
+eksport 6.11.2026 (19 døgn, 27.10–5.11): 119 474 rader på 439 kB, dvs. ca. 3,4 byte per rad i `varsel` og
+4,7 i `stasjon_varsel`. Med 24 felt blir det ca. 0,1 MB per døgn eller 40–50 MB i året; med ~135 felt ca.
+0,5 MB per døgn eller ca. 200 MB i året. Følg med med spørringen over. Den lokale kopien på Pi-en tar like
+mye på SD-kortet.

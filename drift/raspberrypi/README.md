@@ -119,7 +119,7 @@ Banneret om gammelt varsel på nettsiden (over 3 timer) er også et tegn på at 
 - **Lokale endringer på Pi-en** stopper `git pull`; jobben kjører da gjeldende versjon og skriver en advarsel.
   Ikke rediger sporede filer på Pi-en.
 - **Logg** er begrenset til 50 MB (journald), og vær-cachen ligger i `modeling/data/cache/`.
-- **Parquet-arkivet** ligger lokalt i `modeling/data/arkiv/` (ca. 70–150 MB/år, anslag) og i Storage-bøtta
+- **Parquet-arkivet** ligger lokalt i `modeling/data/arkiv/` (ca. 40–50 MB/år med 24 felt, målt 6.11.2026) og i Storage-bøtta
   `arkiv`. Stopper eksporten, sletter ikke ryddingen noe, men databasen vokser. Se [ARKIV](../../docs/ARKIV.md).
 - **Minne:** 3B har 1 GB. Minnebruken med ni felt og ekte vær er ikke målt på Pi-en ennå. Hvis loggen viser
   `Killed`/OOM, øk swap (se Raspberry Pi-dokumentasjonen for gjeldende OS).
