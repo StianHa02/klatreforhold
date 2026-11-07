@@ -220,19 +220,178 @@ export function Simulering({ rader, label }: { rader: SimRad[]; label: string })
   )
 }
 
-/** Fargeforklaring for feltene (vises over diagrammene, og er eneste forklaring på mobil). */
-export function FeltForklaring({ felt }: { felt: { slug: string; navn: string }[] }) {
+// Diagrammer med én rad per felt får høyde etter antall felt, og tegnes smalt (mobil) og bredt.
+function ToBredder({ høyde, tegn, label }: { høyde: (W: number) => number; tegn: (W: number, font: number) => ReactNode; label: string }) {
   return (
-    <div className="flex flex-wrap gap-x-md gap-y-xs text-sm text-text-subtle">
+    <>
+      <svg viewBox={`0 0 360 ${høyde(360)}`} className="w-full sm:hidden" role="img" aria-label={label}>{tegn(360, 11)}</svg>
+      <svg viewBox={`0 0 720 ${høyde(720)}`} className="hidden w-full sm:block" role="img" aria-label={label}>{tegn(720, 12)}</svg>
+    </>
+  )
+}
+
+const pst = (v: number) => `${Math.round(v * 100)} %`
+const VENSTRE = (W: number) => (W < 500 ? 88 : 120) // plass til feltnavnene
+const NAVN = 'var(--color-dark-400)'
+
+/** Felt × måned, farget etter andel (0–1). Tallene står i rutene på brede skjermer; på mobil bare fargen. */
+export function Varmekart({ serier, label }: { serier: Serie[]; label: string }) {
+  const radH = (W: number) => (W < 500 ? 24 : 28)
+  return (
+    <ToBredder label={label} høyde={(W) => 20 + serier.length * radH(W)} tegn={(W, font) => {
+      const venstre = VENSTRE(W)
+      const rute = (W - venstre) / 12
+      const h = radH(W)
+      return (
+        <>
+          {MND.map((m, i) => (
+            <text key={m} x={venstre + (i + 0.5) * rute} y={13} textAnchor="middle" fontSize={font} fill={TEKST}>
+              {W < 500 ? m[0].toUpperCase() : m}
+            </text>
+          ))}
+          {serier.map((s, r) => {
+            const midt = 20 + r * h + h / 2 + font * 0.35
+            return (
+              <g key={s.slug}>
+                <text x={0} y={midt} fontSize={font} fill={NAVN}>{s.navn}</text>
+                {s.verdier.map((v, i) => (
+                  <g key={i}>
+                    <rect x={venstre + i * rute + 1} y={20 + r * h + 1} width={rute - 2} height={h - 2} rx={2}
+                          fill={v === null ? 'var(--color-light-600)' : 'var(--color-forhold-tort)'} fillOpacity={v === null ? 1 : 0.08 + 0.92 * v}>
+                      <title>{`${s.navn}, ${MND[i]}: ${v === null ? 'ingen data' : `${pst(v)} tørre timer på dagtid`}`}</title>
+                    </rect>
+                    {W >= 500 && v !== null && (
+                      <text x={venstre + (i + 0.5) * rute} y={midt} textAnchor="middle" fontSize={font - 1}
+                            fill={v > 0.55 ? 'white' : NAVN} pointerEvents="none">{Math.round(v * 100)}</text>
+                    )}
+                  </g>
+                ))}
+              </g>
+            )
+          })}
+        </>
+      )
+    }} />
+  )
+}
+
+export type Vente = { slug: string; navn: string; innen: [number | null, number | null, number | null] } // tørt innen 6, 12, 24 t
+
+/** Liggende stablede stolper: hvor stor andel av regnepisodene som er tørre innen 6, 12 og 24 timer. */
+export function VenteStolper({ rader, label }: { rader: Vente[]; label: string }) {
+  const radH = 26
+  const sortert = [...rader].sort((a, b) => (b.innen[2] ?? -1) - (a.innen[2] ?? -1))
+  return (
+    <ToBredder label={label} høyde={() => 24 + sortert.length * radH} tegn={(W, font) => {
+      const venstre = VENSTRE(W)
+      const x = (v: number) => venstre + v * (W - venstre - 40)
+      return (
+        <>
+          {[0, 0.5, 1].map((v) => (
+            <g key={v}>
+              <line x1={x(v)} x2={x(v)} y1={18} y2={24 + sortert.length * radH} stroke={RUTE} strokeWidth={0.6} />
+              <text x={x(v)} y={12} textAnchor="middle" fontSize={font} fill={TEKST}>{pst(v)}</text>
+            </g>
+          ))}
+          {sortert.map((r, k) => {
+            const y = 24 + k * radH
+            const midt = y + radH / 2 + font * 0.35
+            const [a6, a12, a24] = r.innen
+            // lengste tidsrom bakerst og lysest, så 12 og 6 timer oppå
+            const lag = [[a24, 0.3, 24], [a12, 0.6, 12], [a6, 1, 6]] as const
+            return (
+              <g key={r.slug}>
+                <text x={0} y={midt} fontSize={font} fill={NAVN}>{r.navn}</text>
+                {a24 === null ? (
+                  <text x={venstre} y={midt} fontSize={font} fill={TEKST}>for få episoder</text>
+                ) : (
+                  <>
+                    {lag.map(([a, op, t]) => a !== null && (
+                      <rect key={t} x={x(0)} y={y + 4} width={x(a) - x(0)} height={radH - 8} fill="var(--color-forhold-tort)" fillOpacity={op}>
+                        <title>{`${r.navn}: ${pst(a)} tørt innen ${t} timer`}</title>
+                      </rect>
+                    ))}
+                    <text x={x(a24) + 4} y={midt} fontSize={font} fill={NAVN}>{Math.round(a24 * 100)}</text>
+                  </>
+                )}
+              </g>
+            )
+          })}
+        </>
+      )
+    }} />
+  )
+}
+
+export type RegnRad = { slug: string; navn: string; vegg: number; totalt: number } // mm per år
+
+/** Hvor mye av regnet som treffer veggen: hele stolpen er nedbør per år, den mørke delen det som treffer. */
+export function RegnPaVeggen({ rader, label }: { rader: RegnRad[]; label: string }) {
+  const radH = 26
+  const sortert = [...rader].sort((a, b) => a.vegg / a.totalt - b.vegg / b.totalt)
+  const maks = Math.max(...rader.map((r) => r.totalt))
+  return (
+    <ToBredder label={label} høyde={() => 8 + sortert.length * radH} tegn={(W, font) => {
+      const venstre = VENSTRE(W)
+      const x = (v: number) => venstre + (v / maks) * (W - venstre - 44)
+      return sortert.map((r, k) => {
+        const y = 4 + k * radH
+        const midt = y + radH / 2 + font * 0.35
+        return (
+          <g key={r.slug}>
+            <text x={0} y={midt} fontSize={font} fill={NAVN}>{r.navn}</text>
+            <rect x={x(0)} y={y + 4} width={x(r.totalt) - x(0)} height={radH - 8} fill="var(--color-accent-blue-200)" fillOpacity={0.6} />
+            <rect x={x(0)} y={y + 4} width={x(r.vegg) - x(0)} height={radH - 8} fill="var(--color-accent-blue-400)">
+              <title>{`${r.navn}: ${Math.round(r.vegg)} av ${Math.round(r.totalt)} mm per år treffer veggen`}</title>
+            </rect>
+            <text x={x(r.totalt) + 4} y={midt} fontSize={font} fill={NAVN}>{pst(r.vegg / r.totalt)}</text>
+          </g>
+        )
+      })
+    }} />
+  )
+}
+
+export type Retning = { slug: string; navn: string; orientering: number }
+
+/** Kompass med én pil per felt i retningen veggen vender. Navnene står i forklaringen ved siden av. */
+export function Kompass({ felt, label }: { felt: Retning[]; label: string }) {
+  const S = 240
+  const c = S / 2
+  const r = 92
+  const punkt = (grader: number, rr: number) => {
+    const v = (grader * Math.PI) / 180
+    return { x: c + Math.sin(v) * rr, y: c - Math.cos(v) * rr }
+  }
+  return (
+    <svg viewBox={`0 0 ${S} ${S}`} className="mx-auto w-full max-w-[260px]" role="img" aria-label={label}>
+      <circle cx={c} cy={c} r={r} fill="none" stroke={RUTE} />
+      <circle cx={c} cy={c} r={r / 2} fill="none" stroke={RUTE} strokeWidth={0.6} />
+      {(['N', 'Ø', 'S', 'V'] as const).map((t, i) => {
+        const p = punkt(i * 90, r + 14)
+        return <text key={t} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize={13} fontWeight={600} fill={TEKST}>{t}</text>
+      })}
       {felt.map((f) => {
         const st = FELTFARGE[f.slug] ?? { farge: TEKST }
+        const p = punkt(f.orientering, r - 6)
         return (
-          <span key={f.slug} className="flex items-center gap-xs">
-            <svg width="22" height="8" aria-hidden><line x1="0" x2="22" y1="4" y2="4" stroke={st.farge} strokeWidth="3" strokeDasharray={st.strek} /></svg>
-            {f.navn}
-          </span>
+          <g key={f.slug}>
+            <line x1={c} y1={c} x2={p.x} y2={p.y} stroke={st.farge} strokeWidth={3} strokeDasharray={st.strek} strokeLinecap="round" />
+            <circle cx={p.x} cy={p.y} r={5} fill={st.farge}><title>{`${f.navn}: ${f.orientering}°`}</title></circle>
+          </g>
         )
       })}
-    </div>
+      <circle cx={c} cy={c} r={3} fill={TEKST} />
+    </svg>
+  )
+}
+
+/** Strek i feltets farge og stiplemønster, til velgeren og forklaringer. */
+export function FeltStrek({ slug }: { slug: string }) {
+  const st = FELTFARGE[slug] ?? { farge: TEKST }
+  return (
+    <svg width="22" height="8" aria-hidden className="shrink-0">
+      <line x1="0" x2="22" y1="4" y2="4" stroke={st.farge} strokeWidth="3" strokeDasharray={st.strek} />
+    </svg>
   )
 }
