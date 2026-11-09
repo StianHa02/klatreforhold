@@ -11,6 +11,7 @@ globalThis.fetch = (async (url: string, init: RequestInit = {}) => {
   if (url.includes('select=felt:data->felt')) body = [{ felt: lagret.felt }] // hentFelt: bare felt-delen
   else if (url.includes('varsel_siste')) body = [{ data: lagret }]
   else if (url.includes('/varsel?')) body = arkivTomt ? [] : [{ status: 'vatt' }] // arkivet sier vått
+  if (url.includes('rpc/tidligere_varsel')) body = [{ tid: '2026-10-28T10:00:00Z', status: 'tort', ledetid_timer: 24 }, { tid: '2026-10-28T11:00:00Z', status: 'is', ledetid_timer: 23 }]
   if (url.includes('rpc/treffsikkerhet')) body = { antall: 3, antall_vurdert: 2, andel_riktig: 0.5 }
   if (url.includes('observasjoner?felt')) body = [{ tid: '2026-10-26T10:00:00Z', status: 'tort', predikert_status: 'vatt', riktig: false, kommentar: null }]
   if (url.includes('registrert=gte.')) body = finnesAllerede ? [{ id: 1 }] : [] // dobbeltklikk-sjekken
@@ -98,18 +99,12 @@ assert(vh!.historikk!.length === forNa.length && vh!.historikk!.at(-1)!.tid === 
 const etterNa = [...lagret.siste_timer, ...lagret.timer].filter((t: { tid: string }) => Date.parse(t.tid) >= Date.parse('2026-10-26T15:00:00+01:00'))
 assert(vh!.framover!.length === etterNa.length && vh!.timer.length === Math.min(25, etterNa.length), 'framover har alle timer fra nå, timer bare neste døgn')
 
-// varslet dagen før: ledetiden nærmest 24 t per time (22-26 t godtas), ved likt den korteste
-const valgt = k.velgTidligereVarsel([
-  { tid: '2026-10-28T10:00:00Z', status: 'vatt', ledetid_timer: 26 },
-  { tid: '2026-10-28T10:00:00Z', status: 'tort', ledetid_timer: 23 },
-  { tid: '2026-10-28T10:00:00Z', status: 'fuktig', ledetid_timer: 25 },
-  { tid: '2026-10-28T13:00:00Z', status: 'fuktig', ledetid_timer: 22 },
-  { tid: '2026-10-28T09:00:00Z', status: 'vatt', ledetid_timer: 12 },
-])
-assert(valgt.length === 2 && valgt[0].status === 'tort' && valgt[1].tid === '2026-10-28T13:00:00Z', 'velger ledetid nærmest 24 t, hull er greit')
+// varslet dagen før: utvalget gjøres i databasen, is vises som vått
 kall.length = 0
-await k.hentTidligereVarsel('ekstraveggen', new Date('2026-10-22T00:00:00Z'))
-assert(kall.some((c) => c.url.includes('/varsel?') && c.url.includes('ledetid_timer=in.(22,23,24,25,26)') && c.url.includes('tid=gte.2026-10-22')), 'spør arkivet om 5 ledetider (under 1000 rader)')
+const tidligere = await k.hentTidligereVarsel('ekstraveggen', new Date('2026-10-22T00:00:00Z'), new Date('2026-10-29T00:00:00Z'))
+const rpc = kall.find((c) => c.url.endsWith('/rpc/tidligere_varsel'))
+assert(rpc?.init.method === 'POST' && rpc.init.body === JSON.stringify({ p_felt: 'ekstraveggen', p_fra: '2026-10-22T00:00:00.000Z', p_til: '2026-10-29T00:00:00.000Z' }), 'spør databasen om én rad per time i vinduet')
+assert(tidligere.length === 2 && tidligere[0].status === 'tort' && tidligere[1].status === 'vatt', 'varslet dagen før: is blir vått')
 kall.length = 0
 await k.hentObservasjoner('ekstraveggen', new Date('2026-10-22T00:00:00Z'))
 assert(kall.some((c) => c.url.includes('observasjoner?felt') && c.url.includes('tid=gte.') && !c.url.includes('limit=10&')), 'observasjoner etter en dato')

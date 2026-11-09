@@ -25,7 +25,7 @@ export default async function FeltSide({
   const [varsel, obsUke, tidligere] = await Promise.all([
     hentVarsel(slug, na),
     hentObservasjoner(slug, uke),
-    hentTidligereVarsel(slug, uke),
+    hentTidligereVarsel(slug, uke, naTid),
   ])
   if (!varsel) notFound()
 

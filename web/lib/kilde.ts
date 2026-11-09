@@ -136,34 +136,16 @@ export async function hentOversikt(): Promise<Varsel[] | null> {
   }
 }
 
-const DAGEN_FOR = 24 // «varslet dagen før»: ledetiden nærmest 24 t
-const SLINGRING = 2 // timesjobben har hull, så 22-26 t godtas
-
-/** For hver time: varselet med ledetid nærmest `mal` (innenfor ± SLINGRING), ved likt den korteste. */
-export function velgTidligereVarsel(rader: TidligereVarsel[], mal = DAGEN_FOR): TidligereVarsel[] {
-  const perTime = new Map<number, TidligereVarsel>()
-  for (const r of rader) {
-    const avvik = Math.abs(r.ledetid_timer - mal)
-    if (avvik > SLINGRING) continue
-    const t = Date.parse(r.tid)
-    const har = perTime.get(t)
-    const harAvvik = har ? Math.abs(har.ledetid_timer - mal) : Infinity
-    if (!har || avvik < harAvvik || (avvik === harAvvik && r.ledetid_timer < har.ledetid_timer)) perTime.set(t, r)
-  }
-  return [...perTime.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r)
-}
-
-/** Varselet slik det så ut dagen før, for timene etter `fra`. Tom liste uten Supabase-nøkler.
- *  PostgREST gir maks 1000 rader per kall, så vi spør bare etter 5 ledetider (5 × 168 = 840). */
-export async function hentTidligereVarsel(slug: string, fra: Date): Promise<TidligereVarsel[]> {
+/** Varselet slik det så ut dagen før (ledetid nærmest 24 t), én rad per time i [fra, til]. Tom liste uten Supabase-nøkler.
+ *  Utvalget gjøres i databasen: PostgREST gir maks 1000 rader per kall, og felt med flere kjøringer i timen går over det. */
+export async function hentTidligereVarsel(slug: string, fra: Date, til: Date): Promise<TidligereVarsel[]> {
   if (!harSupabase) return []
-  const ledetider = Array.from({ length: 2 * SLINGRING + 1 }, (_, i) => DAGEN_FOR - SLINGRING + i).join(',')
   try {
-    const rader = await sb<TidligereVarsel[]>(
-      `varsel?felt=eq.${encodeURIComponent(slug)}&tid=gte.${encodeURIComponent(fra.toISOString())}` +
-        `&ledetid_timer=in.(${ledetider})&select=tid,status,ledetid_timer&order=tid.asc&limit=1000`,
-    )
-    return velgTidligereVarsel(rader).map((r) => ({ ...r, status: tilVisning(r.status) }))
+    const rader = await sb<TidligereVarsel[]>('rpc/tidligere_varsel', {
+      method: 'POST',
+      body: JSON.stringify({ p_felt: slug, p_fra: fra.toISOString(), p_til: til.toISOString() }),
+    })
+    return rader.map((r) => ({ ...r, status: tilVisning(r.status) }))
   } catch (e) {
     console.log(e)
     return []

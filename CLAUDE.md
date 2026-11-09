@@ -34,7 +34,7 @@ Supabase project: `nmiydpcmfxkhtztzgzfx`. Tables: `varsel_siste`, `varsel`, `obs
 `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer` (model weather input per crag and past hour),
 `arkiv_eksport` (one receipt per table and UTC day exported to Parquet), `bones_maling` (one reading per hourly run from the private Bønes station, reserve for `data/bones.py`, which
 normally fetches 168 h of 5-minute data from the station API; Ekstraveggen uses its rain with `regnmaler_bruk: erstatt`).
-RPCs: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)`, `rydd_arkiv(integer)` (weekly pg_cron).
+RPCs: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)`, `rydd_arkiv(integer)` (weekly pg_cron), `tidligere_varsel(text, timestamptz, timestamptz)`.
 Private Storage bucket `arkiv` holds the Parquet archive.
 All access is server-side with service role; no public RLS policies. Grant `service_role` explicitly on new
 tables: newer Supabase (including the local CLI) no longer grants it by default.

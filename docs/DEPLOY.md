@@ -6,7 +6,7 @@ Oppsettet av Pi-en står i [`drift/raspberrypi/README.md`](../drift/raspberrypi/
 ## Database og timesjobb
 
 Prosjektets Supabase-URL er `https://nmiydpcmfxkhtztzgzfx.supabase.co`.
-Kontroller anvendte migrasjoner mot de åtte filene i `supabase/migrations/` før en ny installasjon.
+Kontroller anvendte migrasjoner mot de ni filene i `supabase/migrations/` før en ny installasjon.
 V2 krever `20261030090000_modell_v2.sql`, som legger til `modelltilstand` og arkivmetadata.
 Ikke kjør gamle migrasjoner blindt på nytt.
 `20261030180000_vaer_og_rydding.sql` legger til `vaer`, `lagre_vaer()`, `rydd_arkiv()` og cron-jobben
@@ -19,7 +19,7 @@ men varselet publiseres likevel. Prøv nye migrasjoner lokalt først (README, «
 
 Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer`,
 `bones_maling`, `arkiv_eksport`. Storage: den private bøtta `arkiv` (Parquet-arkivet).
-RPC-er: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)` og `rydd_arkiv(integer)`.
+RPC-er: `treffsikkerhet(text)`, `statistikk()`, `lagre_vaer(jsonb)`, `rydd_arkiv(integer)` og `tidligere_varsel(text, timestamptz, timestamptz)`.
 RLS begrenser tilgangen til service role.
 
 Timesjobben trenger disse verdiene, i `.env` på Pi-en og som GitHub Actions-secrets for reserven:
