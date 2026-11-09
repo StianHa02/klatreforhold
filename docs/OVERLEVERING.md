@@ -9,7 +9,7 @@
   bratthetskategorier er fortsatt anslag. Se felttabellen i modellguiden.
 - Timesjobben lager 120 timer fremover og sju døgn bakover; arkivet beholder ledetider til 48 timer.
   Direkte MET Nordic foretrekkes over Open-Meteo, med fersk Nowcast-nedbør. Open-Meteo gir også innkjøring.
-- Databaseskjemaet har åtte migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
+- Databaseskjemaet har ni migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
   `vaer_og_rydding` legger til værinput til trening (`vaer`) og ukentlig arkivrydding. Den siste,
   `bones_maling`, lagrer målinger fra Bønes værstasjon. `parquet_arkiv` gjør at ryddingen bare sletter
   døgn som er eksportert til Parquet ([Parquet-arkivet](ARKIV.md)), og ryddingen tynner etter 30 dager.
