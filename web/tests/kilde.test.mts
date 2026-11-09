@@ -1,3 +1,6 @@
+// Testene bruker faste datoer, og lagreObservasjon avviser tider eldre enn 14 dager. Klokka fryses så de ikke går ut på dato.
+import { mock } from 'node:test'
+mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-10-30T12:00:00Z') })
 process.env.SUPABASE_URL = 'https://fake.supabase.co'
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'nøkkel'
 import { readFileSync } from 'node:fs'
