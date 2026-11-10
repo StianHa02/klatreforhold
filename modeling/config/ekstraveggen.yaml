@@ -118,8 +118,13 @@ model:
   # lufta nær metning. Med 1.0 tørket modellen veggen natt til 3.11.2026 mens den var fuktig hele 2.11; første
   # publiserte varsel med 0.6/0.5 sa også tørt fra kl. 02. Erfaring fra feltet: over fem døgn oppholdsvær etter
   # skikkelig høstregn. 0.4 gir 5–6 døgn etter 13–15 mm og treffer 9 av 9 egne observasjoner tørt/ikke-tørt.
+  # 7.–9.11.2026 (etter 6 mm 1.11): vått t.o.m. 7.11 kveld, fuktig med sig 8.11 ettermiddag, tørt 9.11 15:30 (sig på
+  # noen ruter). 0.4 ble tørt 8.11 kl. 12–13, to timer før fuktig-observasjonen; 0.38 gir fuktig fra 8.11 kl. 13 og
+  # tørt 9.11 kl. 03, og treffer 19 av 20 egne observasjoner eksakt. Eneste bom er «vått» 9.11 kl. 21–22 (hel time valgt
+  # i skjemaet, grensen mot fuktig er subjektiv) med 0,1 mm yr kl. 19–20 og vind bak veggen; målt regn kom kl. 23.
+  # Den passer ingen parametre som lar veggen tørke, og er ikke tilpasset.
   # Ikke kalibrert; en validert kalibrering (config/kalibrert/) overstyrer denne verdien.
-  evaporation_efficiency: 0.4
+  evaporation_efficiency: 0.38
   # Siging (sakte reservoar matet av nedbør over feltet)
   seep_enabled: true
   # Satt opp til 0.05 (31.10) og 0.10 (2.11) for å forklare flerdøgns tørketid, men tilbake til felles 0.02 samme dag:
@@ -127,7 +132,7 @@ model:
   # 6.11.2026 (5,5 døgn etter 6 mm, 9 døgn etter ~50 mm): eier ser sig fra toppen, vann ut av riss, våte partier
   # der sig har tørket inn, og fuktig under små overheng uten sig. Reservoaret med 120 t var da tømt (0.20 < terskel),
   # så modellen sa tørt. 240 t holder siget i gang (0.76 mm) og treffer 13 av 13 egne observasjoner; tørt ~9.11 uten regn.
-  # Fortsatt ingen tørt-observasjon fra feltet, så tømmetiden er bare nedad begrenset.
+  # Bekreftet 9.11: tørt kl. 15:30 med sig på noen ruter. 300 t eller mer lar ikke veggen tørke i det hele tatt.
   seep_catchment_factor: 0.02   # andel av nedbøren som havner i reservoaret
   seep_timescale_h: 240         # tømmetid for reservoaret; felles standard er 120 (4-8 døgn)
   seep_threshold_mm: 0.3        # reservoar over dette gir siging på veggen. 0.5 -> 0.3 1.11.2026: 13 observasjoner på fire felt, 11 treff mot 10
