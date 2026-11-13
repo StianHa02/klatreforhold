@@ -7,10 +7,10 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 
 import pandas as pd
-
-import os
 
 from .predict import list_crags, load_crag, predict
 from .version import config_hash
@@ -22,6 +22,8 @@ VAER_TIMER = 72  # passerte timer som skrives til vaer hver kjøring; dekker hul
 # Målinger fra Bønes som hentes til modellen: API-et gir høyst 168 timer, som dekker visningshistorikken.
 # Timene før det (oppvarming fra lagret tilstand) bruker modellens regn.
 BONES_TIMER = 168
+# Pause før nytt forsøk på felt som feilet (f.eks. 503 fra Open-Meteo)
+NYTT_FORSOK_PAUSE_S = 60
 VAER_KOLONNER = ["air_temperature", "relative_humidity", "dew_point_2m", "precipitation", "cloud_cover", "ghi",
                  "dni", "dhi", "longwave_down", "wind_speed", "wind_direction", "snow_probability", "snow_water_mm",
                  "weather_source", "weather_kind", "weather_issued", "precipitation_source"]
@@ -112,32 +114,16 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False,
         if not result["_bones"]:
             del result["_bones"]
     for slug in slugger:
-        try:
-            checkpoint = None
-            if not dry_run and hasattr(storage, "load_checkpoint"):
-                crag, params = load_crag(slug)
-                before = (now or pd.Timestamp.now(tz="UTC")) - pd.Timedelta(hours=HISTORIKK_TIMER + 24)
-                checkpoint = storage.load_checkpoint(slug, before, config_hash(crag, params))
-            v = predict(slug, now=now, hours=FRAM_TIMER, history_hours=HISTORIKK_TIMER, checkpoint=checkpoint,
-                        include_checkpoints=not dry_run, include_weather=not dry_run, bones_regn=bones_regn)
-            checkpoints = v.pop("_checkpoints", [])
-            weather = v.pop("_vaer", None)
-            rows = archive_rows(slug, v)
-            if dry_run:
-                result[slug] = {"timer": len(v["timer"]), "arkivrader": len(rows), "bytes": len(json.dumps(v))}
-                continue
-            storage.save_forecast(slug, rows)
-            storage.save_latest(slug, v)
-            if checkpoints and hasattr(storage, "save_checkpoints"):
-                storage.save_checkpoints(checkpoints)
-            result[slug] = {"timer": len(rows), "status_na": v["sammendrag"]["status_na"]}
-            if weather is not None and hasattr(storage, "save_weather"):
-                try:  # treningsdata; varselet over er allerede publisert og skal ikke merkes som feilet
-                    result[slug]["vaer"] = storage.save_weather(weather_rows(slug, weather, v["generert"]))
-                except Exception as err:
-                    result[slug]["vaer_feil"] = str(err)
-        except Exception as err:  # ett felt som feiler skal ikke stoppe resten
-            result[slug] = {"feil": str(err)}
+        result[slug] = _publish_one(slug, storage, now, dry_run, bones_regn)
+    # Ett nytt forsøk for felt som feilet, etter en pause: korte utfall hos Open-Meteo/MET (503) skal ikke
+    # gi hull i varselet for resten av timen. http.get har allerede prøvd et par ganger med kort ventetid.
+    feilet = [s for s in slugger if "feil" in result[s]]
+    if feilet and not dry_run:
+        time.sleep(NYTT_FORSOK_PAUSE_S)
+        for slug in feilet:
+            forste_feil = result[slug]["feil"]
+            result[slug] = _publish_one(slug, storage, now, dry_run, bones_regn)
+            result[slug]["forste_feil"] = forste_feil
     # Kontroll av værvarselet mot målestasjoner (bare med FROST_CLIENT_ID). Feil her stopper ikke jobben.
     stations = [load_crag(s)[0].frost_station for s in slugger]
     stations = [s for s in stations if s]
@@ -145,3 +131,33 @@ def publish_all(storage, now: pd.Timestamp | None = None, dry_run: bool = False,
         from .verify import collect
         result["_kontroll"] = collect(storage, stations, now=now)
     return result
+
+
+def _publish_one(slug: str, storage, now, dry_run: bool, bones_regn) -> dict:
+    """Kjører og lagrer ett felt. Returnerer {"feil": ...} i stedet for å kaste, så ett felt ikke stopper resten."""
+    try:
+        checkpoint = None
+        if not dry_run and hasattr(storage, "load_checkpoint"):
+            crag, params = load_crag(slug)
+            before = (now or pd.Timestamp.now(tz="UTC")) - pd.Timedelta(hours=HISTORIKK_TIMER + 24)
+            checkpoint = storage.load_checkpoint(slug, before, config_hash(crag, params))
+        v = predict(slug, now=now, hours=FRAM_TIMER, history_hours=HISTORIKK_TIMER, checkpoint=checkpoint,
+                    include_checkpoints=not dry_run, include_weather=not dry_run, bones_regn=bones_regn)
+        checkpoints = v.pop("_checkpoints", [])
+        weather = v.pop("_vaer", None)
+        rows = archive_rows(slug, v)
+        if dry_run:
+            return {"timer": len(v["timer"]), "arkivrader": len(rows), "bytes": len(json.dumps(v))}
+        storage.save_forecast(slug, rows)
+        storage.save_latest(slug, v)
+        if checkpoints and hasattr(storage, "save_checkpoints"):
+            storage.save_checkpoints(checkpoints)
+        res = {"timer": len(rows), "status_na": v["sammendrag"]["status_na"]}
+        if weather is not None and hasattr(storage, "save_weather"):
+            try:  # treningsdata; varselet over er allerede publisert og skal ikke merkes som feilet
+                res["vaer"] = storage.save_weather(weather_rows(slug, weather, v["generert"]))
+            except Exception as err:
+                res["vaer_feil"] = str(err)
+        return res
+    except Exception as err:  # ett felt som feiler skal ikke stoppe resten
+        return {"feil": str(err)}

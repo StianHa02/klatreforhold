@@ -11,6 +11,12 @@ from .wetness import DEFAULTS, CP_AIR, RHO_AIR, LV, RV, rh_correction, wind_driv
 LF = 334000.0  # J/kg, smeltevarme
 LS = LV + LF
 STORES = ("film", "holds", "ice_film", "ice_holds", "snow", "seep", "catchment_snow")
+# Negative lagre ned til denne grensen er avrundingsfeil og settes til 0 (alt under er en ekte feil)
+STORE_TOLERANCE_MM = 1e-9
+
+
+def _zero_if_tiny_negative(v: float) -> float:
+    return 0.0 if -STORE_TOLERANCE_MM <= v < 0 else v
 
 
 def _phase_change(s: dict, energy: float, capacity: float) -> tuple[float, float]:
@@ -94,6 +100,9 @@ def run_balance(weather, crag, params=None, substeps=12, init_state=None) -> pd.
     s.update(Ts=float(ta[0]), Tdeep=float(ta[0]))
     if init_state:
         s.update({k: float(v) for k, v in init_state.items() if k in s})
+        # Avrunding i flyttall kan gi lagre som -1e-24 o.l.; det er null, ikke en ødelagt tilstand.
+        for k in STORES:
+            s[k] = _zero_if_tiny_negative(s[k])
     if not all(np.isfinite(v) for v in s.values()) or any(s[k] < 0 for k in STORES):
         raise ValueError("Ugyldig starttilstand")
     columns = ["rock_temp", "deep_temp", "film_mm", "holds_mm", "seep_mm", "ice_mm", "snow_mm",
@@ -218,5 +227,6 @@ def run_balance(weather, crag, params=None, substeps=12, init_state=None) -> pd.
 
 def state_at(result: pd.DataFrame, timestamp) -> dict:
     row = result.loc[timestamp]
-    return {**{k: float(row[k + "_mm"]) for k in STORES},
+    # Avrundingsfeil som -1e-24 lagres som 0 i modelltilstand (NaN og ekte negative verdier slippes gjennom)
+    return {**{k: _zero_if_tiny_negative(float(row[k + "_mm"])) for k in STORES},
             "Ts": float(row["rock_temp"]), "Tdeep": float(row["deep_temp"])}
