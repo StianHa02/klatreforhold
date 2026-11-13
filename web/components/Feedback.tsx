@@ -31,8 +31,10 @@ function datoMinusDager(iso: string, dager: number) {
 }
 
 const pad = (h: number) => String(h).padStart(2, '0')
+const DETALJER_ID = 'tilbakemelding-detaljer'
 
-// Brukeren forteller hvordan det faktisk var, for nå eller et tidspunkt de siste dagene.
+// Brukeren forteller hvordan det faktisk er eller var. Lukket (standard) er det ett trykk: de tre knappene
+// melder status akkurat nå. «Annet tidspunkt eller kommentar» åpner dag, time og kommentar for de siste dagene.
 // Timeknappene har en strek i fargen modellen mener timen hadde. Serveren slår opp varselet
 // for samme time i varselarkivet og regner ut om det stemte.
 export default function Feedback({ slug, na, statusPerTime = {} }: {
@@ -48,6 +50,7 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
   const [annenDag, setAnnenDag] = useState(false)
   const [time, setTime] = useState<'na' | number>('na')
   const [kommentar, setKommentar] = useState('')
+  const [apen, setApen] = useState(false) // dag, time og kommentar vises
   const [sender, setSender] = useState(false)
   const [svar, setSvar] = useState<{ ok: boolean; tekst: string } | null>(null)
   const iDag = dag === iDagIso
@@ -58,6 +61,18 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
     if (v === iDagIso || v === iGarIso) setAnnenDag(false)
     if (v === iDagIso) setTime((t) => (t !== 'na' && t > naTime ? 'na' : t))
     else if (time === 'na') setTime(14)
+  }
+
+  // Lukket skjema betyr alltid «akkurat nå», så valg og kommentar fra det åpne skjemaet nullstilles
+  function veksle() {
+    if (apen) {
+      setDag(iDagIso)
+      setAnnenDag(false)
+      setTime('na')
+      setKommentar('')
+    }
+    setSvar(null)
+    setApen(!apen)
   }
 
   async function send(status: Valg) {
@@ -101,71 +116,81 @@ export default function Feedback({ slug, na, statusPerTime = {} }: {
 
   return (
     <section className="kort p-sm sm:p-md">
-      <h2 className="seksjon">Har du vært der?</h2>
-      <fieldset className="mt-sm">
-        <legend className="sr-only">Dag</legend>
-        <div className="flex flex-wrap border-b-2 border-border-subtle">
-          <Fane valgt={iDag && !annenDag} onClick={() => velgDag(iDagIso)}>I dag</Fane>
-          <Fane valgt={dag === iGarIso && !annenDag} onClick={() => velgDag(iGarIso)}>I går</Fane>
-          <Fane valgt={annenDag} onClick={() => { setAnnenDag(true); if (iDag || dag === iGarIso) velgDag(datoMinusDager(iDagIso, 2)) }}>
-            Tidligere
-          </Fane>
-        </div>
-        {annenDag && (
+      <div className="flex flex-wrap items-baseline justify-between gap-x-md gap-y-xs">
+        <h2 className="seksjon">{apen ? 'Har du vært der?' : 'Er du der nå?'}</h2>
+        <button type="button" className="lenke text-sm" aria-expanded={apen} aria-controls={DETALJER_ID} onClick={veksle}>
+          {apen ? 'Bare akkurat nå' : 'Annet tidspunkt eller kommentar'}
+        </button>
+      </div>
+      {!apen && <p className="mt-xs text-sm text-text-subtle">Trykk på hvordan berget er nå. Ett trykk er nok.</p>}
+      {apen && (
+        <div id={DETALJER_ID}>
+          <fieldset className="mt-sm">
+            <legend className="sr-only">Dag</legend>
+            <div className="flex flex-wrap border-b-2 border-border-subtle">
+              <Fane valgt={iDag && !annenDag} onClick={() => velgDag(iDagIso)}>I dag</Fane>
+              <Fane valgt={dag === iGarIso && !annenDag} onClick={() => velgDag(iGarIso)}>I går</Fane>
+              <Fane valgt={annenDag} onClick={() => { setAnnenDag(true); if (iDag || dag === iGarIso) velgDag(datoMinusDager(iDagIso, 2)) }}>
+                Tidligere
+              </Fane>
+            </div>
+            {annenDag && (
+              <label className="mt-sm flex flex-col gap-xs text-sm">
+                <span className="text-text-subtle">Dato (inntil {MAKS_DAGER_BAKOVER} dager tilbake)</span>
+                <input
+                  type="date"
+                  className="focus-box border-2 border-border-default bg-surface-default px-sm py-xs sm:max-w-[16rem]"
+                  value={dag}
+                  min={tidligst}
+                  max={iDagIso}
+                  required
+                  onChange={(e) => {
+                    const v = e.target.value
+                    if (!v || v < tidligst || v > iDagIso) return // utenfor tillatt periode
+                    velgDag(v)
+                  }}
+                />
+              </label>
+            )}
+          </fieldset>
+          <fieldset className="mt-sm">
+            <legend className="mb-xs text-sm">Når på dagen</legend>
+            {iDag && (
+              <Chip valgt={time === 'na'} onClick={() => setTime('na')} className="mb-xs w-full sm:w-auto">
+                Akkurat nå
+              </Chip>
+            )}
+            <div className="grid grid-cols-6 gap-xs sm:grid-cols-9">
+              {TIMER.map((h) => {
+                const modell = iDag && h > naTime ? undefined : statusPerTime[`${dag}T${pad(h)}`]
+                return (
+                  <Chip
+                    key={h}
+                    valgt={time === h}
+                    disabled={iDag && h > naTime}
+                    onClick={() => setTime(h)}
+                    farge={modell}
+                    aria-label={`kl ${pad(h)}–${pad(h + 1)}${modell ? `, varselet: ${STATUS_TEKST[modell].toLowerCase()}` : ''}`}
+                  >
+                    {pad(h)}
+                  </Chip>
+                )
+              })}
+            </div>
+          </fieldset>
           <label className="mt-sm flex flex-col gap-xs text-sm">
-            <span className="text-text-subtle">Dato (inntil {MAKS_DAGER_BAKOVER} dager tilbake)</span>
+            Kommentar (valgfritt)
             <input
-              type="date"
-              className="focus-box border-2 border-border-default bg-surface-default px-sm py-xs sm:max-w-[16rem]"
-              value={dag}
-              min={tidligst}
-              max={iDagIso}
-              required
-              onChange={(e) => {
-                const v = e.target.value
-                if (!v || v < tidligst || v > iDagIso) return // utenfor tillatt periode
-                velgDag(v)
-              }}
+              className="focus-box border-2 border-border-default bg-surface-default px-sm py-xs"
+              value={kommentar}
+              maxLength={500}
+              placeholder="F.eks. tørt nederst, fuktig i toppen"
+              onChange={(e) => setKommentar(e.target.value)}
             />
           </label>
-        )}
-      </fieldset>
-      <fieldset className="mt-sm">
-        <legend className="mb-xs text-sm">Når på dagen</legend>
-        {iDag && (
-          <Chip valgt={time === 'na'} onClick={() => setTime('na')} className="mb-xs w-full sm:w-auto">
-            Akkurat nå
-          </Chip>
-        )}
-        <div className="grid grid-cols-6 gap-xs sm:grid-cols-9">
-          {TIMER.map((h) => {
-            const modell = iDag && h > naTime ? undefined : statusPerTime[`${dag}T${pad(h)}`]
-            return (
-              <Chip
-                key={h}
-                valgt={time === h}
-                disabled={iDag && h > naTime}
-                onClick={() => setTime(h)}
-                farge={modell}
-                aria-label={`kl ${pad(h)}–${pad(h + 1)}${modell ? `, varselet: ${STATUS_TEKST[modell].toLowerCase()}` : ''}`}
-              >
-                {pad(h)}
-              </Chip>
-            )
-          })}
         </div>
-      </fieldset>
-      <label className="mt-sm flex flex-col gap-xs text-sm">
-        Kommentar (valgfritt)
-        <input
-          className="focus-box border-2 border-border-default bg-surface-default px-sm py-xs"
-          value={kommentar}
-          maxLength={500}
-          placeholder="F.eks. tørt nederst, fuktig i toppen"
-          onChange={(e) => setKommentar(e.target.value)}
-        />
-      </label>
-      <div className="mt-md grid grid-cols-3 gap-sm">
+      )}
+      <div className={`${apen ? 'mt-md' : 'mt-sm'} grid grid-cols-3 gap-sm`}>
         {VALG.map((v) => (
           <button key={v.verdi} type="button" disabled={sender} onClick={() => send(v.verdi)} className="knapp font-medium">
             <span className={`inline-block h-md w-md rounded-full ${v.farge}`} aria-hidden />
