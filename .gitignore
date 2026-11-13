@@ -17,6 +17,7 @@ modeling/outputs/*
 .vercel/
 modeling/data/cache/
 modeling/data/arkiv/
+modeling/data/etterfylt/
 
 # Lokale agent-, nettleser- og byggefiler
 .codex/
