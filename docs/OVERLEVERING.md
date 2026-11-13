@@ -9,14 +9,14 @@
   bratthetskategorier er fortsatt anslag. Se felttabellen i modellguiden.
 - Timesjobben lager 120 timer fremover og sju døgn bakover; arkivet beholder ledetider til 48 timer.
   Direkte MET Nordic foretrekkes over Open-Meteo, med fersk Nowcast-nedbør. Open-Meteo gir også innkjøring.
-- Databaseskjemaet har ni migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
+- Databaseskjemaet har ti migrasjoner, inkludert `modelltilstand`, v2-metadata og støtte for isobservasjoner.
   `vaer_og_rydding` legger til værinput til trening (`vaer`) og ukentlig arkivrydding. Den siste,
   `bones_maling`, lagrer målinger fra Bønes værstasjon. `parquet_arkiv` gjør at ryddingen bare sletter
   døgn som er eksportert til Parquet ([Parquet-arkivet](ARKIV.md)), og ryddingen tynner etter 30 dager.
   Kjørt i produksjon 6.11.2026; Pi-en eksporterer hver natt også i testmodus.
   Se [deployguiden](DEPLOY.md).
-- MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. Verdien arkiveres ikke
-  i `varsel` og vises ikke som prosent på nettsiden.
+- MEPS gir valgfri, ukalibrert `p_tort` og toppnivå `ensemble` i sistevarselet. `p_tort` arkiveres i
+  `varsel` (migrasjonen `varsel_p_tort`, eldre rader har null), men vises ikke som prosent på nettsiden.
 - Nettsiden viser tørt/fuktig/vått og omgjør modellens is/snø til vått. Skjemaet har tre valg.
 - Kalibrering tilpasser én fordampningsparameter, med minst 50 observasjoner og ti regnepisoder.
   ML-kandidater fra `train.py --save` må valideres separat før de kan aktiveres.
@@ -28,7 +28,8 @@
 1. Kontroller siste ordinære timesjobb, datakilder og Frost-innsamling i produksjon.
 2. Samle faktiske observasjoner fra uavhengige regnepisoder og valider tørketid, geometri og vinterfysikk.
 3. Kalibrer ved tilstrekkelig grunnlag; hold dev/test-data og syntetiske etiketter utenfor aktivering.
-4. Vurder arkivering og kalibrering av MEPS-usikkerhet før prosentvis visning. Dette krever eget arbeid.
+4. Kalibrer MEPS-usikkerheten (`varsel.p_tort`) mot observasjoner før prosentvis visning, når arkivet har
+   flere måneder med data. Dette krever eget arbeid.
 5. Kjør `vaer_og_rydding`-migrasjonen i produksjon og følg med på databasestørrelsen.
    Lagringstiden (30 dager, deretter ledetid 0/3/6/12/24/48) står i [deployguiden](DEPLOY.md).
 6. Kjør `bones_maling`-migrasjonen i produksjon (reserve for Bønes-regnet). `regnmaler_bruk: erstatt` er på for

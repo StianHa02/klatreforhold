@@ -6,7 +6,7 @@ Oppsettet av Pi-en står i [`drift/raspberrypi/README.md`](../drift/raspberrypi/
 ## Database og timesjobb
 
 Prosjektets Supabase-URL er `https://nmiydpcmfxkhtztzgzfx.supabase.co`.
-Kontroller anvendte migrasjoner mot de ni filene i `supabase/migrations/` før en ny installasjon.
+Kontroller anvendte migrasjoner mot de ti filene i `supabase/migrations/` før en ny installasjon.
 V2 krever `20261030090000_modell_v2.sql`, som legger til `modelltilstand` og arkivmetadata.
 Ikke kjør gamle migrasjoner blindt på nytt.
 `20261030180000_vaer_og_rydding.sql` legger til `vaer`, `lagre_vaer()`, `rydd_arkiv()` og cron-jobben
@@ -16,6 +16,8 @@ men varselet publiseres likevel. Prøv nye migrasjoner lokalt først (README, «
 ([vurderingen](BONES_STASJON.md)). Uten den får timesjobben en advarsel i `_bones`, og varselet publiseres som før.
 `20261105150000_parquet_arkiv.sql` legger til `arkiv_eksport`, den private Storage-bøtta `arkiv` og en
 `rydd_arkiv()` som bare sletter døgn som er eksportert til Parquet ([Parquet-arkivet](ARKIV.md)).
+`20261113120000_varsel_p_tort.sql` legger til kolonnen `varsel.p_tort` (MEPS-andelen). Kjør den før koden som
+skriver `p_tort` deployes: uten kolonnen avviser PostgREST arkivradene, og timesjobben feiler for alle felt.
 
 Tabeller: `varsel_siste`, `varsel`, `observasjoner`, `stasjon_varsel`, `stasjon_maling`, `modelltilstand`, `vaer`,
 `bones_maling`, `arkiv_eksport`. Storage: den private bøtta `arkiv` (Parquet-arkivet).

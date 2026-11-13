@@ -228,5 +228,6 @@ starttilstand; bare prognosens nedbør byttes, og Nowcast-timer beholdes. Minst 
 kreves. Timesfeltet `p_tort` er andelen som gir tørt berg, ikke en kalibrert sannsynlighet og ikke
 komplementet til ML-feltet `p_vatt`. Toppnivå `ensemble` har `medlemmer`, `utstedt` og `til`.
 Uten ensemble eller etter dekningsslutt er `p_tort` null; hovedvarselet fortsetter ved kildefeil.
-Dataene lagres i `varsel_siste`, men ikke som egne kolonner i `varsel`. Nettsiden viser ennå ikke
-prosentene.
+Dataene lagres i `varsel_siste`, og `p_tort` arkiveres per time og ledetid i `varsel` (migrasjonen
+`20261113120000_varsel_p_tort.sql`; eldre rader har null), slik at andelen senere kan kalibreres mot
+observasjoner. `medlemmer` og `utstedt` arkiveres ikke. Nettsiden viser ennå ikke prosentene.

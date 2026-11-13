@@ -38,7 +38,8 @@ def archive_rows(slug: str, v: dict) -> list[dict]:
         "modellversjon": v.get("modellversjon"), "konfigurasjon": v.get("konfigurasjon"),
         "is_mm": h.get("is_mm"), "sno_mm": h.get("sno_mm"), "vaerkilde": h.get("vaerkilde"),
         "status": h["status"], "vann_mm": h["vann_mm"], "p_vatt": h["p_vatt"], "bergtemp": h["bergtemp"],
-        "duggpunkt": h["duggpunkt"], "nedbor_mm": h["nedbor_mm"],
+        # MEPS-andelen kan ikke regnes ut i ettertid (prognosene lagres ikke); null uten ensemble
+        "p_tort": h.get("p_tort"), "duggpunkt": h["duggpunkt"], "nedbor_mm": h["nedbor_mm"],
         "regn_mot_veggen_mm": h["regn_mot_veggen_mm"], "sol_pa_veggen": h["sol_pa_veggen"],
     } for h in v["timer"] if (pd.Timestamp(h["tid"]) - generert) <= pd.Timedelta(hours=ARKIV_MAKS_LEDETID)]
 

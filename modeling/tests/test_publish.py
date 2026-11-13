@@ -45,3 +45,9 @@ if __name__ == "__main__":
     test_fram_rekker_ut_dag_4()
     test_vaer_bare_passerte_timer_og_null_for_tomt()
     print("ok")
+
+
+def test_arkiv_tar_med_p_tort():
+    v = _varsel(3)
+    v["timer"][0]["p_tort"], v["timer"][1]["p_tort"] = 0.87, None  # time 2 og 3 mangler feltet (eldre payload)
+    assert [r["p_tort"] for r in archive_rows("ekstraveggen", v)] == [0.87, None, None, None]
